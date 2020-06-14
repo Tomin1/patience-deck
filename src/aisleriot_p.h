@@ -3,8 +3,10 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include <random>
 #include <libguile.h>
+#include "slot.h"
 
 #define GAME(q, d) \
     Aisleriot *q = Aisleriot::instance(); \
@@ -43,6 +45,16 @@ public:
         AllFeatures = 0x07,
     };
 
+    enum GameState {
+        UninitializedState,
+        LoadedState,
+        BeginState,
+        RunningState,
+        GameOverState,
+        WonState,
+        LastGameState,
+    };
+
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
     static SCM setStatusbarMessage(SCM message);
@@ -70,6 +82,8 @@ public:
     std::random_device rd;
     std::mt19937 generator;
     QString message;
+    GameState state;
+    QVector<Slot*> cardSlots;
     SCM lambdas[LambdaCount];
     QString score;
     int timeout;

@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 #include "aisleriot.h"
 #include "aisleriot_p.h"
+#include "card.h"
+#include "slot.h"
 
 static const char lambdaNames[] = {
   "new-game\0"
@@ -24,6 +26,11 @@ static const char lambdaNames[] = {
 AisleriotPrivate::AisleriotPrivate()
     : features(0)
     , generator(rd())
+    , state(UninitializedState)
+    , timeout(0)
+    , canUndo(false)
+    , canRedo(false)
+    , canDeal(false)
 {
 }
 
@@ -68,8 +75,62 @@ SCM AisleriotPrivate::resetSurface()
 
 SCM AisleriotPrivate::addSlot(SCM slotData)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    if (data->state > BeginState) {
+        return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
+                         scm_list_1(scm_from_utf8_string("Cannot add a new slot after the game has started.")));
+    }
+
+    // Basically copy-paste from aisleriot/src/game.c:cscmi_add_slot
+#define EQUALS_SYMBOL(string,object) (scm_is_true (scm_equal_p (scm_from_locale_symbol (string), object)))
+
+    SCM slotPlacement = SCM_CADDR(slotData);
+    bool expandedDown, expandedRight;
+    double expansionDepth = 0.0;
+    if (EQUALS_SYMBOL("expanded", SCM_CAR(slotPlacement))) {
+        expandedDown = true;
+    } else if (EQUALS_SYMBOL("expanded-right", SCM_CAR(slotPlacement))) {
+        expandedRight = true;
+    } else if (EQUALS_SYMBOL("partially-expanded", SCM_CAR(slotPlacement))) {
+        expandedDown = true;
+        expansionDepth = scm_to_int(SCM_CADDR(slotPlacement));
+    } else if (EQUALS_SYMBOL("partially-expanded-right", SCM_CAR(slotPlacement))) {
+        expandedRight = true;
+        expansionDepth = scm_to_int(SCM_CADDR(slotPlacement));
+    }
+
+    /* 3rd argument is the slot type (optionally) */
+    SCM slotType = SCM_CDDDR(slotData);
+    Slot::SlotType type = Slot::UnknownSlot;
+    if (slotType != SCM_EOL) {
+        if (EQUALS_SYMBOL("chooser", SCM_CAR(slotType))) {
+            type = Slot::ChooserSlot;
+        } else if (EQUALS_SYMBOL("foundation", SCM_CAR(slotType))) {
+            type = Slot::FoundationSlot;
+        } else if (EQUALS_SYMBOL("reserve", SCM_CAR(slotType))) {
+            type = Slot::ReserveSlot;
+        } else if (EQUALS_SYMBOL("stock", SCM_CAR(slotType))) {
+            type = Slot::StockSlot;
+        } else if (EQUALS_SYMBOL("tableau", SCM_CAR(slotType))) {
+            type = Slot::TableauSlot;
+        } else if (EQUALS_SYMBOL("waste", SCM_CAR(slotType))) {
+            type = Slot::WasteSlot;
+        }
+    }
+
+#undef EQUALS_SYMBOL
+
+    Slot *slot = new Slot(scm_to_int(SCM_CAR(slotData)), type,
+                          scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
+                          scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
+                          expansionDepth, expandedDown, expandedRight,
+                          game);
+
+    slot->setCards(SCM_CADR(slotData));
+
+    data->cardSlots.append(slot);
+
+    return SCM_EOL;
 }
 
 SCM AisleriotPrivate::getSlot(SCM slotId)
