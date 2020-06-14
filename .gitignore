@@ -1,0 +1,8 @@
+*.o
+*.pro.user
+Makefile
+moc_*.cpp
+translations/
+documentation.list
+RPMS/
+mobile-aisleriot
