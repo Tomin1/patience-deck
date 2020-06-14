@@ -20,7 +20,8 @@ CONFIG += sailfishapp
 SOURCES += src/mobile-aisleriot.cpp \
     src/aisleriot.cpp
 
-HEADERS += src/aisleriot.h
+HEADERS += src/aisleriot.h \
+    src/aisleriot_p.h
 
 DISTFILES += qml/mobile-aisleriot.qml \
     qml/cover/CoverPage.qml \

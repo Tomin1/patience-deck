@@ -3,15 +3,27 @@
 
 #include <QObject>
 
+class AisleriotPrivate;
+class QQmlEngine;
+class QJSEngine;
+
 class Aisleriot : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit Aisleriot(QObject *parent = nullptr);
+    static Aisleriot* instance();
+    static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
     ~Aisleriot();
 
 private:
-    static void interface_init(void *data);
+    friend AisleriotPrivate;
+
+    explicit Aisleriot(QObject *parent = nullptr);
+    static void interfaceInit(void *data);
+
+    static Aisleriot *s_game;
+    AisleriotPrivate *d_ptr;
 };
 
 #endif // AISLERIOT_H
