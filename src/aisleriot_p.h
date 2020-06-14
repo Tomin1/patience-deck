@@ -15,9 +15,34 @@
 class Aisleriot;
 class AisleriotPrivate
 {
+public:
     AisleriotPrivate();
 
-    friend Aisleriot;
+    enum Lambdas {
+        NewGameLambda,
+        ButtonPressedLambda,
+        ButtonReleasedLambda,
+        ButtonClickedLambda,
+        ButtonDoubleClickedLambda,
+        GameOverLambda,
+        WinningGameLambda,
+        HintLambda,
+        GetOptionsLambda,
+        ApplyOptionsLambda,
+        TimeoutLambda,
+        DroppableLambda,
+        DealableLambda,
+        LambdaCount,
+        LastMandatoryLambda = TimeoutLambda,
+    };
+
+    enum GameFeatures {
+        FeatureDroppable = 0x01,
+        FeatureScoreHidden = 0x02,
+        FeatureDealable = 0x04,
+        AllFeatures = 0x07,
+    };
+
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
     static SCM setStatusbarMessage(SCM message);
@@ -45,6 +70,7 @@ class AisleriotPrivate
     std::random_device rd;
     std::mt19937 generator;
     QString message;
+    SCM lambdas[LambdaCount];
     QString score;
     int timeout;
     bool canUndo;

@@ -5,6 +5,22 @@
 #include "aisleriot.h"
 #include "aisleriot_p.h"
 
+static const char lambdaNames[] = {
+  "new-game\0"
+  "button-pressed\0"
+  "button-released\0"
+  "button-clicked\0"
+  "button-double-clicked\0"
+  "game-over\0"
+  "winning-game\0"
+  "hint\0"
+  "get-options\0"
+  "apply-options\0"
+  "timeout\0"
+  "droppable\0"
+  "dealable\0"
+};
+
 AisleriotPrivate::AisleriotPrivate()
     : features(0)
     , generator(rd())
@@ -81,17 +97,61 @@ SCM AisleriotPrivate::setSlotXExpansion(SCM slotId, SCM newExpVal)
 }
 
 SCM AisleriotPrivate::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLambda,
-                         SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
-                         SCM winningGameLambda, SCM hintLambda, SCM rest)
+                                SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
+                                SCM winningGameLambda, SCM hintLambda, SCM rest)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    data->lambdas[NewGameLambda] = startGameLambda;
+    data->lambdas[ButtonPressedLambda] = pressedLambda;
+    data->lambdas[ButtonReleasedLambda] = releasedLambda;
+    data->lambdas[ButtonClickedLambda] = clickedLambda;
+    data->lambdas[ButtonDoubleClickedLambda] = doubleClickedLambda;
+    data->lambdas[GameOverLambda] = gameOverLambda;
+    data->lambdas[WinningGameLambda] = winningGameLambda;
+    data->lambdas[HintLambda] = hintLambda;
+
+    data->lambdas[GetOptionsLambda] = SCM_CAR(rest);
+    rest = SCM_CDR(rest);
+    data->lambdas[ApplyOptionsLambda] = SCM_CAR(rest);
+    rest = SCM_CDR(rest);
+    data->lambdas[TimeoutLambda] = SCM_CAR(rest);
+    rest = SCM_CDR(rest);
+
+    if (data->features & FeatureDroppable) {
+        data->lambdas[DroppableLambda] = SCM_CAR(rest);
+        rest = SCM_CDR(rest);
+    } else {
+        data->lambdas[DroppableLambda] = SCM_UNDEFINED;
+    }
+
+    if (data->features & FeatureDroppable) {
+        data->lambdas[DealableLambda] = SCM_CAR(rest);
+        rest = SCM_CDR(rest);
+    } else {
+        data->lambdas[DealableLambda] = SCM_UNDEFINED;
+    }
+
+    return SCM_EOL;
 }
 
 SCM AisleriotPrivate::setLambdaX(SCM symbol, SCM lambda)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    // Basically copy-paste from aisleriot/src/game.c:scm_set_lambda_x
+    // TODO: maybe rewrite to use hash table instead
+
+    const char *lambdaName = lambdaNames;
+    for (int i = 0; i < LambdaCount; ++i) {
+      if (scm_is_true(scm_equal_p(symbol, scm_from_locale_symbol(lambdaName)))) {
+        data->lambdas[i] = lambda;
+        return SCM_EOL;
+      }
+
+      lambdaName += strlen(lambdaName) + 1;
+    }
+
+    return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
+                     scm_list_1(scm_from_utf8_string("Unknown lambda name in set-lambda!")));
 }
 
 SCM AisleriotPrivate::myrandom(SCM range)
