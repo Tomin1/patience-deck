@@ -145,8 +145,13 @@ SCM AisleriotPrivate::getSlot(SCM slotId)
 
 SCM AisleriotPrivate::setCards(SCM slotId, SCM newCards)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    Slot *slot = data->cardSlots[scm_to_int(slotId)];
+    if (!slot)
+        return SCM_BOOL_F;  // TODO: Is this correct behaviour?
+    slot->setCards(newCards);
+
+    return SCM_BOOL_T;
 }
 
 SCM AisleriotPrivate::setSlotYExpansion(SCM slotId, SCM newExpVal)
