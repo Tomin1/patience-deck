@@ -10,10 +10,10 @@ Slot::Slot(int id, SlotType type, double x, double y,
     , m_exposed(false)
     , m_x(x)
     , m_y(y)
-    , m_expansion(0.0)
+    , m_expansionDelta(0.0)
+    , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
+                | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
-    , m_expandedDown(expandedDown)
-    , m_expandedRight(expandedRight)
     , m_needsUpdate(true)
 {
 }
@@ -46,6 +46,38 @@ void Slot::setCards(SCM cards)
         delete newCards[i];
     }
     // TODO: Emit signal
+}
+
+bool Slot::expandsRight()
+{
+    return m_expansion & ExpandsInX;
+}
+
+bool Slot::expandedRight()
+{
+    return m_expansion & ExpandedAtX;
+}
+
+void Slot::setExpansionToRight(double expansion)
+{
+    m_expansion |= ExpandedAtX;
+    m_expansionDelta = expansion;
+}
+
+bool Slot::expandsDown()
+{
+    return m_expansion & ExpandsInY;
+}
+
+bool Slot::expandedDown()
+{
+    return m_expansion & ExpandedAtY;
+}
+
+void Slot::setExpansionToDown(double expansion)
+{
+    m_expansion |= ExpandedAtY;
+    m_expansionDelta = expansion;
 }
 
 SCM Slot::toSCM() const

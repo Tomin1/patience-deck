@@ -154,16 +154,32 @@ SCM AisleriotPrivate::setCards(SCM slotId, SCM newCards)
     return SCM_BOOL_T;
 }
 
-SCM AisleriotPrivate::setSlotYExpansion(SCM slotId, SCM newExpVal)
+SCM AisleriotPrivate::setSlotYExpansion(SCM slotId, SCM value)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    Slot *slot = data->cardSlots[scm_to_int(slotId)];
+    if (!slot)
+        return SCM_EOL; // TODO: Is this correct behaviour?
+    if (!slot->expandsDown())
+        return SCM_EOL;
+    if (slot->expandedRight())
+        return SCM_EOL;
+    slot->setExpansionToDown(scm_to_double(value));
+    return SCM_EOL;
 }
 
-SCM AisleriotPrivate::setSlotXExpansion(SCM slotId, SCM newExpVal)
+SCM AisleriotPrivate::setSlotXExpansion(SCM slotId, SCM value)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    Slot *slot = data->cardSlots[scm_to_int(slotId)];
+    if (!slot)
+        return SCM_EOL; // TODO: Is this correct behaviour?
+    if (!slot->expandsRight())
+        return SCM_EOL;
+    if (slot->expandedDown())
+        return SCM_EOL;
+    slot->setExpansionToRight(scm_to_double(value));
+    return SCM_EOL;
 }
 
 SCM AisleriotPrivate::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLambda,
