@@ -74,8 +74,13 @@ SCM AisleriotPrivate::setStatusbarMessage(SCM newMessage)
 
 SCM AisleriotPrivate::resetSurface()
 {
-    GAME(game, data, SCM_EOL); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data, SCM_EOL);
+    for (Slot *slot : data->cardSlots) {
+        delete slot;
+    }
+    data->cardSlots.clear();
+    // TODO: Emit signal for clearing game
+    return SCM_EOL;
 }
 
 SCM AisleriotPrivate::addSlot(SCM slotData)
