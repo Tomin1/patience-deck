@@ -46,6 +46,8 @@ public:
 
     Card(SCM data, QObject *parent = nullptr);
 
+    SCM toSCM() const;
+
     friend inline bool operator==(const Card &a, const Card &b);
 
 private:

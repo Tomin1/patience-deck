@@ -47,3 +47,12 @@ void Slot::setCards(SCM cards)
     }
     // TODO: Emit signal
 }
+
+SCM Slot::toSCM() const
+{
+    SCM cards = SCM_EOL;
+    for (const Card *card : m_cards) {
+        cards = scm_cons(card->toSCM(), cards);
+    }
+    return cards;
+}

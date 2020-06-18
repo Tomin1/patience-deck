@@ -28,6 +28,8 @@ public:
 
     void setCards(SCM cards);
 
+    SCM toSCM() const;
+
 private:
     int m_id;
     SlotType m_type;

@@ -135,8 +135,12 @@ SCM AisleriotPrivate::addSlot(SCM slotData)
 
 SCM AisleriotPrivate::getSlot(SCM slotId)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data);
+    Slot *slot = data->cardSlots[scm_to_int(slotId)];
+    if (!slot)
+        return SCM_EOL;
+
+    return scm_cons(slotId, scm_cons(slot->toSCM(), SCM_EOL));
 }
 
 SCM AisleriotPrivate::setCards(SCM slotId, SCM newCards)
