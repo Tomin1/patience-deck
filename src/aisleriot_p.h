@@ -6,21 +6,25 @@
 #include <QVector>
 #include <random>
 #include <libguile.h>
-#include "slot.h"
+#include "aisleriot.h"
 
-#define GAME(q, d) \
+#define GAME(q, d, err) \
     Aisleriot *q = Aisleriot::instance(); \
     if (!q) \
-        return SCM_EOL; \
+        return err; \
     AisleriotPrivate *d = q->d_ptr
 
-class Aisleriot;
-class AisleriotPrivate
-{
-public:
-    AisleriotPrivate();
+class QTimer;
+class Slot;
 
-    enum Lambdas {
+class AisleriotPrivate : QObject
+{
+    Q_OBJECT
+
+public:
+    explicit AisleriotPrivate(QObject *parent = nullptr);
+
+    enum Lambda {
         NewGameLambda,
         ButtonPressedLambda,
         ButtonReleasedLambda,
@@ -37,23 +41,17 @@ public:
         LambdaCount,
         LastMandatoryLambda = TimeoutLambda,
     };
+    Q_ENUM(Lambda)
 
-    enum GameFeatures {
+    enum GameFeature : uint {
+        NoFeatures = 0x00,
         FeatureDroppable = 0x01,
         FeatureScoreHidden = 0x02,
         FeatureDealable = 0x04,
         AllFeatures = 0x07,
     };
-
-    enum GameState {
-        UninitializedState,
-        LoadedState,
-        BeginState,
-        RunningState,
-        GameOverState,
-        WonState,
-        LastGameState,
-    };
+    Q_ENUM(GameFeature)
+    Q_DECLARE_FLAGS(GameFeatures, GameFeature)
 
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
@@ -78,11 +76,19 @@ public:
     static SCM redoSetSensitive(SCM inState);
     static SCM dealableSetSensitive(SCM inState);
 
-    uint features;
+    bool makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval);
+    bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
+    bool makeTestLambdaCall(Lambda lambda);
+
+public slots:
+    static void runDelayedCallback(SCM callback);
+
+public:
+    GameFeatures features;
     std::random_device rd;
     std::mt19937 generator;
     QString message;
-    GameState state;
+    Aisleriot::GameState state;
     QVector<Slot*> cardSlots;
     SCM lambdas[LambdaCount];
     QString score;
@@ -90,6 +96,7 @@ public:
     bool canUndo;
     bool canRedo;
     bool canDeal;
+    QTimer *delayedCallTimer;
 };
 
 #endif // AISLERIOT_P_H

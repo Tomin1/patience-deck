@@ -16,11 +16,31 @@ public:
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
     ~Aisleriot();
 
+    enum GameState {
+        UninitializedState,
+        LoadedState,
+        BeginState,
+        RunningState,
+        GameOverState,
+        WonState,
+        LastGameState,
+    };
+    Q_ENUM(GameState)
+
+
 private:
     friend AisleriotPrivate;
 
     explicit Aisleriot(QObject *parent = nullptr);
     static void interfaceInit(void *data);
+
+    void setDealable(bool dealable);
+    void setState(GameState state);
+
+    void endMove();
+    void updateDealable();
+    bool winningGame();
+    void testGameOver();
 
     static Aisleriot *s_game;
     AisleriotPrivate *d_ptr;

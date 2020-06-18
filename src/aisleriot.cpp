@@ -1,13 +1,15 @@
+#include <functional>
 #include <libguile.h>
 #include <random>
 #include <QJSEngine>
 #include <QQmlEngine>
+#include <QTimer>
 #include "aisleriot.h"
 #include "aisleriot_p.h"
 #include "card.h"
 #include "slot.h"
 
-static const char lambdaNames[] = {
+static const char LambdaNames[] = {
   "new-game\0"
   "button-pressed\0"
   "button-released\0"
@@ -23,10 +25,13 @@ static const char lambdaNames[] = {
   "dealable\0"
 };
 
-AisleriotPrivate::AisleriotPrivate()
-    : features(0)
+static const int DelayedCallDelay = 50;
+
+AisleriotPrivate::AisleriotPrivate(QObject *parent)
+    : QObject(parent)
+    , features(NoFeatures)
     , generator(rd())
-    , state(UninitializedState)
+    , state(Aisleriot::UninitializedState)
     , timeout(0)
     , canUndo(false)
     , canRedo(false)
@@ -36,20 +41,20 @@ AisleriotPrivate::AisleriotPrivate()
 
 SCM AisleriotPrivate::setFeatureWord(SCM features)
 {
-    GAME(game, data);
-    data->features = scm_to_uint(features);
+    GAME(game, data, SCM_EOL);
+    data->features = static_cast<GameFeatures>(scm_to_uint(features));
     return SCM_EOL;
 }
 
 SCM AisleriotPrivate::getFeatureWord()
 {
-    GAME(game, data);
-    return scm_from_uint(data->features);
+    GAME(game, data, SCM_EOL);
+    return scm_from_uint(static_cast<GameFeatures>(data->features));
 }
 
 SCM AisleriotPrivate::setStatusbarMessage(SCM newMessage)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     if (!scm_is_string(newMessage))
         return SCM_EOL;
 
@@ -69,14 +74,14 @@ SCM AisleriotPrivate::setStatusbarMessage(SCM newMessage)
 
 SCM AisleriotPrivate::resetSurface()
 {
-    GAME(game, data); Q_UNUSED(data);
+    GAME(game, data, SCM_EOL); Q_UNUSED(data);
     return SCM_EOL; // TODO
 }
 
 SCM AisleriotPrivate::addSlot(SCM slotData)
 {
-    GAME(game, data);
-    if (data->state > BeginState) {
+    GAME(game, data, SCM_EOL);
+    if (data->state > Aisleriot::BeginState) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
                          scm_list_1(scm_from_utf8_string("Cannot add a new slot after the game has started.")));
     }
@@ -135,7 +140,7 @@ SCM AisleriotPrivate::addSlot(SCM slotData)
 
 SCM AisleriotPrivate::getSlot(SCM slotId)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     Slot *slot = data->cardSlots[scm_to_int(slotId)];
     if (!slot)
         return SCM_EOL;
@@ -145,7 +150,7 @@ SCM AisleriotPrivate::getSlot(SCM slotId)
 
 SCM AisleriotPrivate::setCards(SCM slotId, SCM newCards)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     Slot *slot = data->cardSlots[scm_to_int(slotId)];
     if (!slot)
         return SCM_BOOL_F;  // TODO: Is this correct behaviour?
@@ -156,7 +161,7 @@ SCM AisleriotPrivate::setCards(SCM slotId, SCM newCards)
 
 SCM AisleriotPrivate::setSlotYExpansion(SCM slotId, SCM value)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     Slot *slot = data->cardSlots[scm_to_int(slotId)];
     if (!slot)
         return SCM_EOL; // TODO: Is this correct behaviour?
@@ -170,7 +175,7 @@ SCM AisleriotPrivate::setSlotYExpansion(SCM slotId, SCM value)
 
 SCM AisleriotPrivate::setSlotXExpansion(SCM slotId, SCM value)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     Slot *slot = data->cardSlots[scm_to_int(slotId)];
     if (!slot)
         return SCM_EOL; // TODO: Is this correct behaviour?
@@ -186,7 +191,7 @@ SCM AisleriotPrivate::setLambda(SCM startGameLambda, SCM pressedLambda, SCM rele
                                 SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
                                 SCM winningGameLambda, SCM hintLambda, SCM rest)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     data->lambdas[NewGameLambda] = startGameLambda;
     data->lambdas[ButtonPressedLambda] = pressedLambda;
     data->lambdas[ButtonReleasedLambda] = releasedLambda;
@@ -222,11 +227,11 @@ SCM AisleriotPrivate::setLambda(SCM startGameLambda, SCM pressedLambda, SCM rele
 
 SCM AisleriotPrivate::setLambdaX(SCM symbol, SCM lambda)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     // Basically copy-paste from aisleriot/src/game.c:scm_set_lambda_x
     // TODO: maybe rewrite to use hash table instead
 
-    const char *lambdaName = lambdaNames;
+    const char *lambdaName = LambdaNames;
     for (int i = 0; i < LambdaCount; ++i) {
       if (scm_is_true(scm_equal_p(symbol, scm_from_locale_symbol(lambdaName)))) {
         data->lambdas[i] = lambda;
@@ -242,21 +247,21 @@ SCM AisleriotPrivate::setLambdaX(SCM symbol, SCM lambda)
 
 SCM AisleriotPrivate::myrandom(SCM range)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     std::uniform_int_distribution<quint32> distribution(0, scm_to_int(range));
     return scm_from_uint32(distribution(data->generator));
 }
 
 SCM AisleriotPrivate::clickToMoveP(void)
 {
-    GAME(game, data); Q_UNUSED(data);
+    GAME(game, data, SCM_EOL); Q_UNUSED(data);
     // See aisleriot/src/game.c:scm_click_to_move_p for explanation
     return SCM_BOOL_F;
 }
 
 SCM AisleriotPrivate::updateScore(SCM newScore)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     char *score = scm_to_utf8_string(newScore);
     if (data->score != score) {
         data->score = score;
@@ -268,13 +273,13 @@ SCM AisleriotPrivate::updateScore(SCM newScore)
 
 SCM AisleriotPrivate::getTimeout(void)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     return scm_from_int(data->timeout);
 }
 
 SCM AisleriotPrivate::setTimeout(SCM newTimeout)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     int timeout = scm_to_int(newTimeout);
     if (data->timeout != timeout) {
         data->timeout = timeout;
@@ -285,13 +290,23 @@ SCM AisleriotPrivate::setTimeout(SCM newTimeout)
 
 SCM AisleriotPrivate::delayedCall(SCM callback)
 {
-    GAME(game, data); Q_UNUSED(data);
-    return SCM_EOL; // TODO
+    GAME(game, data, SCM_EOL);
+    if (data->delayedCallTimer) {
+        return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
+                         scm_list_1(scm_from_utf8_string("Already have a delayed callback pending.")));
+    }
+
+    scm_gc_protect_object(callback);
+    data->delayedCallTimer = new QTimer(data);
+    connect(data->delayedCallTimer, &QTimer::timeout,
+            data, std::bind(runDelayedCallback, callback));
+    data->delayedCallTimer->start(DelayedCallDelay);
+    return SCM_EOL;
 }
 
 SCM AisleriotPrivate::undoSetSensitive(SCM inState)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     bool state = scm_is_true(inState);
     if (state != data->canUndo) {
         data->canUndo = state;
@@ -302,7 +317,7 @@ SCM AisleriotPrivate::undoSetSensitive(SCM inState)
 
 SCM AisleriotPrivate::redoSetSensitive(SCM inState)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     bool state = scm_is_true(inState);
     if (state != data->canRedo) {
         data->canRedo = state;
@@ -313,13 +328,48 @@ SCM AisleriotPrivate::redoSetSensitive(SCM inState)
 
 SCM AisleriotPrivate::dealableSetSensitive(SCM inState)
 {
-    GAME(game, data);
+    GAME(game, data, SCM_EOL);
     bool state = scm_is_true(inState);
     if (state != data->canDeal) {
         data->canDeal = state;
         // TODO: Emit canDeal changed
     }
     return SCM_EOL;
+}
+
+bool AisleriotPrivate::makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval)
+{
+    // TODO: Add error handling
+    SCM r = scm_call_n(lambda, args, n);
+    if (retval)
+        *retval = r;
+    return true;
+}
+
+bool AisleriotPrivate::makeSCMCall(QString name, SCM *args, int n, SCM *retval)
+{
+    SCM lambda = scm_c_eval_string(name.toUtf8().data());
+    if (!makeSCMCall(lambda, args, n, retval))
+        return false;
+    scm_remember_upto_here_1(lambda);
+    return true;
+}
+
+bool AisleriotPrivate::makeTestLambdaCall(Lambda lambda)
+{
+    GAME(game, data, false);
+    SCM rv = nullptr;
+    return data->makeSCMCall(data->lambdas[lambda], NULL, 0, &rv) && scm_is_true(rv);
+}
+
+void AisleriotPrivate::runDelayedCallback(SCM callback)
+{
+    GAME(game, data, );
+    data->delayedCallTimer->deleteLater();
+    data->delayedCallTimer = nullptr;
+
+    if (data->makeSCMCall(callback, NULL, 0, NULL))
+        game->testGameOver();
 }
 
 Aisleriot* Aisleriot::s_game = nullptr;
@@ -340,7 +390,7 @@ QObject* Aisleriot::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 Aisleriot::Aisleriot(QObject *parent)
     : QObject(parent)
-    , d_ptr(new AisleriotPrivate)
+    , d_ptr(new AisleriotPrivate(this))
 {
     scm_c_define_module("aisleriot interface", interfaceInit, this);
 }
@@ -383,4 +433,56 @@ void Aisleriot::interfaceInit(void *data)
                  "click-to-move?", "update-score", "get-timeout",
                  "set-timeout!", "delayed-call", "undo-set-sensitive",
                  "redo-set-sensitive", "dealable-set-sensitive", NULL);
+}
+
+void Aisleriot::setDealable(bool dealable)
+{
+    if (d_ptr->canDeal != dealable) {
+        d_ptr->canDeal = dealable;
+        // TODO: Emit dealable change
+    }
+}
+
+void Aisleriot::setState(GameState state)
+{
+    if (d_ptr->state != state) {
+        d_ptr->state = state;
+        // TODO: Stop timer, record time
+    }
+    // TODO: Emit state change
+}
+
+void Aisleriot::endMove()
+{
+    d_ptr->makeSCMCall(QStringLiteral("end-move"), NULL, 0, NULL);
+}
+
+void Aisleriot::updateDealable()
+{
+    SCM rv;
+    if ((d_ptr->features & AisleriotPrivate::FeatureDealable) != 0
+            && d_ptr->makeSCMCall(d_ptr->lambdas[AisleriotPrivate::DealableLambda], NULL, 0, &rv)) {
+        setDealable(scm_is_true(rv));
+    }
+}
+
+bool Aisleriot::winningGame()
+{
+    return d_ptr->makeTestLambdaCall(AisleriotPrivate::WinningGameLambda);
+}
+
+void Aisleriot::testGameOver()
+{
+    endMove();
+    updateDealable();
+    if (d_ptr->state < GameOverState) {
+        if (d_ptr->makeTestLambdaCall(AisleriotPrivate::GameOverLambda)) {
+            GameState newState;
+            if (winningGame())
+                newState = WonState;
+            else
+                newState = GameOverState;
+            setState(newState);
+        }
+    }
 }
