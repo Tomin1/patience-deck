@@ -33,8 +33,7 @@ public:
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
     Slot(int id, SlotType type, double x, double y,
-         int expansionDepth, bool expandedDown, bool expandedRight,
-         QObject *parent = nullptr);
+         int expansionDepth, bool expandedDown, bool expandedRight);
 
     void setCards(SCM cards);
 

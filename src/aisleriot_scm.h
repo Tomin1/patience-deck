@@ -1,28 +1,18 @@
-#ifndef AISLERIOT_P_H
-#define AISLERIOT_P_H
+#ifndef AISLERIOT_SCM_H
+#define AISLERIOT_SCM_H
 
-#include <QObject>
-#include <QString>
+#include <QSharedPointer>
 #include <QVector>
 #include <random>
 #include <libguile.h>
-#include "aisleriot.h"
-
-#define GAME(q, d, err) \
-    Aisleriot *q = Aisleriot::instance(); \
-    if (!q) \
-        return err; \
-    AisleriotPrivate *d = q->d_ptr
 
 class QTimer;
 class Slot;
-
-class AisleriotPrivate : QObject
+class AisleriotSCM
 {
-    Q_OBJECT
-
-public:
-    explicit AisleriotPrivate(QObject *parent = nullptr);
+protected:
+    AisleriotSCM();
+    ~AisleriotSCM();
 
     enum Lambda {
         NewGameLambda,
@@ -41,7 +31,6 @@ public:
         LambdaCount,
         LastMandatoryLambda = TimeoutLambda,
     };
-    Q_ENUM(Lambda)
 
     enum GameFeature : uint {
         NoFeatures = 0x00,
@@ -50,15 +39,23 @@ public:
         FeatureDealable = 0x04,
         AllFeatures = 0x07,
     };
-    Q_ENUM(GameFeature)
-    Q_DECLARE_FLAGS(GameFeatures, GameFeature)
+
+    virtual void setMessage(QString message) = 0;
+    virtual void clearGame() = 0;
+    virtual void addSlot(QSharedPointer<Slot> slot) = 0;
+    virtual QSharedPointer<Slot> getSlot(int slot) = 0;
+    virtual void setScore(int score) = 0;
+    virtual void setCanUndo(bool canUndo) = 0;
+    virtual void setCanRedo(bool canRedo) = 0;
+    virtual void setCanDeal(bool canDeal) = 0;
+    virtual void testGameOver() = 0;
 
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
     static SCM setStatusbarMessage(SCM message);
     static SCM resetSurface();
-    static SCM addSlot(SCM slotData);
-    static SCM getSlot(SCM slotId);
+    static SCM addCardSlot(SCM slotData);
+    static SCM getCardSlot(SCM slotId);
     static SCM setCards(SCM slotId, SCM newCards);
     static SCM setSlotYExpansion(SCM slotId, SCM newExpVal);
     static SCM setSlotXExpansion(SCM slotId, SCM newExpVal);
@@ -80,25 +77,12 @@ public:
     bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
     bool makeTestLambdaCall(Lambda lambda);
 
-public slots:
-    static void runDelayedCallback(SCM callback);
-
-public:
-    bool canUndo;
-    bool canRedo;
-    bool canDeal;
-    QString gameFile;
-    Aisleriot::GameState state;
-    int score;
-
-    GameFeatures features;
-    std::random_device rd;
-    std::mt19937 generator;
-    QString message;
-    QVector<Slot*> cardSlots;
-    SCM lambdas[LambdaCount];
-    QTimer *delayedCallTimer;
-    int timeout;
+    uint m_features;
+    std::random_device m_rd;
+    std::mt19937 m_generator;
+    SCM m_lambdas[LambdaCount];
+    QTimer *m_delayedCallTimer;
+    int m_timeout;
 };
 
-#endif // AISLERIOT_P_H
+#endif // AISLERIOT_SCM_H

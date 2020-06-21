@@ -2,9 +2,8 @@
 #include "slot.h"
 
 Slot::Slot(int id, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight,
-           QObject *parent)
-    : QObject(parent)
+           int expansionDepth, bool expandedDown, bool expandedRight)
+    : QObject(nullptr)
     , m_id(id)
     , m_type(type)
     , m_exposed(false)

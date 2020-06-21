@@ -18,12 +18,13 @@ PKGCONFIG += guile-2.2
 CONFIG += sailfishapp
 
 SOURCES += src/mobile-aisleriot.cpp \
+    src/aisleriot_scm.cpp \
     src/aisleriot.cpp \
     src/card.cpp \
     src/slot.cpp
 
 HEADERS += src/aisleriot.h \
-    src/aisleriot_p.h \
+    src/aisleriot_scm.h \
     src/card.h \
     src/slot.h
 

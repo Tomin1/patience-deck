@@ -2,12 +2,13 @@
 #define AISLERIOT_H
 
 #include <QObject>
+#include <QSharedPointer>
+#include "aisleriot_scm.h"
 
-class AisleriotPrivate;
 class QQmlEngine;
 class QJSEngine;
-
-class Aisleriot : public QObject
+class Slot;
+class Aisleriot : public QObject, public AisleriotSCM
 {
     Q_OBJECT
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)
@@ -16,6 +17,7 @@ class Aisleriot : public QObject
     Q_PROPERTY(QString gameFile READ gameFile NOTIFY gameFileChanged)
     Q_PROPERTY(int score READ score NOTIFY scoreChanged)
     Q_PROPERTY(int state READ state NOTIFY stateChanged);
+    Q_PROPERTY(QString message READ message NOTIFY messageChanged);
 
 public:
     static Aisleriot* instance();
@@ -48,6 +50,7 @@ public:
     QString gameFile() const;
     int score() const;
     GameState state() const;
+    QString message() const;
 
 signals:
     void canUndoChanged();
@@ -56,27 +59,42 @@ signals:
     void gameFileChanged();
     void scoreChanged();
     void stateChanged();
+    void messageChanged();
 
 private:
-    friend AisleriotPrivate;
+    friend AisleriotSCM;  // TODO: Can I get rid of this?
 
     explicit Aisleriot(QObject *parent = nullptr);
     static void interfaceInit(void *data);
 
-    void setCanUndo(bool canUndo);
-    void setCanRedo(bool canRedo);
-    void setCanDeal(bool canDeal);
+    virtual void setCanUndo(bool canUndo);
+    virtual void setCanRedo(bool canRedo);
+    virtual void setCanDeal(bool canDeal);
     void setGameFile(QString file);
-    void setScore(int score);
+    virtual void setScore(int score);
     void setState(GameState state);
+    virtual void setMessage(QString message);
 
     void endMove();
     void updateDealable();
     bool winningGame();
-    void testGameOver();
+
+    // Methods required by SCM
+    virtual void addSlot(QSharedPointer<Slot> slot);
+    virtual QSharedPointer<Slot> getSlot(int slot);
+    virtual void testGameOver();
+    virtual void clearGame();
+
+    bool m_canUndo;
+    bool m_canRedo;
+    bool m_canDeal;
+    QString m_gameFile;
+    GameState m_state;
+    int m_score;
+    QString m_message;
+    QVector<QSharedPointer<Slot>> m_cardSlots;
 
     static Aisleriot *s_game;
-    AisleriotPrivate *d_ptr;
 };
 
 #endif // AISLERIOT_H
