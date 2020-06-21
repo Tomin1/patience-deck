@@ -29,13 +29,13 @@ static const int DelayedCallDelay = 50;
 
 AisleriotPrivate::AisleriotPrivate(QObject *parent)
     : QObject(parent)
-    , features(NoFeatures)
-    , generator(rd())
-    , state(Aisleriot::UninitializedState)
-    , timeout(0)
     , canUndo(false)
     , canRedo(false)
     , canDeal(false)
+    , state(Aisleriot::UninitializedState)
+    , features(NoFeatures)
+    , generator(rd())
+    , timeout(0)
 {
 }
 
@@ -266,12 +266,12 @@ SCM AisleriotPrivate::clickToMoveP(void)
 
 SCM AisleriotPrivate::updateScore(SCM newScore)
 {
-    GAME(game, data, SCM_EOL);
+    GAME(game, data, SCM_EOL); Q_UNUSED(data)
     char *score = scm_to_utf8_string(newScore);
-    if (data->score != score) {
-        data->score = score;
-        // TODO: Emit score changed signal
-    }
+    bool ok;
+    int value = QString::fromUtf8(score).toInt(&ok);
+    Q_ASSERT_X(ok, "updateScore", "expected an integer value");
+    game->setScore(value);
     free(score);
     return newScore;
 }
@@ -309,36 +309,24 @@ SCM AisleriotPrivate::delayedCall(SCM callback)
     return SCM_EOL;
 }
 
-SCM AisleriotPrivate::undoSetSensitive(SCM inState)
+SCM AisleriotPrivate::undoSetSensitive(SCM state)
 {
-    GAME(game, data, SCM_EOL);
-    bool state = scm_is_true(inState);
-    if (state != data->canUndo) {
-        data->canUndo = state;
-        // TODO: Emit canUndo changed
-    }
+    GAME(game, data, SCM_EOL); Q_UNUSED(data)
+    game->setCanUndo(scm_is_true(state));
     return SCM_EOL;
 }
 
-SCM AisleriotPrivate::redoSetSensitive(SCM inState)
+SCM AisleriotPrivate::redoSetSensitive(SCM state)
 {
-    GAME(game, data, SCM_EOL);
-    bool state = scm_is_true(inState);
-    if (state != data->canRedo) {
-        data->canRedo = state;
-        // TODO: Emit canRedo changed
-    }
+    GAME(game, data, SCM_EOL); Q_UNUSED(data)
+    game->setCanRedo(scm_is_true(state));
     return SCM_EOL;
 }
 
-SCM AisleriotPrivate::dealableSetSensitive(SCM inState)
+SCM AisleriotPrivate::dealableSetSensitive(SCM state)
 {
-    GAME(game, data, SCM_EOL);
-    bool state = scm_is_true(inState);
-    if (state != data->canDeal) {
-        data->canDeal = state;
-        // TODO: Emit canDeal changed
-    }
+    GAME(game, data, SCM_EOL); Q_UNUSED(data)
+    game->setCanDeal(scm_is_true(state));
     return SCM_EOL;
 }
 
@@ -405,6 +393,111 @@ Aisleriot::~Aisleriot()
     delete d_ptr;
 }
 
+void Aisleriot::startNewGame()
+{
+    // TODO
+}
+
+void Aisleriot::restartGame()
+{
+    // TODO
+}
+
+bool Aisleriot::loadGame(QString gameFile)
+{
+    Q_UNUSED(gameFile) // TODO
+    return false; // TODO
+}
+
+void Aisleriot::undoMove()
+{
+    // TODO
+}
+
+void Aisleriot::redoMove()
+{
+    // TODO
+}
+
+bool Aisleriot::canUndo() const
+{
+    return d_ptr->canUndo;
+}
+
+void Aisleriot::setCanUndo(bool canUndo)
+{
+    if (d_ptr->canUndo != canUndo) {
+        d_ptr->canUndo = canUndo;
+        emit canUndoChanged();
+    }
+}
+
+bool Aisleriot::canRedo() const
+{
+    return d_ptr->canRedo;
+}
+
+void Aisleriot::setCanRedo(bool canUndo)
+{
+    if (d_ptr->canRedo != canUndo) {
+        d_ptr->canRedo = canUndo;
+        emit canRedoChanged();
+    }
+}
+
+bool Aisleriot::canDeal() const
+{
+    return d_ptr->canDeal;
+}
+
+void Aisleriot::setCanDeal(bool canUndo)
+{
+    if (d_ptr->canDeal != canUndo) {
+        d_ptr->canDeal = canUndo;
+        emit canDealChanged();
+    }
+}
+
+QString Aisleriot::gameFile() const
+{
+    return d_ptr->gameFile;
+}
+
+void Aisleriot::setGameFile(QString file)
+{
+    if (d_ptr->gameFile != file) {
+        d_ptr->gameFile = file;
+        emit gameFileChanged();
+    }
+}
+
+int Aisleriot::score() const
+{
+    return d_ptr->score;
+}
+
+void Aisleriot::setScore(int score)
+{
+    if (d_ptr->score != score) {
+        d_ptr->score = score;
+        emit scoreChanged();
+    }
+}
+
+Aisleriot::GameState Aisleriot::state() const
+{
+    return d_ptr->state;
+}
+
+void Aisleriot::setState(GameState state)
+{
+    if (d_ptr->state != state) {
+        d_ptr->state = state;
+        // TODO: Stop timer, record time
+        emit stateChanged();
+    }
+}
+
 void Aisleriot::interfaceInit(void *data)
 {
     // See aisleriot/src/game.c:cscm_init for reference
@@ -440,23 +533,6 @@ void Aisleriot::interfaceInit(void *data)
                  "redo-set-sensitive", "dealable-set-sensitive", NULL);
 }
 
-void Aisleriot::setDealable(bool dealable)
-{
-    if (d_ptr->canDeal != dealable) {
-        d_ptr->canDeal = dealable;
-        // TODO: Emit dealable change
-    }
-}
-
-void Aisleriot::setState(GameState state)
-{
-    if (d_ptr->state != state) {
-        d_ptr->state = state;
-        // TODO: Stop timer, record time
-    }
-    // TODO: Emit state change
-}
-
 void Aisleriot::endMove()
 {
     d_ptr->makeSCMCall(QStringLiteral("end-move"), NULL, 0, NULL);
@@ -467,7 +543,7 @@ void Aisleriot::updateDealable()
     SCM rv;
     if ((d_ptr->features & AisleriotPrivate::FeatureDealable) != 0
             && d_ptr->makeSCMCall(d_ptr->lambdas[AisleriotPrivate::DealableLambda], NULL, 0, &rv)) {
-        setDealable(scm_is_true(rv));
+        setCanDeal(scm_is_true(rv));
     }
 }
 

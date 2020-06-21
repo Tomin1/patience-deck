@@ -72,9 +72,9 @@ public:
     static SCM getTimeout(void);
     static SCM setTimeout(SCM newTimeout);
     static SCM delayedCall(SCM callback);
-    static SCM undoSetSensitive(SCM inState);
-    static SCM redoSetSensitive(SCM inState);
-    static SCM dealableSetSensitive(SCM inState);
+    static SCM undoSetSensitive(SCM state);
+    static SCM redoSetSensitive(SCM state);
+    static SCM dealableSetSensitive(SCM state);
 
     bool makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval);
     bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
@@ -84,19 +84,21 @@ public slots:
     static void runDelayedCallback(SCM callback);
 
 public:
+    bool canUndo;
+    bool canRedo;
+    bool canDeal;
+    QString gameFile;
+    Aisleriot::GameState state;
+    int score;
+
     GameFeatures features;
     std::random_device rd;
     std::mt19937 generator;
     QString message;
-    Aisleriot::GameState state;
     QVector<Slot*> cardSlots;
     SCM lambdas[LambdaCount];
-    QString score;
-    int timeout;
-    bool canUndo;
-    bool canRedo;
-    bool canDeal;
     QTimer *delayedCallTimer;
+    int timeout;
 };
 
 #endif // AISLERIOT_P_H
