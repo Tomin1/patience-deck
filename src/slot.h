@@ -2,11 +2,10 @@
 #define SLOT_H
 
 #include <QObject>
-#include <libguile.h>
+#include <QSharedPointer>
 
 class Card;
-class Aisleriot;
-class AisleriotPrivate;
+class AisleriotSCM;
 class Slot : public QObject
 {
     Q_OBJECT
@@ -35,7 +34,7 @@ public:
     Slot(int id, SlotType type, double x, double y,
          int expansionDepth, bool expandedDown, bool expandedRight);
 
-    void setCards(SCM cards);
+    void setCards(QList<QSharedPointer<Card>> cards);
 
     bool expandsRight();
     bool expandedRight();
@@ -44,12 +43,15 @@ public:
     bool expandedDown();
     void setExpansionToDown(double expansion);
 
-    SCM toSCM() const;
+signals:
+    void cardsChanged();
 
 private:
+    friend AisleriotSCM;
+
     int m_id;
     SlotType m_type;
-    QList<Card*> m_cards;
+    QList<QSharedPointer<Card>> m_cards;
     bool m_exposed;
     double m_x;
     double m_y;

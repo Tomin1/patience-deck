@@ -7,6 +7,7 @@
 #include <libguile.h>
 
 class QTimer;
+class Card;
 class Slot;
 class AisleriotSCM
 {
@@ -77,6 +78,13 @@ protected:
     bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
     bool makeTestLambdaCall(Lambda lambda);
 
+private:
+    static QSharedPointer<Card> createCard(SCM data);
+    static QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
+    static SCM cardToSCM(QSharedPointer<Card> card);
+    static SCM slotToSCM(QSharedPointer<Slot> slot);
+
+protected:
     uint m_features;
     std::random_device m_rd;
     std::mt19937 m_generator;

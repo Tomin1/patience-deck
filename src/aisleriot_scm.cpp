@@ -121,13 +121,12 @@ SCM AisleriotSCM::addCardSlot(SCM slotData)
     }
 
 #undef EQUALS_SYMBOL
-
     auto slot = QSharedPointer<Slot>::create(scm_to_int(SCM_CAR(slotData)), type,
                                              scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
                                              scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
                                              expansionDepth, expandedDown, expandedRight);
 
-    slot->setCards(SCM_CADR(slotData));
+    slot->setCards(cardsFromSlot(SCM_CADR(slotData)));
 
     game->addSlot(slot);
 
@@ -141,7 +140,7 @@ SCM AisleriotSCM::getCardSlot(SCM slotId)
     if (!slot)
         return SCM_EOL;
 
-    return scm_cons(slotId, scm_cons(slot->toSCM(), SCM_EOL));
+    return scm_cons(slotId, scm_cons(slotToSCM(slot), SCM_EOL));
 }
 
 SCM AisleriotSCM::setCards(SCM slotId, SCM newCards)
@@ -150,7 +149,7 @@ SCM AisleriotSCM::setCards(SCM slotId, SCM newCards)
     QSharedPointer<Slot> slot = game->getSlot(scm_to_int(slotId));
     if (!slot)
         return SCM_BOOL_F;  // TODO: Is this correct behaviour?
-    slot->setCards(newCards);
+    slot->setCards(cardsFromSlot(newCards));
 
     return SCM_BOOL_T;
 }
@@ -348,4 +347,41 @@ bool AisleriotSCM::makeTestLambdaCall(Lambda lambda)
     auto *game = Aisleriot::instance();
     SCM rv = nullptr;
     return game->makeSCMCall(game->m_lambdas[lambda], NULL, 0, &rv) && scm_is_true(rv);
+}
+
+QSharedPointer<Card> AisleriotSCM::createCard(SCM data)
+{
+    return QSharedPointer<Card>::create(!(scm_is_true(SCM_CADDR(data))),
+                                        static_cast<Card::Suit>(scm_to_int(SCM_CADR(data))),
+                                        static_cast<Card::Rank>(scm_to_int(SCM_CAR(data))));
+}
+
+QList<QSharedPointer<Card>> AisleriotSCM::cardsFromSlot(SCM cards)
+{
+    // mimics aisleriot/src/game.c:cscmi_slot_set_cards
+    QList<QSharedPointer<Card>> newCards;
+    if (scm_is_true(scm_list_p(cards))) {
+        for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
+            newCards.append(createCard(it));
+        }
+    }
+    return newCards;
+}
+
+
+SCM AisleriotSCM::cardToSCM(QSharedPointer<Card> card)
+{
+    return scm_cons(scm_from_uint(card->m_rank),
+                    scm_cons(scm_from_uint(card->m_suit),
+                             scm_cons(SCM_BOOL(!card->m_faceDown),
+                                      SCM_EOL)));
+}
+
+SCM AisleriotSCM::slotToSCM(QSharedPointer<Slot> slot)
+{
+    SCM cards = SCM_EOL;
+    for (const QSharedPointer<Card> card : slot->m_cards) {
+        cards = scm_cons(cardToSCM(card), cards);
+    }
+    return cards;
 }

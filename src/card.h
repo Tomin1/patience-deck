@@ -1,10 +1,9 @@
 #ifndef CARD_H
 #define CARD_H
 
-#include <libguile.h>
 #include <QObject>
 
-class Aisleriot;
+class AisleriotSCM;
 class Card : public QObject
 {
     Q_OBJECT
@@ -44,21 +43,20 @@ public:
         SuitSpade = 3
     };
 
-    Card(SCM data, QObject *parent = nullptr);
-
-    SCM toSCM() const;
+    Card(bool faceDown, Suit suit, Rank rank);
 
     friend inline bool operator==(const Card &a, const Card &b);
+    friend AisleriotSCM;
 
 private:
-    bool faceDown;
-    Suit suit;
-    Rank rank;
+    bool m_faceDown;
+    Suit m_suit;
+    Rank m_rank;
 };
 
 inline bool operator==(const Card &a, const Card &b)
 {
-    return a.faceDown == b.faceDown && a.suit == b.suit && a.rank == b.rank;
+    return a.m_faceDown == b.m_faceDown && a.m_suit == b.m_suit && a.m_rank == b.m_rank;
 }
 
 #endif // CARD_H
