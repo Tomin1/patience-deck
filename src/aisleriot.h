@@ -61,29 +61,23 @@ signals:
     void stateChanged();
     void messageChanged();
 
-private:
-    friend AisleriotSCM;  // TODO: Can I get rid of this?
-
-    explicit Aisleriot(QObject *parent = nullptr);
-    static void interfaceInit(void *data);
-
+public:
+    // Methods required by SCM
+    virtual void setScore(int score);
     virtual void setCanUndo(bool canUndo);
     virtual void setCanRedo(bool canRedo);
     virtual void setCanDeal(bool canDeal);
-    void setGameFile(QString file);
-    virtual void setScore(int score);
-    void setState(GameState state);
     virtual void setMessage(QString message);
-
-    void endMove();
-    void updateDealable();
-    bool winningGame();
-
-    // Methods required by SCM
     virtual void addSlot(QSharedPointer<Slot> slot);
     virtual QSharedPointer<Slot> getSlot(int slot);
     virtual void testGameOver();
     virtual void clearGame();
+
+private:
+    explicit Aisleriot(QObject *parent = nullptr);
+
+    void setGameFile(QString file);
+    void setState(GameState state);
 
     bool m_canUndo;
     bool m_canRedo;

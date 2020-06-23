@@ -41,6 +41,13 @@ protected:
         AllFeatures = 0x07,
     };
 
+    bool hasFeature(GameFeature feature);
+    void updateDealable();
+    void endMove();
+    bool isWinningGame();
+    bool isGameOver();
+
+public:
     virtual void setMessage(QString message) = 0;
     virtual void clearGame() = 0;
     virtual void addSlot(QSharedPointer<Slot> slot) = 0;
@@ -51,6 +58,7 @@ protected:
     virtual void setCanDeal(bool canDeal) = 0;
     virtual void testGameOver() = 0;
 
+private:
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
     static SCM setStatusbarMessage(SCM message);
@@ -74,17 +82,16 @@ protected:
     static SCM redoSetSensitive(SCM state);
     static SCM dealableSetSensitive(SCM state);
 
+    bool makeSCMCall(Lambda lambda, SCM *args, int n, SCM *retval);
     bool makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval);
     bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
-    bool makeTestLambdaCall(Lambda lambda);
 
-private:
+    static void interfaceInit(void *data);
     static QSharedPointer<Card> createCard(SCM data);
     static QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
     static SCM cardToSCM(QSharedPointer<Card> card);
     static SCM slotToSCM(QSharedPointer<Slot> slot);
 
-protected:
     uint m_features;
     std::random_device m_rd;
     std::mt19937 m_generator;

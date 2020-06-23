@@ -30,12 +30,78 @@ AisleriotSCM::AisleriotSCM()
     , m_generator(m_rd())
     , m_timeout(0)
 {
+    scm_c_define_module("aisleriot interface", interfaceInit, this);
 }
 
 AisleriotSCM::~AisleriotSCM()
 {
     m_delayedCallTimer->stop();
     delete m_delayedCallTimer;
+}
+
+void AisleriotSCM::interfaceInit(void *data)
+{
+    // See aisleriot/src/game.c:cscm_init for reference
+    Q_UNUSED(data)
+    /* List all C functions that Aisleriot can call */
+    scm_c_define_gsubr("set-feature-word!", 1, 0, 0, (void *)AisleriotSCM::setFeatureWord);
+    scm_c_define_gsubr("get-feature-word", 0, 0, 0, (void *)AisleriotSCM::getFeatureWord);
+    scm_c_define_gsubr("set-statusbar-message-c", 1, 0, 0, (void *)AisleriotSCM::setStatusbarMessage);
+    scm_c_define_gsubr("reset-surface", 0, 0, 0, (void *)AisleriotSCM::resetSurface);
+    scm_c_define_gsubr("add-slot", 1, 0, 0, (void *)AisleriotSCM::addCardSlot);
+    scm_c_define_gsubr("get-slot", 1, 0, 0, (void *)AisleriotSCM::getCardSlot);
+    scm_c_define_gsubr("set-cards-c!", 2, 0, 0, (void *)AisleriotSCM::setCards);
+    scm_c_define_gsubr("set-slot-y-expansion!", 2, 0, 0, (void *)AisleriotSCM::setSlotYExpansion);
+    scm_c_define_gsubr("set-slot-x-expansion!", 2, 0, 0, (void *)AisleriotSCM::setSlotXExpansion);
+    scm_c_define_gsubr("set-lambda", 8, 0, 1, (void *)AisleriotSCM::setLambda);
+    scm_c_define_gsubr("set-lambda!", 2, 0, 0, (void *)AisleriotSCM::setLambdaX);
+    scm_c_define_gsubr("aisleriot-random", 1, 0, 0, (void *)AisleriotSCM::myrandom);
+    scm_c_define_gsubr("click-to-move?", 0, 0, 0, (void *)AisleriotSCM::clickToMoveP);
+    scm_c_define_gsubr("update-score", 1, 0, 0, (void *)AisleriotSCM::updateScore);
+    scm_c_define_gsubr("get-timeout", 0, 0, 0, (void *)AisleriotSCM::getTimeout);
+    scm_c_define_gsubr("set-timeout!", 1, 0, 0, (void *)AisleriotSCM::setTimeout);
+    scm_c_define_gsubr("delayed-call", 1, 0, 0, (void *)AisleriotSCM::delayedCall);
+    scm_c_define_gsubr("undo-set-sensitive", 1, 0, 0, (void *)AisleriotSCM::undoSetSensitive);
+    scm_c_define_gsubr("redo-set-sensitive", 1, 0, 0, (void *)AisleriotSCM::redoSetSensitive);
+    scm_c_define_gsubr("dealable-set-sensitive", 1, 0, 0, (void *)AisleriotSCM::dealableSetSensitive);
+
+    scm_c_export("set-feature-word!", "get-feature-word", "set-statusbar-message-c",
+                 "reset-surface", "add-slot", "get-slot", "set-cards-c!",
+                 "set-slot-y-expansion!", "set-slot-x-expansion!",
+                 "set-lambda", "set-lambda!", "aisleriot-random",
+                 "click-to-move?", "update-score", "get-timeout",
+                 "set-timeout!", "delayed-call", "undo-set-sensitive",
+                 "redo-set-sensitive", "dealable-set-sensitive", NULL);
+}
+
+bool AisleriotSCM::hasFeature(GameFeature feature)
+{
+    return (m_features & feature) != 0;
+}
+
+void AisleriotSCM::updateDealable()
+{
+    SCM rv;
+    if (hasFeature(FeatureDealable) && makeSCMCall(m_lambdas[DealableLambda], NULL, 0, &rv)) {
+        setCanDeal(scm_is_true(rv));
+    }
+}
+
+void AisleriotSCM::endMove()
+{
+    makeSCMCall(QStringLiteral("end-move"), NULL, 0, NULL);
+}
+
+bool AisleriotSCM::isWinningGame()
+{
+    SCM rv;
+    return makeSCMCall(WinningGameLambda, NULL, 0, &rv) && scm_is_true(rv);
+}
+
+bool AisleriotSCM::isGameOver()
+{
+    SCM rv;
+    return makeSCMCall(GameOverLambda, NULL, 0, &rv) && scm_is_true(rv);
 }
 
 SCM AisleriotSCM::setFeatureWord(SCM features)
@@ -324,6 +390,11 @@ SCM AisleriotSCM::dealableSetSensitive(SCM state)
     return SCM_EOL;
 }
 
+bool AisleriotSCM::makeSCMCall(Lambda lambda, SCM *args, int n, SCM *retval)
+{
+    return makeSCMCall(m_lambdas[lambda], args, n, retval);
+}
+
 bool AisleriotSCM::makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval)
 {
     // TODO: Add error handling
@@ -340,13 +411,6 @@ bool AisleriotSCM::makeSCMCall(QString name, SCM *args, int n, SCM *retval)
         return false;
     scm_remember_upto_here_1(lambda);
     return true;
-}
-
-bool AisleriotSCM::makeTestLambdaCall(Lambda lambda)
-{
-    auto *game = Aisleriot::instance();
-    SCM rv = nullptr;
-    return game->makeSCMCall(game->m_lambdas[lambda], NULL, 0, &rv) && scm_is_true(rv);
 }
 
 QSharedPointer<Card> AisleriotSCM::createCard(SCM data)
