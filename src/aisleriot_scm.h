@@ -41,6 +41,7 @@ protected:
         AllFeatures = 0x07,
     };
 
+    bool startNewGameSCM();
     bool hasFeature(GameFeature feature);
     void updateDealable();
     void endMove();
@@ -56,9 +57,13 @@ public:
     virtual void setCanUndo(bool canUndo) = 0;
     virtual void setCanRedo(bool canRedo) = 0;
     virtual void setCanDeal(bool canDeal) = 0;
+    virtual void setWidth(double width) = 0;
+    virtual void setHeight(double height) = 0;
     virtual void testGameOver() = 0;
 
 private:
+    static SCM startNewGameSCM(void *data);
+
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
     static SCM setStatusbarMessage(SCM message);

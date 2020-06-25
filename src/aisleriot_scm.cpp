@@ -74,6 +74,34 @@ void AisleriotSCM::interfaceInit(void *data)
                  "redo-set-sensitive", "dealable-set-sensitive", NULL);
 }
 
+bool AisleriotSCM::startNewGameSCM()
+{
+    // TODO: Exception handling, scm_c_catch
+    startNewGameSCM((void*)this);
+    return true;
+}
+
+SCM AisleriotSCM::startNewGameSCM(void *data)
+{
+    Aisleriot *game = static_cast<Aisleriot *>(data);
+    // TODO: Deal with game over situations
+    SCM size;
+    Q_ASSERT(game->makeSCMCall(NewGameLambda, NULL, 0, &size));
+    game->setWidth(scm_to_double(SCM_CAR(size)));
+    game->setHeight(scm_to_double(SCM_CADR(size)));
+    scm_remember_upto_here_1(size);
+
+    game->makeSCMCall(QStringLiteral("start-game"), NULL, 0, NULL);
+
+    if (game->hasFeature(FeatureDealable)) {
+        SCM rv;
+        Q_ASSERT(game->makeSCMCall(DealableLambda, NULL, 0, &rv));
+        game->setCanDeal(scm_is_true(rv));
+    }
+
+    return SCM_BOOL_T;
+}
+
 bool AisleriotSCM::hasFeature(GameFeature feature)
 {
     return (m_features & feature) != 0;
@@ -308,6 +336,7 @@ SCM AisleriotSCM::setLambdaX(SCM symbol, SCM lambda)
 
 SCM AisleriotSCM::myrandom(SCM range)
 {
+    // TODO: Needs to be reimplemented
     auto *game = Aisleriot::instance();
     std::uniform_int_distribution<quint32> distribution(0, scm_to_int(range));
     return scm_from_uint32(distribution(game->m_generator));

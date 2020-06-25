@@ -36,7 +36,12 @@ Aisleriot::~Aisleriot()
 
 void Aisleriot::startNewGame()
 {
-    // TODO
+    Q_ASSERT_X(state() != UninitializedState, "startNewGame", "Game must be initialized first");
+    setState(BeginState);
+    setCanUndo(false);
+    setCanRedo(false);
+    if (!startNewGameSCM())
+        return;
 }
 
 void Aisleriot::restartGame()
@@ -97,6 +102,16 @@ void Aisleriot::setCanDeal(bool canUndo)
         m_canDeal = canUndo;
         emit canDealChanged();
     }
+}
+
+void Aisleriot::setWidth(double width)
+{
+    Q_UNUSED(width); // TODO
+}
+
+void Aisleriot::setHeight(double height)
+{
+    Q_UNUSED(height); // TODO
 }
 
 QString Aisleriot::gameFile() const

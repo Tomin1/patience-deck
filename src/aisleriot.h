@@ -67,6 +67,8 @@ public:
     virtual void setCanUndo(bool canUndo);
     virtual void setCanRedo(bool canRedo);
     virtual void setCanDeal(bool canDeal);
+    virtual void setWidth(double width);
+    virtual void setHeight(double height);
     virtual void setMessage(QString message);
     virtual void addSlot(QSharedPointer<Slot> slot);
     virtual QSharedPointer<Slot> getSlot(int slot);
