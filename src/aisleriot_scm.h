@@ -44,6 +44,8 @@ protected:
     bool startNewGameSCM();
     bool hasFeature(GameFeature feature);
     void updateDealable();
+    void undoMoveSCM();
+    void redoMoveSCM();
     void endMove();
     bool isWinningGame();
     bool isGameOver();

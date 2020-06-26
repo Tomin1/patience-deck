@@ -115,6 +115,16 @@ void AisleriotSCM::updateDealable()
     }
 }
 
+void AisleriotSCM::undoMoveSCM()
+{
+    makeSCMCall(QStringLiteral("undo"), NULL, 0, NULL);
+}
+
+void AisleriotSCM::redoMoveSCM()
+{
+    makeSCMCall(QStringLiteral("redo"), NULL, 0, NULL);
+}
+
 void AisleriotSCM::endMove()
 {
     makeSCMCall(QStringLiteral("end-move"), NULL, 0, NULL);

@@ -57,12 +57,16 @@ bool Aisleriot::loadGame(QString gameFile)
 
 void Aisleriot::undoMove()
 {
-    // TODO
+    if (state() == Aisleriot::GameOverState)
+        setState(RunningState);
+    undoMoveSCM();
+    updateDealable();
 }
 
 void Aisleriot::redoMove()
 {
-    // TODO
+    redoMoveSCM();
+    testGameOver();
 }
 
 bool Aisleriot::canUndo() const
