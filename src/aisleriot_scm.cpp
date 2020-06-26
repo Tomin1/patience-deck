@@ -85,7 +85,7 @@ SCM AisleriotSCM::startNewGameSCM(void *data)
 {
     Aisleriot *game = static_cast<Aisleriot *>(data);
     // TODO: Deal with game over situations
-    SCM size;
+    SCM size = SCM_UNDEFINED;
     Q_ASSERT(game->makeSCMCall(NewGameLambda, NULL, 0, &size));
     game->setWidth(scm_to_double(SCM_CAR(size)));
     game->setHeight(scm_to_double(SCM_CADR(size)));
@@ -251,8 +251,7 @@ SCM AisleriotSCM::setCards(SCM slotId, SCM newCards)
 {
     auto *game = Aisleriot::instance();
     QSharedPointer<Slot> slot = game->getSlot(scm_to_int(slotId));
-    if (!slot)
-        return SCM_BOOL_F;  // TODO: Is this correct behaviour?
+    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
     slot->setCards(cardsFromSlot(newCards));
 
     return SCM_BOOL_T;
@@ -262,8 +261,7 @@ SCM AisleriotSCM::setSlotYExpansion(SCM slotId, SCM value)
 {
     auto *game = Aisleriot::instance();
     QSharedPointer<Slot> slot = game->getSlot(scm_to_int(slotId));
-    if (!slot)
-        return SCM_EOL; // TODO: Is this correct behaviour?
+    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
     if (!slot->expandsDown())
         return SCM_EOL;
     if (slot->expandedRight())
@@ -276,8 +274,7 @@ SCM AisleriotSCM::setSlotXExpansion(SCM slotId, SCM value)
 {
     auto *game = Aisleriot::instance();
     QSharedPointer<Slot> slot = game->getSlot(scm_to_int(slotId));
-    if (!slot)
-        return SCM_EOL; // TODO: Is this correct behaviour?
+    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
     if (!slot->expandsRight())
         return SCM_EOL;
     if (slot->expandedDown())
@@ -364,7 +361,7 @@ SCM AisleriotSCM::updateScore(SCM newScore)
     char *score = scm_to_utf8_string(newScore);
     bool ok;
     int value = QString::fromUtf8(score).toInt(&ok);
-    Q_ASSERT_X(ok, "updateScore", "expected an integer value");
+    Q_ASSERT_X(ok, __FUNCTION__, "expected an integer value");
     game->setScore(value);
     free(score);
     return newScore;

@@ -36,7 +36,7 @@ Aisleriot::~Aisleriot()
 
 void Aisleriot::startNewGame()
 {
-    Q_ASSERT_X(state() != UninitializedState, "startNewGame", "Game must be initialized first");
+    Q_ASSERT_X(state() != UninitializedState, __FUNCTION__, "Game must be initialized first");
     setState(BeginState);
     setCanUndo(false);
     setCanRedo(false);
@@ -178,7 +178,7 @@ void Aisleriot::addSlot(QSharedPointer<Slot> slot)
 
 QSharedPointer<Slot> Aisleriot::getSlot(int slot)
 {
-    Q_ASSERT_X(slot > 0 && slot < m_cardSlots.count(), "getSlot", "invalid slot index");
+    Q_ASSERT_X(slot > 0 && slot < m_cardSlots.count(), __FUNCTION__, "invalid slot index");
     return m_cardSlots[slot];
 }
 
