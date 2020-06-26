@@ -51,8 +51,18 @@ void Aisleriot::restartGame()
 
 bool Aisleriot::loadGame(QString gameFile)
 {
-    Q_UNUSED(gameFile) // TODO
-    return false; // TODO
+    Q_ASSERT_X(!gameFile.isEmpty(), __FUNCTION__, "gameFile can not be empty");
+    if (m_gameFile != gameFile) {
+        // TODO: Handle statistics
+        setState(UninitializedState);
+        setCanUndo(false);
+        setCanRedo(false);
+        setCanDeal(false);
+        loadGameSCM(gameFile);
+        setState(LoadedState);
+        setGameFile(gameFile);
+    }
+    return true;
 }
 
 void Aisleriot::undoMove()

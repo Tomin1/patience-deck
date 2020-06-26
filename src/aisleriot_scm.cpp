@@ -102,6 +102,23 @@ SCM AisleriotSCM::startNewGameSCM(void *data)
     return SCM_BOOL_T;
 }
 
+void AisleriotSCM::loadGameSCM(QString gameFile)
+{
+    m_features = 0;
+    // TODO: Catch errros
+    loadGameSCM(&gameFile);
+}
+
+SCM AisleriotSCM::loadGameSCM(void *data)
+{
+    QString *gameFile = static_cast<QString *>(data);
+    scm_dynwind_begin((scm_t_dynwind_flags)0);
+    scm_primitive_load_path(scm_from_utf8_string(gameFile->toUtf8().data()));
+    // TODO: Test all lambdas
+    scm_dynwind_end();
+    return SCM_BOOL_T;
+}
+
 bool AisleriotSCM::hasFeature(GameFeature feature)
 {
     return (m_features & feature) != 0;

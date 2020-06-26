@@ -42,6 +42,7 @@ protected:
     };
 
     bool startNewGameSCM();
+    void loadGameSCM(QString gameFile);
     bool hasFeature(GameFeature feature);
     void updateDealable();
     void undoMoveSCM();
@@ -65,6 +66,7 @@ public:
 
 private:
     static SCM startNewGameSCM(void *data);
+    static SCM loadGameSCM(void *data);
 
     static SCM setFeatureWord(SCM features);
     static SCM getFeatureWord();
