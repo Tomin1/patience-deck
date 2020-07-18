@@ -8,7 +8,7 @@
 class QQmlEngine;
 class QJSEngine;
 class Slot;
-class Aisleriot : public QObject, public AisleriotSCM
+class Aisleriot : public QObject, public Engine
 {
     Q_OBJECT
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)

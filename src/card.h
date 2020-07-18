@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-class AisleriotSCM;
 class Card : public QObject
 {
     Q_OBJECT
@@ -45,8 +44,11 @@ public:
 
     Card(bool faceDown, Suit suit, Rank rank);
 
+    bool faceDown() { return m_faceDown; };
+    Suit suit() { return m_suit; };
+    Rank rank() { return m_rank; };
+
     friend inline bool operator==(const Card &a, const Card &b);
-    friend AisleriotSCM;
 
 private:
     bool m_faceDown;

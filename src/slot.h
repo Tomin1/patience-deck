@@ -5,7 +5,6 @@
 #include <QSharedPointer>
 
 class Card;
-class AisleriotSCM;
 class Slot : public QObject
 {
     Q_OBJECT
@@ -43,11 +42,12 @@ public:
     bool expandedDown();
     void setExpansionToDown(double expansion);
 
+    QList<QSharedPointer<Card>> cards() { return m_cards; };
+
 signals:
     void cardsChanged();
 
 private:
-    friend AisleriotSCM;
 
     int m_id;
     SlotType m_type;

@@ -9,12 +9,14 @@
 class QTimer;
 class Card;
 class Slot;
-class AisleriotSCM
+class Engine
 {
 protected:
-    AisleriotSCM();
-    ~AisleriotSCM();
+    Engine();
+    ~Engine();
 
+public:
+    // TODO: Make internal to engine
     enum Lambda {
         NewGameLambda,
         ButtonPressedLambda,
@@ -33,6 +35,7 @@ protected:
         LastMandatoryLambda = TimeoutLambda,
     };
 
+    // TODO: Make internal to engine
     enum GameFeature : uint {
         NoFeatures = 0x00,
         FeatureDroppable = 0x01,
@@ -51,7 +54,7 @@ protected:
     bool isWinningGame();
     bool isGameOver();
 
-public:
+    // TODO: Make these signals
     virtual void setMessage(QString message) = 0;
     virtual void clearGame() = 0;
     virtual void addSlot(QSharedPointer<Slot> slot) = 0;
@@ -64,43 +67,12 @@ public:
     virtual void setHeight(double height) = 0;
     virtual void testGameOver() = 0;
 
-private:
-    static SCM startNewGameSCM(void *data);
-    static SCM loadGameSCM(void *data);
-
-    static SCM setFeatureWord(SCM features);
-    static SCM getFeatureWord();
-    static SCM setStatusbarMessage(SCM message);
-    static SCM resetSurface();
-    static SCM addCardSlot(SCM slotData);
-    static SCM getCardSlot(SCM slotId);
-    static SCM setCards(SCM slotId, SCM newCards);
-    static SCM setSlotYExpansion(SCM slotId, SCM newExpVal);
-    static SCM setSlotXExpansion(SCM slotId, SCM newExpVal);
-    static SCM setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLambda,
-                         SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
-                         SCM winningGameLambda, SCM hintLambda, SCM rest);
-    static SCM setLambdaX(SCM symbol, SCM lambda);
-    static SCM myrandom(SCM range);
-    static SCM clickToMoveP(void);
-    static SCM updateScore(SCM newScore);
-    static SCM getTimeout(void);
-    static SCM setTimeout(SCM newTimeout);
-    static SCM delayedCall(SCM callback);
-    static SCM undoSetSensitive(SCM state);
-    static SCM redoSetSensitive(SCM state);
-    static SCM dealableSetSensitive(SCM state);
-
+    // TODO: Make these internal to engine
     bool makeSCMCall(Lambda lambda, SCM *args, int n, SCM *retval);
     bool makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval);
     bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
 
-    static void interfaceInit(void *data);
-    static QSharedPointer<Card> createCard(SCM data);
-    static QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
-    static SCM cardToSCM(QSharedPointer<Card> card);
-    static SCM slotToSCM(QSharedPointer<Slot> slot);
-
+    // TODO: Protect these better
     uint m_features;
     std::random_device m_rd;
     std::mt19937 m_generator;
