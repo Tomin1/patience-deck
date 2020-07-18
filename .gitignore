@@ -3,6 +3,6 @@
 Makefile
 moc_*.cpp
 translations/
-documentation.list
+*.list
 RPMS/
 mobile-aisleriot
