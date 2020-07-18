@@ -1,5 +1,5 @@
 Name:       mobile-aisleriot
-Summary:    Mobile port of GNOME Aisleriot
+Summary:    Mobile reimplementation of GNOME Aisleriot
 Version:    0.1
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
@@ -12,11 +12,10 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
-# TODO: And gc and libunistring probably too!
-BuildRequires: guile22
+BuildRequires:  guile22-devel
 
 %description
-%{summary}.
+%{summary} for Sailfish.
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -30,8 +29,7 @@ rm -rf %{buildroot}
 
 %qmake5_install
 
-# TODO: And gc and libunistring probably too!
-cp -L /usr/lib/libguile-2.2.so %{buildroot}/%{_datadir}/%{name}/
+chmod -x %{buildroot}/%{_datadir}/%{name}/games/*.scm
 
 desktop-file-install --delete-original       \
   --dir %{buildroot}%{_datadir}/applications             \

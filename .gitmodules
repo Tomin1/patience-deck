@@ -1,0 +1,3 @@
+[submodule "aisleriot"]
+	path = aisleriot
+	url = https://gitlab.gnome.org/GNOME/aisleriot.git

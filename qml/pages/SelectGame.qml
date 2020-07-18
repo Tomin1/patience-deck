@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Aisleriot 1.0
 
 Page {
     id: page
@@ -8,7 +9,7 @@ Page {
 
     SilicaListView {
         id: listView
-        model: 20
+        model: Aisleriot.getGameList()
         anchors.fill: parent
         header: PageHeader {
             title: qsTr("Games")
@@ -18,11 +19,11 @@ Page {
 
             Label {
                 x: Theme.horizontalPageMargin
-                text: qsTr("Game") + " " + index
+                text: modelData
                 anchors.verticalCenter: parent.verticalCenter
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
-            onClicked: console.log("Selected " + index)
+            onClicked: Aisleriot.loadGame(modelData)
         }
         VerticalScrollDecorator {}
     }

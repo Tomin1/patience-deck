@@ -1,9 +1,12 @@
+#include <QDir>
 #include <QObject>
 #include <QJSEngine>
 #include <QQmlEngine>
 #include "aisleriot.h"
 #include "card.h"
 #include "slot.h"
+
+const auto GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
 
 Aisleriot* Aisleriot::s_game = nullptr;
 
@@ -179,6 +182,13 @@ void Aisleriot::setMessage(QString message)
         m_message = message;
         emit messageChanged();
     }
+}
+
+QStringList Aisleriot::getGameList() const
+{
+    // TODO: Make this a model instead of QStringList
+    return QDir(GameDirectory).entryList(QStringList() << "*.scm",
+                                         QDir::Files | QDir::Readable, QDir::Name);
 }
 
 void Aisleriot::addSlot(QSharedPointer<Slot> slot)
