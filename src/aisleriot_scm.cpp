@@ -27,6 +27,7 @@ const char LambdaNames[] = {
 
 const int DelayedCallDelay = 50;
 
+void *init(void *data);
 void interfaceInit(void *data);
 SCM startNewGameSCM(void *data);
 SCM loadGameSCM(void *data);
@@ -56,6 +57,12 @@ QSharedPointer<Card> createCard(SCM data);
 QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
 SCM cardToSCM(QSharedPointer<Card> card);
 SCM slotToSCM(QSharedPointer<Slot> slot);
+
+void *init(void *data)
+{
+    scm_c_define_module("aisleriot interface", interfaceInit, data);
+    return NULL;
+}
 
 void interfaceInit(void *data)
 {
@@ -451,7 +458,7 @@ Engine::Engine()
     , m_generator(m_rd())
     , m_timeout(0)
 {
-    scm_c_define_module("aisleriot interface", interfaceInit, this);
+    scm_with_guile(&init, this);
 }
 
 Engine::~Engine()

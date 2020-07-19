@@ -11,6 +11,7 @@
 
 int main(int argc, char *argv[])
 {
+    qputenv("GUILE_AUTO_COMPILE", "0");
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     qmlRegisterSingletonType<Aisleriot>("Aisleriot", 1, 0, "Aisleriot", &Aisleriot::instance);
