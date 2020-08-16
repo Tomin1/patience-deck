@@ -5,9 +5,16 @@
 #include "aisleriot_scm.h"
 #include "aisleriot.h"
 #include "card.h"
+#include "logging.h"
 #include "slot.h"
 
 namespace {
+
+struct Call {
+    SCM lambda;
+    SCM *args;
+    size_t n;
+};
 
 const char LambdaNames[] = {
   "new-game\0"
@@ -57,6 +64,9 @@ QSharedPointer<Card> createCard(SCM data);
 QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
 SCM cardToSCM(QSharedPointer<Card> card);
 SCM slotToSCM(QSharedPointer<Slot> slot);
+SCM callLambda(void *data);
+SCM preUnwindHandler(void *data, SCM tag, SCM throwArgs);
+SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 void *init(void *data)
 {
@@ -97,6 +107,8 @@ void interfaceInit(void *data)
                  "click-to-move?", "update-score", "get-timeout",
                  "set-timeout!", "delayed-call", "undo-set-sensitive",
                  "redo-set-sensitive", "dealable-set-sensitive", NULL);
+
+    qCDebug(lcScheme) << "Initialized aisleriot interface";
 }
 
 SCM startNewGameSCM(void *data)
@@ -451,6 +463,63 @@ SCM slotToSCM(QSharedPointer<Slot> slot)
     return cards;
 }
 
+SCM callLambda(void *data)
+{
+    Call *call = static_cast<Call *>(data);
+    return scm_call_n(call->lambda, call->args, call->n);
+}
+
+inline QString getMessage(SCM message)
+{
+    SCM port = scm_open_output_string();
+    scm_display(message, port);
+    char *string = scm_to_utf8_string(scm_get_output_string(port));
+    scm_dynwind_free(string);
+    scm_close_output_port(port);
+    return QString::fromUtf8(string);
+}
+
+SCM preUnwindHandler(void *data, SCM tag, SCM throwArgs)
+{
+    Q_UNUSED(tag)
+    Q_UNUSED(throwArgs)
+    // TODO: Get more info
+    bool *error = static_cast<bool *>(data);
+    *error = true;
+
+    scm_dynwind_begin((scm_t_dynwind_flags)0);
+
+    QString errorMessage = getMessage(throwArgs);
+    QString tagName = getMessage(tag);
+
+    qCWarning(lcScheme) << "Scheme exception occured:" << errorMessage << "in" << tagName;
+
+    SCM stack = scm_make_stack(SCM_BOOL_T, SCM_EOL);
+    if (scm_is_false(stack)) {
+        qCWarning(lcScheme) << "No scheme stack trace";
+    } else {
+        SCM port = scm_open_output_string();
+        scm_display_backtrace(stack, port, SCM_UNDEFINED, SCM_UNDEFINED);
+        char *string = scm_to_utf8_string(scm_get_output_string(port));
+        scm_dynwind_free(string);
+        scm_close_output_port(port);
+        QString backtrace = QString::fromUtf8(string);
+        qCDebug(lcScheme) << "Backtrace:" << backtrace;
+    }
+
+    scm_dynwind_end();
+
+    return SCM_UNDEFINED;
+}
+
+SCM catchHandler(void *data, SCM tag, SCM throwArgs)
+{
+    Q_UNUSED(data)
+    Q_UNUSED(tag)
+    Q_UNUSED(throwArgs)
+    return SCM_UNDEFINED;
+}
+
 } // namespace
 
 Engine::Engine()
@@ -459,6 +528,7 @@ Engine::Engine()
     , m_timeout(0)
 {
     scm_with_guile(&init, this);
+    qCDebug(lcAisleriot) << "Initialized Aisleriot Engine";
 }
 
 Engine::~Engine()
@@ -469,16 +539,26 @@ Engine::~Engine()
 
 bool Engine::startNewGameSCM()
 {
-    // TODO: Exception handling, scm_c_catch
-    ::startNewGameSCM((void*)this);
+    bool error = false;
+    scm_c_catch(SCM_BOOL_T, ::startNewGameSCM, this,
+                catchHandler, NULL, preUnwindHandler, &error);
+    if (error) {
+        qCWarning(lcAisleriot) << "A scheme error happened while starting new game";
+        return false;
+    }
     return true;
 }
 
 void Engine::loadGameSCM(QString gameFile)
 {
+    bool error = false;
     m_features = 0;
-    // TODO: Catch errros
-    ::loadGameSCM(&gameFile);
+    scm_c_catch(SCM_BOOL_T, ::loadGameSCM, &gameFile,
+                catchHandler, NULL, preUnwindHandler, &error);
+    if (error)
+        qCWarning(lcAisleriot) << "A scheme error happened while loading";
+    else
+        qCDebug(lcAisleriot) << "Loaded" << gameFile;
 }
 
 bool Engine::hasFeature(GameFeature feature)
@@ -522,21 +602,30 @@ bool Engine::isGameOver()
 }
 
 
-bool Engine::makeSCMCall(Lambda lambda, SCM *args, int n, SCM *retval)
+bool Engine::makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval)
 {
     return makeSCMCall(m_lambdas[lambda], args, n, retval);
 }
 
-bool Engine::makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval)
+bool Engine::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
 {
+    Call call = { lambda, args, n };
+    bool error = false;
+
     // TODO: Add error handling
-    SCM r = scm_call_n(lambda, args, n);
+    SCM r = scm_c_catch(SCM_BOOL_T, callLambda, &call,
+                        catchHandler, NULL, preUnwindHandler, &error);
+    if (error) {
+        qCWarning(lcAisleriot) << "Scheme reported an error";
+        return false;
+    }
+
     if (retval)
         *retval = r;
     return true;
 }
 
-bool Engine::makeSCMCall(QString name, SCM *args, int n, SCM *retval)
+bool Engine::makeSCMCall(QString name, SCM *args, size_t n, SCM *retval)
 {
     SCM lambda = scm_c_eval_string(name.toUtf8().data());
     if (!makeSCMCall(lambda, args, n, retval))

@@ -68,9 +68,9 @@ public:
     virtual void testGameOver() = 0;
 
     // TODO: Make these internal to engine
-    bool makeSCMCall(Lambda lambda, SCM *args, int n, SCM *retval);
-    bool makeSCMCall(SCM lambda, SCM *args, int n, SCM *retval);
-    bool makeSCMCall(QString name, SCM *args, int n, SCM *retval);
+    bool makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval);
+    bool makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval);
+    bool makeSCMCall(QString name, SCM *args, size_t n, SCM *retval);
 
     // TODO: Protect these better
     uint m_features;
