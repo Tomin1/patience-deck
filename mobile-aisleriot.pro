@@ -21,12 +21,14 @@ SOURCES += src/mobile-aisleriot.cpp \
     src/aisleriot_scm.cpp \
     src/aisleriot.cpp \
     src/card.cpp \
-    src/slot.cpp
+    src/slot.cpp \
+    src/logging.cpp
 
 HEADERS += src/aisleriot.h \
     src/aisleriot_scm.h \
     src/card.h \
-    src/slot.h
+    src/slot.h \
+    src/logging.h
 
 DISTFILES += qml/mobile-aisleriot.qml \
     qml/cover/CoverPage.qml \
