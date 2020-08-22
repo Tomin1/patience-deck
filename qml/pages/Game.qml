@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Aisleriot 1.0
 
 Page {
     id: page
@@ -31,6 +32,11 @@ Page {
                 text: qsTr("To be done")
                 color: Theme.secondaryHighlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
+            }
+
+            Button {
+                text: "Load Freecell"
+                onClicked: Aisleriot.loadGame("freecell.scm")
             }
         }
     }

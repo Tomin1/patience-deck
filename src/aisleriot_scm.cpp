@@ -32,12 +32,13 @@ const char LambdaNames[] = {
   "dealable\0"
 };
 
+const auto GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games/");
 const int DelayedCallDelay = 50;
 
 void *init(void *data);
 void interfaceInit(void *data);
-SCM startNewGameSCM(void *data);
-SCM loadGameSCM(void *data);
+SCM startNewGame(void *data);
+SCM loadGameFromFile(void *data);
 SCM setFeatureWord(SCM features);
 SCM getFeatureWord(void);
 SCM setStatusbarMessage(SCM message);
@@ -70,8 +71,12 @@ SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 void *init(void *data)
 {
+    QByteArray path = GameDirectory.toUtf8();
+    SCM var = scm_c_module_lookup(scm_the_root_module(), "%load-path");
+    scm_variable_set_x(var, scm_append_x(scm_list_2(scm_variable_ref(var),
+                                                    scm_list_1(scm_from_utf8_string(path.constData())))));
     scm_c_define_module("aisleriot interface", interfaceInit, data);
-    return NULL;
+    return SCM_UNDEFINED;
 }
 
 void interfaceInit(void *data)
@@ -79,26 +84,26 @@ void interfaceInit(void *data)
     // See aisleriot/src/game.c:cscm_init for reference
     Q_UNUSED(data)
     /* List all C functions that Aisleriot can call */
-    scm_c_define_gsubr("set-feature-word!", 1, 0, 0, (void *)setFeatureWord);
-    scm_c_define_gsubr("get-feature-word", 0, 0, 0, (void *)getFeatureWord);
-    scm_c_define_gsubr("set-statusbar-message-c", 1, 0, 0, (void *)setStatusbarMessage);
-    scm_c_define_gsubr("reset-surface", 0, 0, 0, (void *)resetSurface);
-    scm_c_define_gsubr("add-slot", 1, 0, 0, (void *)addCardSlot);
-    scm_c_define_gsubr("get-slot", 1, 0, 0, (void *)getCardSlot);
-    scm_c_define_gsubr("set-cards-c!", 2, 0, 0, (void *)setCards);
-    scm_c_define_gsubr("set-slot-y-expansion!", 2, 0, 0, (void *)setSlotYExpansion);
-    scm_c_define_gsubr("set-slot-x-expansion!", 2, 0, 0, (void *)setSlotXExpansion);
-    scm_c_define_gsubr("set-lambda", 8, 0, 1, (void *)setLambda);
-    scm_c_define_gsubr("set-lambda!", 2, 0, 0, (void *)setLambdaX);
-    scm_c_define_gsubr("aisleriot-random", 1, 0, 0, (void *)myrandom);
-    scm_c_define_gsubr("click-to-move?", 0, 0, 0, (void *)clickToMoveP);
-    scm_c_define_gsubr("update-score", 1, 0, 0, (void *)updateScore);
-    scm_c_define_gsubr("get-timeout", 0, 0, 0, (void *)getTimeout);
-    scm_c_define_gsubr("set-timeout!", 1, 0, 0, (void *)setTimeout);
-    scm_c_define_gsubr("delayed-call", 1, 0, 0, (void *)delayedCall);
-    scm_c_define_gsubr("undo-set-sensitive", 1, 0, 0, (void *)undoSetSensitive);
-    scm_c_define_gsubr("redo-set-sensitive", 1, 0, 0, (void *)redoSetSensitive);
-    scm_c_define_gsubr("dealable-set-sensitive", 1, 0, 0, (void *)dealableSetSensitive);
+    scm_c_define_gsubr("set-feature-word!", 1, 0, 0, (void *)&setFeatureWord);
+    scm_c_define_gsubr("get-feature-word", 0, 0, 0, (void *)&getFeatureWord);
+    scm_c_define_gsubr("set-statusbar-message-c", 1, 0, 0, (void *)&setStatusbarMessage);
+    scm_c_define_gsubr("reset-surface", 0, 0, 0, (void *)&resetSurface);
+    scm_c_define_gsubr("add-slot", 1, 0, 0, (void *)&addCardSlot);
+    scm_c_define_gsubr("get-slot", 1, 0, 0, (void *)&getCardSlot);
+    scm_c_define_gsubr("set-cards-c!", 2, 0, 0, (void *)&setCards);
+    scm_c_define_gsubr("set-slot-y-expansion!", 2, 0, 0, (void *)&setSlotYExpansion);
+    scm_c_define_gsubr("set-slot-x-expansion!", 2, 0, 0, (void *)&setSlotXExpansion);
+    scm_c_define_gsubr("set-lambda", 8, 0, 1, (void *)&setLambda);
+    scm_c_define_gsubr("set-lambda!", 2, 0, 0, (void *)&setLambdaX);
+    scm_c_define_gsubr("aisleriot-random", 1, 0, 0, (void *)&myrandom);
+    scm_c_define_gsubr("click-to-move?", 0, 0, 0, (void *)&clickToMoveP);
+    scm_c_define_gsubr("update-score", 1, 0, 0, (void *)&updateScore);
+    scm_c_define_gsubr("get-timeout", 0, 0, 0, (void *)&getTimeout);
+    scm_c_define_gsubr("set-timeout!", 1, 0, 0, (void *)&setTimeout);
+    scm_c_define_gsubr("delayed-call", 1, 0, 0, (void *)&delayedCall);
+    scm_c_define_gsubr("undo-set-sensitive", 1, 0, 0, (void *)&undoSetSensitive);
+    scm_c_define_gsubr("redo-set-sensitive", 1, 0, 0, (void *)&redoSetSensitive);
+    scm_c_define_gsubr("dealable-set-sensitive", 1, 0, 0, (void *)&dealableSetSensitive);
 
     scm_c_export("set-feature-word!", "get-feature-word", "set-statusbar-message-c",
                  "reset-surface", "add-slot", "get-slot", "set-cards-c!",
@@ -111,7 +116,7 @@ void interfaceInit(void *data)
     qCDebug(lcScheme) << "Initialized aisleriot interface";
 }
 
-SCM startNewGameSCM(void *data)
+SCM startNewGame(void *data)
 {
     Aisleriot *game = static_cast<Aisleriot *>(data);
     // TODO: Deal with game over situations
@@ -132,11 +137,11 @@ SCM startNewGameSCM(void *data)
     return SCM_BOOL_T;
 }
 
-SCM loadGameSCM(void *data)
+SCM loadGameFromFile(void *data)
 {
-    QString *gameFile = static_cast<QString *>(data);
     scm_dynwind_begin((scm_t_dynwind_flags)0);
-    scm_primitive_load_path(scm_from_utf8_string(gameFile->toUtf8().data()));
+    QByteArray file(static_cast<QString *>(data)->toUtf8());
+    scm_primitive_load_path(scm_from_utf8_string(file.constData()));
     // TODO: Test all lambdas
     scm_dynwind_end();
     return SCM_BOOL_T;
@@ -528,6 +533,7 @@ Engine::Engine()
     , m_timeout(0)
 {
     scm_with_guile(&init, this);
+    scm_primitive_load_path(scm_from_utf8_string("api.scm"));
     qCDebug(lcAisleriot) << "Initialized Aisleriot Engine";
 }
 
@@ -540,7 +546,7 @@ Engine::~Engine()
 bool Engine::startNewGameSCM()
 {
     bool error = false;
-    scm_c_catch(SCM_BOOL_T, ::startNewGameSCM, this,
+    scm_c_catch(SCM_BOOL_T, startNewGame, this,
                 catchHandler, NULL, preUnwindHandler, &error);
     if (error) {
         qCWarning(lcAisleriot) << "A scheme error happened while starting new game";
@@ -553,7 +559,7 @@ void Engine::loadGameSCM(QString gameFile)
 {
     bool error = false;
     m_features = 0;
-    scm_c_catch(SCM_BOOL_T, ::loadGameSCM, &gameFile,
+    scm_c_catch(SCM_BOOL_T, loadGameFromFile, &gameFile,
                 catchHandler, NULL, preUnwindHandler, &error);
     if (error)
         qCWarning(lcAisleriot) << "A scheme error happened while loading";
@@ -612,7 +618,6 @@ bool Engine::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
     Call call = { lambda, args, n };
     bool error = false;
 
-    // TODO: Add error handling
     SCM r = scm_c_catch(SCM_BOOL_T, callLambda, &call,
                         catchHandler, NULL, preUnwindHandler, &error);
     if (error) {
