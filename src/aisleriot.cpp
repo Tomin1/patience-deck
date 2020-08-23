@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include "aisleriot.h"
 #include "constants.h"
+#include "logging.h"
 
 Aisleriot* Aisleriot::s_game = nullptr;
 
@@ -33,6 +34,7 @@ Aisleriot::Aisleriot(QObject *parent)
     connect(m_engine.data(), &Engine::gameFileChanged, this, &Aisleriot::gameFileChanged);
     connect(m_engine.data(), &Engine::messageChanged, this, &Aisleriot::messageChanged);
     connect(m_engine.data(), &Engine::gameLoaded, this, &Aisleriot::gameLoaded);
+    connect(m_engine.data(), &Engine::engineFailure, this, &Aisleriot::catchFailure);
 }
 
 Aisleriot::~Aisleriot()
@@ -41,7 +43,9 @@ Aisleriot::~Aisleriot()
 
 void Aisleriot::startNewGame()
 {
-    Q_ASSERT_X(m_engine->start(), Q_FUNC_INFO, "Could not start game");
+    qCDebug(lcAisleriot) << "Starting new game";
+    if (!m_engine->start())
+        catchFailure("Could not start game");
 }
 
 void Aisleriot::restartGame()
@@ -52,7 +56,9 @@ void Aisleriot::restartGame()
 bool Aisleriot::loadGame(QString gameFile)
 {
     // TODO: Do this in a background thread
-    Q_ASSERT_X(!gameFile.isEmpty(), Q_FUNC_INFO, "gameFile can not be empty");
+    qCDebug(lcAisleriot) << "Loading" << gameFile;
+    if (gameFile.isEmpty())
+        catchFailure("gameFile can not be empty");
     if (m_engine->gameFile() == gameFile)
         return false;
     return m_engine->load(gameFile);
@@ -101,4 +107,9 @@ Aisleriot::GameState Aisleriot::state() const
 QString Aisleriot::message() const
 {
     return m_engine->message();
+}
+
+void Aisleriot::catchFailure(QString message) {
+    qCritical() << "Engine failed!" << message;
+    abort();
 }

@@ -14,4 +14,5 @@ Board::Board(QQuickItem *parent)
 
 void Board::paint(QPainter *painter)
 {
+    Q_UNUSED(painter) // TODO
 }

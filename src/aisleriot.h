@@ -62,6 +62,9 @@ signals:
     void messageChanged();
     void gameLoaded();
 
+private slots:
+    void catchFailure(QString message);
+
 private:
     explicit Aisleriot(QObject *parent = nullptr);
 

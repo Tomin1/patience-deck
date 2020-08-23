@@ -50,6 +50,7 @@ signals:
     void gameFileChanged();
     void messageChanged();
     void gameLoaded();
+    void engineFailure(QString message);
 
 private:
     friend EnginePrivate;

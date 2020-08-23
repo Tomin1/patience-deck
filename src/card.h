@@ -44,9 +44,9 @@ public:
 
     Card(bool faceDown, Suit suit, Rank rank);
 
-    bool faceDown() { return m_faceDown; };
-    Suit suit() { return m_suit; };
-    Rank rank() { return m_rank; };
+    bool faceDown() const { return m_faceDown; };
+    Suit suit() const { return m_suit; };
+    Rank rank() const { return m_rank; };
 
     friend inline bool operator==(const Card &a, const Card &b);
 

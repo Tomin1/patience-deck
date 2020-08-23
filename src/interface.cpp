@@ -36,7 +36,7 @@ void Interface::init_module(void* data)
                  "set-timeout!", "delayed-call", "undo-set-sensitive",
                  "redo-set-sensitive", "dealable-set-sensitive", nullptr);
 
-    qCDebug(lcScheme) << "Initialized aisleriot interface";
+    qCInfo(lcScheme) << "Initialized aisleriot interface";
 }
 
 SCM Scheme::preUnwindHandler(void *data, SCM tag, SCM throwArgs)
@@ -56,15 +56,17 @@ SCM Scheme::preUnwindHandler(void *data, SCM tag, SCM throwArgs)
 
     SCM stack = scm_make_stack(SCM_BOOL_T, SCM_EOL);
     if (scm_is_false(stack)) {
-        qCWarning(lcScheme) << "No scheme stack trace";
+        qCWarning(lcScheme) << "No scheme stack";
     } else {
         SCM port = scm_open_output_string();
         scm_display_backtrace(stack, port, SCM_UNDEFINED, SCM_UNDEFINED);
         char *string = scm_to_utf8_string(scm_get_output_string(port));
         scm_dynwind_free(string);
         scm_close_output_port(port);
-        QString backtrace = QString::fromUtf8(string);
-        qCDebug(lcScheme) << "Backtrace:" << backtrace;
+        qCDebug(lcScheme) << "Backtrace:";
+        for (const QString &line : QString::fromUtf8(string).split("\n")) {
+            qCDebug(lcScheme) << line;
+        }
     }
 
     scm_dynwind_end();
@@ -131,7 +133,7 @@ SCM Scheme::startNewGame(void *data)
     EnginePrivate *engine = static_cast<EnginePrivate *>(data);
     // TODO: Deal with game over situations
     SCM size = SCM_UNDEFINED;
-    Q_ASSERT(engine->makeSCMCall(EnginePrivate::NewGameLambda, nullptr, 0, &size));
+    engine->makeSCMCall(EnginePrivate::NewGameLambda, nullptr, 0, &size);
     engine->setWidth(scm_to_double(SCM_CAR(size)));
     engine->setHeight(scm_to_double(SCM_CADR(size)));
     scm_remember_upto_here_1(size);
@@ -140,7 +142,7 @@ SCM Scheme::startNewGame(void *data)
 
     if (engine->hasFeature(EnginePrivate::FeatureDealable)) {
         SCM rv;
-        Q_ASSERT(engine->makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv));
+        engine->makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv);
         engine->setCanDeal(scm_is_true(rv));
     }
 
@@ -166,10 +168,14 @@ SCM Scheme::callLambda(void *data)
 void *Interface::init(void *data)
 {
     const QString *loadPath = static_cast<const QString *>(data);
-    SCM variable;
-    variable = scm_c_module_lookup(scm_the_root_module(), "%load-path");
-    scm_variable_set_x(variable, scm_append_x(scm_list_2(scm_variable_ref(variable),
-                                                         scm_list_1(scm_from_utf8_string(loadPath->toUtf8().constData())))));
+    SCM var;
+    var = scm_c_module_lookup(scm_the_root_module(), "%load-path");
+    scm_variable_set_x(var,
+        scm_append_x(scm_list_2(
+                scm_variable_ref(var),
+                scm_list_1(scm_from_utf8_string(loadPath->toUtf8().constData()))
+        ))
+    );
     scm_c_define_module("aisleriot interface", init_module, nullptr);
     return SCM_UNDEFINED;
 }
@@ -178,6 +184,7 @@ SCM Interface::setFeatureWord(SCM features)
 {
     auto *engine = EnginePrivate::instance();
     engine->setFeatures(scm_to_uint(features));
+    qCDebug(lcScheme) << "Set features to" << EnginePrivate::GameFeatures(engine->getFeatures());
     return SCM_EOL;
 }
 
@@ -199,6 +206,7 @@ SCM Interface::setStatusbarMessage(SCM newMessage)
     scm_dynwind_free(message);
 
     engine->setMessage(QString::fromUtf8(message));
+    qCDebug(lcScheme) << "Set statusbar message to" << message;
 
     scm_dynwind_end();
     return SCM_EOL;
@@ -207,6 +215,7 @@ SCM Interface::setStatusbarMessage(SCM newMessage)
 SCM Interface::resetSurface()
 {
     auto *engine = EnginePrivate::instance();
+    qCDebug(lcScheme) << "Reseting surface";
     engine->clear();
     return SCM_EOL;
 }
@@ -220,7 +229,7 @@ SCM Interface::addCardSlot(SCM slotData)
     }
 
     // Basically copy-paste from aisleriot/src/game.c:cscmi_add_slot
-#define EQUALS_SYMBOL(string,object) (scm_is_true (scm_equal_p (scm_from_locale_symbol (string), object)))
+#define EQUALS_SYMBOL(string, object) (scm_is_true(scm_equal_p(scm_from_locale_symbol(string), object)))
 
     SCM slotPlacement = SCM_CADDR(slotData);
     bool expandedDown, expandedRight;
@@ -240,23 +249,23 @@ SCM Interface::addCardSlot(SCM slotData)
     /* 3rd argument is the slot type (optionally) */
     SCM slotType = SCM_CDDDR(slotData);
     Slot::SlotType type = Slot::UnknownSlot;
-    if (slotType != SCM_EOL) {
-        if (EQUALS_SYMBOL("chooser", SCM_CAR(slotType))) {
-            type = Slot::ChooserSlot;
-        } else if (EQUALS_SYMBOL("foundation", SCM_CAR(slotType))) {
-            type = Slot::FoundationSlot;
-        } else if (EQUALS_SYMBOL("reserve", SCM_CAR(slotType))) {
-            type = Slot::ReserveSlot;
-        } else if (EQUALS_SYMBOL("stock", SCM_CAR(slotType))) {
-            type = Slot::StockSlot;
-        } else if (EQUALS_SYMBOL("tableau", SCM_CAR(slotType))) {
-            type = Slot::TableauSlot;
-        } else if (EQUALS_SYMBOL("waste", SCM_CAR(slotType))) {
-            type = Slot::WasteSlot;
-        }
+    if (slotType == SCM_EOL) {
+        // Optional
+    } else if (EQUALS_SYMBOL("chooser", SCM_CAR(slotType))) {
+        type = Slot::ChooserSlot;
+    } else if (EQUALS_SYMBOL("foundation", SCM_CAR(slotType))) {
+        type = Slot::FoundationSlot;
+    } else if (EQUALS_SYMBOL("reserve", SCM_CAR(slotType))) {
+        type = Slot::ReserveSlot;
+    } else if (EQUALS_SYMBOL("stock", SCM_CAR(slotType))) {
+        type = Slot::StockSlot;
+    } else if (EQUALS_SYMBOL("tableau", SCM_CAR(slotType))) {
+        type = Slot::TableauSlot;
+    } else if (EQUALS_SYMBOL("waste", SCM_CAR(slotType))) {
+        type = Slot::WasteSlot;
     }
-
 #undef EQUALS_SYMBOL
+
     auto slot = QSharedPointer<Slot>::create(scm_to_int(SCM_CAR(slotData)), type,
                                              scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
                                              scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
@@ -283,7 +292,8 @@ SCM Interface::setCards(SCM slotId, SCM newCards)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
+    if (!slot)
+        engine->die("no such slot");
     slot->setCards(Scheme::cardsFromSlot(newCards));
 
     return SCM_BOOL_T;
@@ -293,7 +303,8 @@ SCM Interface::setSlotYExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
+    if (!slot)
+        engine->die("no such slot");
     if (!slot->expandsDown())
         return SCM_EOL;
     if (slot->expandedRight())
@@ -306,7 +317,8 @@ SCM Interface::setSlotXExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
+    if (!slot)
+        engine->die("no such slot");
     if (!slot->expandsRight())
         return SCM_EOL;
     if (slot->expandedDown())
@@ -320,6 +332,7 @@ SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLam
                          SCM winningGameLambda, SCM hintLambda, SCM rest)
 {
     auto *engine = EnginePrivate::instance();
+    qCDebug(lcScheme) << "Setting all lambdas";
     engine->setLambda(EnginePrivate::NewGameLambda, startGameLambda);
     engine->setLambda(EnginePrivate::ButtonPressedLambda, pressedLambda);
     engine->setLambda(EnginePrivate::ButtonReleasedLambda, releasedLambda);
@@ -355,6 +368,7 @@ SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLam
 
 SCM Interface::setLambdaX(SCM symbol, SCM lambda)
 {
+    qCDebug(lcScheme) << "Setting a lambda";
     auto *engine = EnginePrivate::instance();
     // Basically copy-paste from aisleriot/src/game.c:scm_set_lambda_x
     // TODO: maybe rewrite to use hash table instead
@@ -393,8 +407,10 @@ SCM Interface::updateScore(SCM newScore)
     char *score = scm_to_utf8_string(newScore);
     bool ok;
     int value = QString::fromUtf8(score).toInt(&ok);
-    Q_ASSERT_X(ok, Q_FUNC_INFO, "expected an integer value");
+    if (!ok)
+        engine->die("expected an integer value");
     engine->setScore(value);
+    qCDebug(lcScheme) << "Set score to" << value;
     free(score);
     return newScore;
 }
@@ -409,12 +425,14 @@ SCM Interface::setTimeout(SCM newTimeout)
 {
     auto *engine = EnginePrivate::instance();
     engine->setTimeout(scm_to_int(newTimeout));
+    qCDebug(lcScheme) << "Set timeout to" << engine->getTimeout();
     return newTimeout;
 }
 
 SCM Interface::delayedCall(SCM callback)
 {
     auto *engine = EnginePrivate::instance();
+    qCDebug(lcScheme) << "Creating delayed call";
     if (engine->m_delayedCallTimer) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
                          scm_list_1(scm_from_utf8_string("Already have a delayed callback pending.")));

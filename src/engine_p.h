@@ -84,6 +84,7 @@ public:
     bool hasFeature(GameFeature feature);
     int getTimeout();
     void setTimeout(int timeout);
+    void die(const char *message);
 
     bool makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval);
     bool makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval);

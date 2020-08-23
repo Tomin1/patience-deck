@@ -34,7 +34,8 @@ EnginePrivate::~EnginePrivate()
 
 EnginePrivate *EnginePrivate::instance()
 {
-    Q_ASSERT_X(!Engine::s_engine.isNull(), Q_FUNC_INFO, "Engine must have been created when calling instance()");
+    if (Engine::s_engine.isNull())
+        qCCritical(lcEngine) << "Engine must have been created when calling instance()";
     return Engine::s_engine->d_ptr;
 }
 
@@ -53,7 +54,7 @@ Engine::Engine(QObject *parent)
 {
     scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
     scm_primitive_load_path(scm_from_utf8_string("api.scm"));
-    qCDebug(lcEngine) << "Initialized Aisleriot Engine";
+    qCInfo(lcEngine) << "Initialized Aisleriot Engine";
 }
 
 Engine::~Engine()
@@ -80,7 +81,8 @@ bool Engine::load(const QString &gameFile)
 
 bool Engine::start()
 {
-    Q_ASSERT_X(state() != UninitializedState, Q_FUNC_INFO, "Game must be initialized first");
+    if (state() == UninitializedState)
+        emit engineFailure("Game must be initialized first");
     d_ptr->setState(EnginePrivate::BeginState);
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
@@ -252,24 +254,30 @@ void EnginePrivate::setMessage(QString message)
 void EnginePrivate::setWidth(double width)
 {
     Q_UNUSED(width); // TODO
-    qCDebug(lcEngine) << "Setting width is not yet implemented!";
+    qCWarning(lcEngine) << "Setting width is not yet implemented!";
 }
 
 
 void EnginePrivate::setHeight(double height)
 {
     Q_UNUSED(height); // TODO
-    qCDebug(lcEngine) << "Setting height is not yet implemented!";
+    qCWarning(lcEngine) << "Setting height is not yet implemented!";
 }
 
 void EnginePrivate::addSlot(QSharedPointer<Slot> slot)
 {
     m_cardSlots.append(slot);
+    qCDebug(lcEngine) << "Added new slot with" << slot->cards().count() << "cards";
+    qCDebug(lcEngine) << "Cards:";
+    for (const QSharedPointer<Card> &card : slot->cards()) {
+        qCDebug(lcEngine) << card->suit() << card->rank() << (card->faceDown() ? "down" : "up");
+    }
 }
 
 QSharedPointer<Slot> EnginePrivate::getSlot(int slot)
 {
-    Q_ASSERT_X(slot > 0 && slot < m_cardSlots.count(), Q_FUNC_INFO, "invalid slot index");
+    if (slot < 0 && slot >= m_cardSlots.count())
+        die("invalid slot index");
     return m_cardSlots[slot];
 }
 
@@ -306,6 +314,11 @@ void EnginePrivate::setTimeout(int timeout)
     }
 }
 
+void EnginePrivate::die(const char *message)
+{
+    emit engine()->engineFailure(QString(message));
+}
+
 bool EnginePrivate::makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval)
 {
     return makeSCMCall(m_lambdas[lambda], args, n, retval);
@@ -320,6 +333,7 @@ bool EnginePrivate::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
                         Scheme::catchHandler, nullptr, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "Scheme reported an error";
+        die("Making SCM call failed!");
         return false;
     }
 
