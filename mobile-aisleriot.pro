@@ -21,6 +21,7 @@ SOURCES += src/mobile-aisleriot.cpp \
     src/engine.cpp \
     src/interface.cpp \
     src/aisleriot.cpp \
+    src/board.cpp \
     src/card.cpp \
     src/slot.cpp \
     src/logging.cpp
@@ -29,6 +30,7 @@ HEADERS += src/aisleriot.h \
     src/engine.h \
     src/engine_p.h \
     src/interface.h \
+    src/board.h \
     src/card.h \
     src/slot.h \
     src/logging.h

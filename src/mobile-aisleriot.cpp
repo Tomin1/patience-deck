@@ -8,6 +8,7 @@
 #include <QtQml>
 #include <sailfishapp.h>
 #include "aisleriot.h"
+#include "board.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     qmlRegisterSingletonType<Aisleriot>("Aisleriot", 1, 0, "Aisleriot", &Aisleriot::instance);
+    qmlRegisterType<Board>("Aisleriot", 1, 0, "Board");
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
     return app->exec();

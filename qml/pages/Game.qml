@@ -23,20 +23,13 @@ Page {
             id: column
 
             width: page.width
-            spacing: Theme.paddingLarge
             PageHeader {
+                id: header
                 title: qsTr("Aisleriot")
             }
-            Label {
-                x: Theme.horizontalPageMargin
-                text: qsTr("To be done")
-                color: Theme.secondaryHighlightColor
-                font.pixelSize: Theme.fontSizeExtraLarge
-            }
-
-            Button {
-                text: "Load Freecell"
-                onClicked: Aisleriot.loadGame("freecell.scm")
+            Board {
+                height: page.height - header.height
+                width: parent.width
             }
         }
     }
