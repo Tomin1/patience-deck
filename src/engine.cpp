@@ -78,7 +78,7 @@ bool Engine::load(const QString &gameFile)
 
 bool Engine::start()
 {
-    Q_ASSERT_X(state() != UninitializedState, __FUNCTION__, "Game must be initialized first");
+    Q_ASSERT_X(state() != UninitializedState, Q_FUNC_INFO, "Game must be initialized first");
     d_ptr->setState(EnginePrivate::BeginState);
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
@@ -267,7 +267,7 @@ void EnginePrivate::addSlot(QSharedPointer<Slot> slot)
 
 QSharedPointer<Slot> EnginePrivate::getSlot(int slot)
 {
-    Q_ASSERT_X(slot > 0 && slot < m_cardSlots.count(), __FUNCTION__, "invalid slot index");
+    Q_ASSERT_X(slot > 0 && slot < m_cardSlots.count(), Q_FUNC_INFO, "invalid slot index");
     return m_cardSlots[slot];
 }
 

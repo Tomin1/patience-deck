@@ -283,7 +283,7 @@ SCM Interface::setCards(SCM slotId, SCM newCards)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
+    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
     slot->setCards(Scheme::cardsFromSlot(newCards));
 
     return SCM_BOOL_T;
@@ -293,7 +293,7 @@ SCM Interface::setSlotYExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
+    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
     if (!slot->expandsDown())
         return SCM_EOL;
     if (slot->expandedRight())
@@ -306,7 +306,7 @@ SCM Interface::setSlotXExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
     QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    Q_ASSERT_X(slot, __FUNCTION__, "no such slot");
+    Q_ASSERT_X(slot, Q_FUNC_INFO, "no such slot");
     if (!slot->expandsRight())
         return SCM_EOL;
     if (slot->expandedDown())
@@ -393,7 +393,7 @@ SCM Interface::updateScore(SCM newScore)
     char *score = scm_to_utf8_string(newScore);
     bool ok;
     int value = QString::fromUtf8(score).toInt(&ok);
-    Q_ASSERT_X(ok, __FUNCTION__, "expected an integer value");
+    Q_ASSERT_X(ok, Q_FUNC_INFO, "expected an integer value");
     engine->setScore(value);
     free(score);
     return newScore;
