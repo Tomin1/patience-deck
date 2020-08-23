@@ -3,20 +3,20 @@
 
 #include <QObject>
 #include <QSharedPointer>
-#include "aisleriot_scm.h"
+#include "engine.h"
 
 class QQmlEngine;
 class QJSEngine;
 class Slot;
-class Aisleriot : public QObject, public Engine
+class Aisleriot : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY canRedoChanged)
     Q_PROPERTY(bool canDeal READ canDeal NOTIFY canDealChanged)
-    Q_PROPERTY(QString gameFile READ gameFile NOTIFY gameFileChanged)
     Q_PROPERTY(int score READ score NOTIFY scoreChanged)
     Q_PROPERTY(int state READ state NOTIFY stateChanged);
+    Q_PROPERTY(QString gameFile READ gameFile NOTIFY gameFileChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged);
 
 public:
@@ -24,8 +24,8 @@ public:
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
     ~Aisleriot();
 
-    // Values
-    enum GameState {
+    // The same as Engine::GameState
+    enum GameState : int {
         UninitializedState,
         LoadedState,
         BeginState,
@@ -57,39 +57,15 @@ signals:
     void canUndoChanged();
     void canRedoChanged();
     void canDealChanged();
-    void gameFileChanged();
     void scoreChanged();
     void stateChanged();
+    void gameFileChanged();
     void messageChanged();
-
-public:
-    // Methods required by SCM
-    virtual void setScore(int score);
-    virtual void setCanUndo(bool canUndo);
-    virtual void setCanRedo(bool canRedo);
-    virtual void setCanDeal(bool canDeal);
-    virtual void setWidth(double width);
-    virtual void setHeight(double height);
-    virtual void setMessage(QString message);
-    virtual void addSlot(QSharedPointer<Slot> slot);
-    virtual QSharedPointer<Slot> getSlot(int slot);
-    virtual void testGameOver();
-    virtual void clearGame();
 
 private:
     explicit Aisleriot(QObject *parent = nullptr);
 
-    void setGameFile(QString file);
-    void setState(GameState state);
-
-    bool m_canUndo;
-    bool m_canRedo;
-    bool m_canDeal;
-    QString m_gameFile;
-    GameState m_state;
-    int m_score;
-    QString m_message;
-    QVector<QSharedPointer<Slot>> m_cardSlots;
+    QSharedPointer<Engine> m_engine;
 
     static Aisleriot *s_game;
 };
