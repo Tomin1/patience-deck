@@ -9,6 +9,7 @@
 #include <sailfishapp.h>
 #include "aisleriot.h"
 #include "board.h"
+#include "gamelist.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,6 +18,7 @@ int main(int argc, char *argv[])
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     qmlRegisterSingletonType<Aisleriot>("Aisleriot", 1, 0, "Aisleriot", &Aisleriot::instance);
     qmlRegisterType<Board>("Aisleriot", 1, 0, "Board");
+    qmlRegisterType<GameList>("Aisleriot", 1, 0, "GameList");
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
     return app->exec();

@@ -3,8 +3,9 @@
 #include <QJSEngine>
 #include <QQmlEngine>
 #include "aisleriot.h"
+#include "constants.h"
 
-const auto GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
+const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
 
 Aisleriot* Aisleriot::s_game = nullptr;
 
@@ -24,7 +25,7 @@ QObject* Aisleriot::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 Aisleriot::Aisleriot(QObject *parent)
     : QObject(parent)
-    , m_engine(Engine::instance(GameDirectory))
+    , m_engine(Engine::instance(Constants::GameDirectory))
 {
     connect(m_engine.data(), &Engine::canUndoChanged, this, &Aisleriot::canUndoChanged);
     connect(m_engine.data(), &Engine::canRedoChanged, this, &Aisleriot::canRedoChanged);
@@ -33,6 +34,7 @@ Aisleriot::Aisleriot(QObject *parent)
     connect(m_engine.data(), &Engine::scoreChanged, this, &Aisleriot::scoreChanged);
     connect(m_engine.data(), &Engine::gameFileChanged, this, &Aisleriot::gameFileChanged);
     connect(m_engine.data(), &Engine::messageChanged, this, &Aisleriot::messageChanged);
+    connect(m_engine.data(), &Engine::gameLoaded, this, &Aisleriot::gameLoaded);
 }
 
 Aisleriot::~Aisleriot()
@@ -51,6 +53,7 @@ void Aisleriot::restartGame()
 
 bool Aisleriot::loadGame(QString gameFile)
 {
+    // TODO: Do this in a background thread
     Q_ASSERT_X(!gameFile.isEmpty(), Q_FUNC_INFO, "gameFile can not be empty");
     if (m_engine->gameFile() == gameFile)
         return false;
@@ -100,11 +103,4 @@ Aisleriot::GameState Aisleriot::state() const
 QString Aisleriot::message() const
 {
     return m_engine->message();
-}
-
-QStringList Aisleriot::getGameList() const
-{
-    // TODO: Make this a model instead of QStringList
-    return QDir(GameDirectory).entryList(QStringList() << "*.scm",
-                                         QDir::Files | QDir::Readable, QDir::Name);
 }

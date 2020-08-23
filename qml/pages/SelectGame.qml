@@ -9,7 +9,7 @@ Page {
 
     SilicaListView {
         id: listView
-        model: Aisleriot.getGameList()
+        model: GameList { }
         anchors.fill: parent
         header: PageHeader {
             title: qsTr("Games")
@@ -19,11 +19,14 @@ Page {
 
             Label {
                 x: Theme.horizontalPageMargin
-                text: modelData
+                text: display
                 anchors.verticalCenter: parent.verticalCenter
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
-            onClicked: Aisleriot.loadGame(modelData)
+            onClicked: {
+                Aisleriot.loadGame(filename)
+                pageStack.pop()
+            }
         }
         VerticalScrollDecorator {}
     }

@@ -33,4 +33,9 @@ Page {
             }
         }
     }
+
+    Connections {
+        target: Aisleriot
+        onGameLoaded: Aisleriot.startNewGame()
+    }
 }

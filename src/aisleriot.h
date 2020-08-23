@@ -42,7 +42,6 @@ public:
     Q_INVOKABLE bool loadGame(QString gameFile);
     Q_INVOKABLE void undoMove();
     Q_INVOKABLE void redoMove();
-    Q_INVOKABLE QStringList getGameList() const;
 
     // Properties
     bool canUndo() const;
@@ -61,6 +60,7 @@ signals:
     void stateChanged();
     void gameFileChanged();
     void messageChanged();
+    void gameLoaded();
 
 private:
     explicit Aisleriot(QObject *parent = nullptr);

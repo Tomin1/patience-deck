@@ -50,6 +50,7 @@ signals:
     void scoreChanged();
     void gameFileChanged();
     void messageChanged();
+    void gameLoaded();
 
 private:
     friend EnginePrivate;

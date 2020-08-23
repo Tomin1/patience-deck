@@ -71,6 +71,7 @@ bool Engine::load(const QString &gameFile)
         d_ptr->setGameFile(gameFile);
         d_ptr->setState(EnginePrivate::LoadedState);
         qCDebug(lcEngine) << "Loaded" << gameFile;
+        emit gameLoaded();
         return true;
     }
 }

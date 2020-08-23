@@ -165,7 +165,7 @@ SCM Scheme::callLambda(void *data)
 
 void *Interface::init(void *data)
 {
-    QString *loadPath = static_cast<QString *>(data);
+    const QString *loadPath = static_cast<const QString *>(data);
     SCM variable;
     variable = scm_c_module_lookup(scm_the_root_module(), "%load-path");
     scm_variable_set_x(variable, scm_append_x(scm_list_2(scm_variable_ref(variable),
