@@ -15,7 +15,6 @@ public:
     ~Engine();
 
     static QSharedPointer<Engine> instance();
-    static QSharedPointer<Engine> instance(const QString &loadPath);
 
     // The same as EnginePrivate::GameState
     enum GameState : int {
@@ -55,7 +54,7 @@ signals:
 private:
     friend EnginePrivate;
 
-    explicit Engine(const QString &loadPath, QObject *parent = nullptr);
+    explicit Engine(QObject *parent = nullptr);
     static QSharedPointer<Engine> s_engine;
     EnginePrivate *d_ptr;
 };

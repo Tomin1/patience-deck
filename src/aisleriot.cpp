@@ -5,8 +5,6 @@
 #include "aisleriot.h"
 #include "constants.h"
 
-const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
-
 Aisleriot* Aisleriot::s_game = nullptr;
 
 Aisleriot* Aisleriot::instance()
@@ -25,7 +23,7 @@ QObject* Aisleriot::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 Aisleriot::Aisleriot(QObject *parent)
     : QObject(parent)
-    , m_engine(Engine::instance(Constants::GameDirectory))
+    , m_engine(Engine::instance())
 {
     connect(m_engine.data(), &Engine::canUndoChanged, this, &Aisleriot::canUndoChanged);
     connect(m_engine.data(), &Engine::canRedoChanged, this, &Aisleriot::canRedoChanged);

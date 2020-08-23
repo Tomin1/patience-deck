@@ -1,5 +1,6 @@
 #include "engine.h"
 #include "engine_p.h"
+#include "constants.h"
 #include "card.h"
 #include "slot.h"
 #include "logging.h"
@@ -7,6 +8,8 @@
 
 #include <unistd.h>
 #include <QDebug>
+
+const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
 
 EnginePrivate::EnginePrivate(QObject *parent)
     : QObject(parent)
@@ -37,25 +40,24 @@ EnginePrivate *EnginePrivate::instance()
 
 QSharedPointer<Engine> Engine::s_engine;
 
-QSharedPointer<Engine> Engine::instance(const QString &loadPath)
+QSharedPointer<Engine> Engine::instance()
 {
     if (s_engine.isNull())
-        s_engine = QSharedPointer<Engine>(new Engine(loadPath));
+        s_engine = QSharedPointer<Engine>(new Engine(nullptr));
     return s_engine;
 }
 
-Engine::Engine(const QString &loadPath, QObject *parent)
+Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
 {
-    scm_with_guile(&Interface::init, (void *)&loadPath);
+    scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
     scm_primitive_load_path(scm_from_utf8_string("api.scm"));
     qCDebug(lcEngine) << "Initialized Aisleriot Engine";
 }
 
 Engine::~Engine()
 {
-    s_engine.clear();
 }
 
 bool Engine::load(const QString &gameFile)
