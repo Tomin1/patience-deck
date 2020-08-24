@@ -53,7 +53,6 @@ Engine::Engine(QObject *parent)
     , d_ptr(new EnginePrivate(this))
 {
     scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
-    scm_primitive_load_path(scm_from_utf8_string("api.scm"));
     qCInfo(lcEngine) << "Initialized Aisleriot Engine";
 }
 

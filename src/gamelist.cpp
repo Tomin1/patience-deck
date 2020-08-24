@@ -14,8 +14,7 @@ GameList::GameList(QObject *parent)
     for (QString &name : gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
                                                  QDir::Files | QDir::Readable, 
                                                  QDir::Name)) {
-        if (name != QStringLiteral("api.scm"))
-            m_games.append({ name, displayable(name) });
+        m_games.append({ name, displayable(name) });
     }
 }
 

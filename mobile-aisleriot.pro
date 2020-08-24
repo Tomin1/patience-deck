@@ -48,10 +48,14 @@ DISTFILES += qml/mobile-aisleriot.qml \
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
-games.files = aisleriot/games/*.scm
+games.files = $$files(aisleriot/games/*.scm)
+games.files -= aisleriot/games/api.scm
 games.path = /usr/share/$$TARGET/games/
 
-INSTALLS += games
+api.files = aisleriot/games/api.scm
+api.path = /usr/share/$$TARGET/games/aisleriot/
+
+INSTALLS += games api
 
 #CONFIG += sailfishapp_i18n
 #TRANSLATIONS += translations/mobile-aisleriot-de.ts
