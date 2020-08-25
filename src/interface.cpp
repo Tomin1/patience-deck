@@ -76,9 +76,10 @@ SCM Scheme::preUnwindHandler(void *data, SCM tag, SCM throwArgs)
 
 SCM Scheme::catchHandler(void *data, SCM tag, SCM throwArgs)
 {
-    Q_UNUSED(data)
     Q_UNUSED(tag)
     Q_UNUSED(throwArgs)
+    bool *error = static_cast<bool *>(data);
+    *error = true;
     return SCM_UNDEFINED;
 }
 

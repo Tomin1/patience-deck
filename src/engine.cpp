@@ -39,12 +39,14 @@ EnginePrivate *EnginePrivate::instance()
     return Engine::s_engine->d_ptr;
 }
 
-QSharedPointer<Engine> Engine::s_engine;
+QSharedPointer<Engine> Engine::s_engine = QSharedPointer<Engine>();
 
 QSharedPointer<Engine> Engine::instance()
 {
-    if (s_engine.isNull())
+    if (s_engine.isNull()) {
+        qCDebug(lcEngine) << "No engine yet, must create a new engine";
         s_engine = QSharedPointer<Engine>(new Engine(nullptr));
+    }
     return s_engine;
 }
 
@@ -65,9 +67,10 @@ bool Engine::load(const QString &gameFile)
     bool error = false;
     d_ptr->clear();
     scm_c_catch(SCM_BOOL_T, Scheme::loadGameFromFile, (void *)&gameFile,
-                Scheme::catchHandler, nullptr, Scheme::preUnwindHandler, &error);
+                Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while loading";
+        emit engineFailure("Loading new game failed");
         return false;
     } else {
         d_ptr->setGameFile(gameFile);
@@ -85,9 +88,10 @@ bool Engine::start()
     d_ptr->setState(EnginePrivate::BeginState);
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
-                Scheme::catchHandler, nullptr, Scheme::preUnwindHandler, &error);
+                Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while starting new game";
+        emit engineFailure("Starting new game failed");
         return false;
     }
     return true;
@@ -325,7 +329,7 @@ bool EnginePrivate::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
     bool error = false;
 
     SCM r = scm_c_catch(SCM_BOOL_T, Scheme::callLambda, &call,
-                        Scheme::catchHandler, nullptr, Scheme::preUnwindHandler, &error);
+                        Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "Scheme reported an error";
         die("Making SCM call failed!");
