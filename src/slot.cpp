@@ -1,5 +1,6 @@
 #include "card.h"
 #include "slot.h"
+#include "logging.h"
 
 Slot::Slot(int id, SlotType type, double x, double y,
            int expansionDepth, bool expandedDown, bool expandedRight)
@@ -34,6 +35,7 @@ void Slot::setCards(QList<QSharedPointer<Card>> cards)
         }
     }
     m_cards.swap(cards);
+    qCDebug(lcEngine) << "Set" << m_cards.count() << "cards to slot";
     emit cardsChanged();
 }
 

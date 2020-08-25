@@ -267,10 +267,6 @@ void EnginePrivate::addSlot(QSharedPointer<Slot> slot)
 {
     m_cardSlots.append(slot);
     qCDebug(lcEngine) << "Added new slot with" << slot->cards().count() << "cards";
-    qCDebug(lcEngine) << "Cards:";
-    for (const QSharedPointer<Card> &card : slot->cards()) {
-        qCDebug(lcEngine) << card->suit() << card->rank() << (card->faceDown() ? "down" : "up");
-    }
 }
 
 QSharedPointer<Slot> EnginePrivate::getSlot(int slot)

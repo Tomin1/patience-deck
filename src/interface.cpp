@@ -95,8 +95,8 @@ inline QString Scheme::getMessage(SCM message)
 QSharedPointer<Card> Scheme::createCard(SCM data)
 {
     return QSharedPointer<Card>::create(!(scm_is_true(SCM_CADDR(data))),
-                                        static_cast<Card::Suit>(scm_to_int(SCM_CADR(data))),
-                                        static_cast<Card::Rank>(scm_to_int(SCM_CAR(data))));
+                                        Card::Suit(scm_to_int(SCM_CADR(data))),
+                                        Card::Rank(scm_to_int(SCM_CAR(data))));
 }
 
 QList<QSharedPointer<Card>> Scheme::cardsFromSlot(SCM cards)
@@ -105,7 +105,7 @@ QList<QSharedPointer<Card>> Scheme::cardsFromSlot(SCM cards)
     QList<QSharedPointer<Card>> newCards;
     if (scm_is_true(scm_list_p(cards))) {
         for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
-            newCards.append(createCard(it));
+            newCards.append(createCard(SCM_CAR(it)));
         }
     }
     return newCards;
@@ -271,7 +271,9 @@ SCM Interface::addCardSlot(SCM slotData)
                                              scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
                                              expansionDepth, expandedDown, expandedRight);
 
-    slot->setCards(Scheme::cardsFromSlot(SCM_CADR(slotData)));
+    auto cards = Scheme::cardsFromSlot(SCM_CADR(slotData));
+    if (!cards.isEmpty())
+        slot->setCards(cards);
 
     engine->addSlot(slot);
 
@@ -391,7 +393,7 @@ SCM Interface::myrandom(SCM range)
 {
     // TODO: Needs to be reimplemented
     auto *engine = EnginePrivate::instance();
-    std::uniform_int_distribution<quint32> distribution(0, scm_to_int(range));
+    std::uniform_int_distribution<quint32> distribution(0, scm_to_int(range)-1);
     return scm_from_uint32(distribution(engine->m_generator));
 }
 
