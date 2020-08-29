@@ -2,12 +2,12 @@
 #define ENGINE_P_H
 
 #include <libguile.h>
+#include <QHash>
+#include <QList>
 #include <QObject>
-#include <QSharedPointer>
 #include <QTimer>
-#include <QVector>
+#include "enginedata.h"
 
-class Slot;
 class Engine;
 class EnginePrivate : public QObject
 {
@@ -42,17 +42,20 @@ public:
     Q_ENUM(GameFeature);
     Q_DECLARE_FLAGS(GameFeatures, GameFeature);
 
-    // TODO: Deduplicate
     enum GameState : int {
         UninitializedState,
         LoadedState,
         BeginState,
         RunningState,
         GameOverState,
-        WonState,
-        LastGameState,
     };
-    Q_ENUM(GameState)
+    Q_ENUM(GameState);
+
+    struct Card {
+        Suit suit;
+        Rank rank;
+        bool faceDown;
+    };
 
     explicit EnginePrivate(QObject *parent = nullptr);
     ~EnginePrivate();
@@ -62,6 +65,7 @@ public:
     void endMove();
     bool isGameOver();
     bool isWinningGame();
+    bool isInitialized();
     void clear();
     void testGameOver();
 
@@ -69,15 +73,16 @@ public:
     void setCanRedo(bool canRedo);
     void setCanDeal(bool canDeal);
     void setScore(int score);
-    GameState getState() const;
-    void setState(GameState state);
-    void setGameFile(QString gameFile);
     void setMessage(QString message);
     void setWidth(double width);
     void setHeight(double height);
 
-    void addSlot(QSharedPointer<Slot> slot);
-    QSharedPointer<Slot> getSlot(int slot);
+    void addSlot(int id, QList<Card> cards, SlotType type, double x, double y,
+                 int expansionDepth, bool expandedDown, bool expandedRight);
+    const QList<Card> getSlot(int slot);
+    void setCards(int id, QList<Card> cards);
+    void setExpansionToDown(int id, double expansion);
+    void setExpansionToRight(int id, double expansion);
     void setLambda(Lambda lambda, SCM func);
     uint getFeatures();
     void setFeatures(uint features);
@@ -98,17 +103,14 @@ public:
 private:
     friend Engine;
 
-    QVector<QSharedPointer<Slot>> m_cardSlots;
-    GameFeatures m_features;
+    QHash<int, QList<Card>> m_cardSlots;
     SCM m_lambdas[LambdaCount];
+    GameFeatures m_features;
+    GameState m_state;
     int m_timeout;
     bool m_canUndo;
     bool m_canRedo;
     bool m_canDeal;
-    GameState m_state;
-    int m_score;
-    QString m_gameFile;
-    QString m_message;
 
     Engine *engine();
 };

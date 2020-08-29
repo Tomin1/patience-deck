@@ -36,6 +36,10 @@ Page {
 
     Connections {
         target: Aisleriot
-        onGameLoaded: Aisleriot.startNewGame()
+        onStateChanged: {
+            if (Aisleriot.state === Aisleriot.LoadedState) {
+                Aisleriot.startNewGame()
+            }
+        }
     }
 }

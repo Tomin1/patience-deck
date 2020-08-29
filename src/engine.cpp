@@ -1,13 +1,9 @@
+#include <QDebug>
+#include "constants.h"
 #include "engine.h"
 #include "engine_p.h"
-#include "constants.h"
-#include "card.h"
-#include "slot.h"
-#include "logging.h"
 #include "interface.h"
-
-#include <unistd.h>
-#include <QDebug>
+#include "logging.h"
 
 const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
 
@@ -16,11 +12,11 @@ EnginePrivate::EnginePrivate(QObject *parent)
     , m_generator(m_rd())
     , m_delayedCallTimer(nullptr)
     , m_features(NoFeatures)
+    , m_state(UninitializedState)
     , m_timeout(0)
     , m_canUndo(false)
     , m_canRedo(false)
     , m_canDeal(false)
-    , m_state(UninitializedState)
 {
 }
 
@@ -34,18 +30,18 @@ EnginePrivate::~EnginePrivate()
 
 EnginePrivate *EnginePrivate::instance()
 {
-    if (Engine::s_engine.isNull())
+    if (!Engine::s_engine)
         qCCritical(lcEngine) << "Engine must have been created when calling instance()";
     return Engine::s_engine->d_ptr;
 }
 
-QSharedPointer<Engine> Engine::s_engine = QSharedPointer<Engine>();
+Engine* Engine::s_engine = nullptr;
 
-QSharedPointer<Engine> Engine::instance()
+Engine *Engine::instance()
 {
-    if (s_engine.isNull()) {
+    if (!s_engine) {
         qCDebug(lcEngine) << "No engine yet, must create a new engine";
-        s_engine = QSharedPointer<Engine>(new Engine(nullptr));
+        s_engine = new Engine(nullptr);
     }
     return s_engine;
 }
@@ -54,53 +50,66 @@ Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
 {
+}
+
+void Engine::init()
+{
     scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
     qCInfo(lcEngine) << "Initialized Aisleriot Engine";
 }
 
 Engine::~Engine()
 {
+    s_engine = nullptr;
 }
 
-bool Engine::load(const QString &gameFile)
+void Engine::load(const QString &gameFile)
 {
-    bool error = false;
+    qCDebug(lcEngine) << "Loading game from" << gameFile;
     d_ptr->clear();
+    bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::loadGameFromFile, (void *)&gameFile,
                 Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while loading";
         emit engineFailure("Loading new game failed");
-        return false;
     } else {
-        d_ptr->setGameFile(gameFile);
-        d_ptr->setState(EnginePrivate::LoadedState);
         qCDebug(lcEngine) << "Loaded" << gameFile;
-        emit gameLoaded();
-        return true;
+        d_ptr->m_state = EnginePrivate::LoadedState;
+        emit gameLoaded(gameFile);
     }
 }
 
-bool Engine::start()
+void Engine::start()
 {
-    if (state() == UninitializedState)
+    qCDebug(lcEngine) << "Starting engine";
+    if (d_ptr->m_state == EnginePrivate::UninitializedState)
         emit engineFailure("Game must be initialized first");
-    d_ptr->setState(EnginePrivate::BeginState);
+    d_ptr->m_state = EnginePrivate::BeginState;
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
                 Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while starting new game";
         emit engineFailure("Starting new game failed");
-        return false;
+    } else {
+        d_ptr->m_state = EnginePrivate::RunningState;
+        emit gameStarted();
     }
-    return true;
+}
+
+void Engine::restart()
+{
+    // TODO
+    qCWarning(lcEngine) << "Restarting is not implemented yet!";
 }
 
 void Engine::undoMove()
 {
-    if (state() == GameOverState)
-        d_ptr->setState(EnginePrivate::RunningState);
+    if (d_ptr->m_state == EnginePrivate::GameOverState) {
+        d_ptr->m_state = EnginePrivate::RunningState;
+        emit gameStarted();
+    }
     d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr);
     d_ptr->updateDealable();
 }
@@ -136,9 +145,14 @@ bool EnginePrivate::isWinningGame()
     return makeSCMCall(WinningGameLambda, nullptr, 0, &rv) && scm_is_true(rv);
 }
 
+bool EnginePrivate::isInitialized()
+{
+    return m_state > BeginState;
+}
+
 void EnginePrivate::clear()
 {
-    setState(UninitializedState);
+    m_state = UninitializedState;
     setFeatures(0);
     setCanUndo(false);
     setCanRedo(false);
@@ -151,107 +165,45 @@ void EnginePrivate::testGameOver()
     updateDealable();
     if (m_state < GameOverState) {
         if (isGameOver()) {
-            setState(isWinningGame() ? WonState : GameOverState);
+            m_state = GameOverState;
+            emit engine()->gameOver(isWinningGame());
         }
     }
-}
-
-bool Engine::canUndo() const
-{
-    return d_ptr->m_canUndo;
 }
 
 void EnginePrivate::setCanUndo(bool canUndo)
 {
     if (m_canUndo != canUndo) {
         m_canUndo = canUndo;
-        emit engine()->canUndoChanged();
+        emit engine()->canUndoChanged(canUndo);
     }
 }
 
-bool Engine::canRedo() const
+void EnginePrivate::setCanRedo(bool canRedo)
 {
-    return d_ptr->m_canRedo;
-}
-
-void EnginePrivate::setCanRedo(bool canUndo)
-{
-    if (m_canRedo != canUndo) {
-        m_canRedo = canUndo;
-        emit engine()->canRedoChanged();
+    if (m_canRedo != canRedo) {
+        m_canRedo = canRedo;
+        emit engine()->canRedoChanged(canRedo);
     }
 }
 
-bool Engine::canDeal() const
+void EnginePrivate::setCanDeal(bool canDeal)
 {
-    return d_ptr->m_canDeal;
-}
-
-void EnginePrivate::setCanDeal(bool canUndo)
-{
-    if (m_canDeal != canUndo) {
-        m_canDeal = canUndo;
-        emit engine()->canDealChanged();
+    if (m_canDeal != canDeal) {
+        m_canDeal = canDeal;
+        emit engine()->canDealChanged(canDeal);
     }
-}
-
-Engine::GameState Engine::state() const
-{
-    return static_cast<GameState>(d_ptr->m_state);
-}
-
-EnginePrivate::GameState EnginePrivate::getState() const
-{
-    return m_state;
-}
-
-void EnginePrivate::setState(GameState state)
-{
-    if (m_state != state) {
-        m_state = state;
-        // TODO: Stop timer, record time
-        emit engine()->stateChanged();
-    }
-}
-
-int Engine::score() const
-{
-    return d_ptr->m_score;
 }
 
 void EnginePrivate::setScore(int score)
 {
-    if (m_score != score) {
-        m_score = score;
-        emit engine()->scoreChanged();
-    }
-}
-
-QString Engine::gameFile() const
-{
-    return d_ptr->m_gameFile;
-}
-
-void EnginePrivate::setGameFile(QString gameFile)
-{
-    if (m_gameFile != gameFile) {
-        m_gameFile = gameFile;
-        emit engine()->gameFileChanged();
-    }
-}
-
-QString Engine::message() const
-{
-    return d_ptr->m_message;
+    emit engine()->scoreChanged(score);
 }
 
 void EnginePrivate::setMessage(QString message)
 {
     qCDebug(lcEngine) << "Setting message to" << message;
-    if (m_message != message) {
-        m_message = message;
-        emit engine()->messageChanged();
-    }
+    emit engine()->messageChanged(message);
 }
 
 void EnginePrivate::setWidth(double width)
@@ -267,18 +219,45 @@ void EnginePrivate::setHeight(double height)
     qCWarning(lcEngine) << "Setting height is not yet implemented!";
 }
 
-void EnginePrivate::addSlot(QSharedPointer<Slot> slot)
+void EnginePrivate::addSlot(int id, QList<Card> cards, SlotType type,
+                            double x, double y, int expansionDepth,
+                            bool expandedDown, bool expandedRight)
 {
-    m_cardSlots.append(slot);
-    qCDebug(lcEngine) << "Added new slot with" << slot->cards().count() << "cards";
+    m_cardSlots.insert(id, cards);
+    qCDebug(lcEngine) << "Added new slot with id" << id << "and" << cards.count() << "cards";
+    emit engine()->newSlot(id, type, x, y, expansionDepth, expandedDown, expandedRight);
+    for (const Card &card : cards) {
+        emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
+    }
 }
 
-QSharedPointer<Slot> EnginePrivate::getSlot(int slot)
+const QList<EnginePrivate::Card> EnginePrivate::getSlot(int slot)
 {
-    if (slot < 0 && slot >= m_cardSlots.count())
-        die("invalid slot index");
     return m_cardSlots[slot];
 }
+
+void EnginePrivate::setCards(int id, QList<Card> cards)
+{
+    // TODO: Instead of clearing it every time,
+    // check what needs to be changed and adjust
+    emit engine()->clearSlot(id);
+    m_cardSlots.insert(id, cards);
+    qCDebug(lcEngine) << "Set" << cards.count() << "cards to slot with id" << id;
+    for (const Card &card : cards) {
+        emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
+    }
+}
+
+void EnginePrivate::setExpansionToDown(int id, double expansion)
+{
+    emit Engine::instance()->setExpansionToDown(id, expansion);
+}
+
+void EnginePrivate::setExpansionToRight(int id, double expansion)
+{
+    emit Engine::instance()->setExpansionToRight(id, expansion);
+}
+
 
 void EnginePrivate::setLambda(EnginePrivate::Lambda lambda, SCM func)
 {

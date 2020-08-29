@@ -1,8 +1,7 @@
-#include "card.h"
+#include "enginedata.h"
 #include "engine_p.h"
 #include "interface.h"
 #include "logging.h"
-#include "slot.h"
 
 void Interface::init_module(void* data)
 {
@@ -93,17 +92,19 @@ inline QString Scheme::getMessage(SCM message)
     return QString::fromUtf8(string);
 }
 
-QSharedPointer<Card> Scheme::createCard(SCM data)
+EnginePrivate::Card Scheme::createCard(SCM data)
 {
-    return QSharedPointer<Card>::create(!(scm_is_true(SCM_CADDR(data))),
-                                        Card::Suit(scm_to_int(SCM_CADR(data))),
-                                        Card::Rank(scm_to_int(SCM_CAR(data))));
+    return {
+        Suit(scm_to_int(SCM_CADR(data))),
+        Rank(scm_to_int(SCM_CAR(data))),
+        !scm_is_true(SCM_CADDR(data))
+    };
 }
 
-QList<QSharedPointer<Card>> Scheme::cardsFromSlot(SCM cards)
+QList<EnginePrivate::Card> Scheme::cardsFromSlot(SCM cards)
 {
     // mimics aisleriot/src/game.c:cscmi_slot_set_cards
-    QList<QSharedPointer<Card>> newCards;
+    QList<EnginePrivate::Card> newCards;
     if (scm_is_true(scm_list_p(cards))) {
         for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
             newCards.append(createCard(SCM_CAR(it)));
@@ -112,18 +113,24 @@ QList<QSharedPointer<Card>> Scheme::cardsFromSlot(SCM cards)
     return newCards;
 }
 
-SCM Scheme::cardToSCM(QSharedPointer<Card> card)
+SCM Scheme::cardToSCM(const EnginePrivate::Card &card)
 {
-    return scm_cons(scm_from_uint(card->rank()),
-                    scm_cons(scm_from_uint(card->suit()),
-                             scm_cons(SCM_BOOL(!card->faceDown()),
-                                      SCM_EOL)));
+    return scm_cons(
+        scm_from_uint(card.rank),
+        scm_cons(
+            scm_from_uint(card.suit),
+            scm_cons(
+                SCM_BOOL(!card.faceDown),
+                SCM_EOL
+            )
+        )
+    );
 }
 
-SCM Scheme::slotToSCM(QSharedPointer<Slot> slot)
+SCM Scheme::slotToSCM(const QList<EnginePrivate::Card> &slot)
 {
     SCM cards = SCM_EOL;
-    for (const QSharedPointer<Card> card : slot->cards()) {
+    for (const EnginePrivate::Card &card : slot) {
         cards = scm_cons(cardToSCM(card), cards);
     }
     return cards;
@@ -224,7 +231,7 @@ SCM Interface::resetSurface()
 SCM Interface::addCardSlot(SCM slotData)
 {
     auto *engine = EnginePrivate::instance();
-    if (engine->getState() > EnginePrivate::BeginState) {
+    if (engine->isInitialized()) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
                          scm_list_1(scm_from_utf8_string("Cannot add a new slot after the game has started.")));
     }
@@ -249,34 +256,29 @@ SCM Interface::addCardSlot(SCM slotData)
 
     /* 3rd argument is the slot type (optionally) */
     SCM slotType = SCM_CDDDR(slotData);
-    Slot::SlotType type = Slot::UnknownSlot;
+    SlotType type = UnknownSlot;
     if (slotType == SCM_EOL) {
         // Optional
     } else if (EQUALS_SYMBOL("chooser", SCM_CAR(slotType))) {
-        type = Slot::ChooserSlot;
+        type = ChooserSlot;
     } else if (EQUALS_SYMBOL("foundation", SCM_CAR(slotType))) {
-        type = Slot::FoundationSlot;
+        type = FoundationSlot;
     } else if (EQUALS_SYMBOL("reserve", SCM_CAR(slotType))) {
-        type = Slot::ReserveSlot;
+        type = ReserveSlot;
     } else if (EQUALS_SYMBOL("stock", SCM_CAR(slotType))) {
-        type = Slot::StockSlot;
+        type = StockSlot;
     } else if (EQUALS_SYMBOL("tableau", SCM_CAR(slotType))) {
-        type = Slot::TableauSlot;
+        type = TableauSlot;
     } else if (EQUALS_SYMBOL("waste", SCM_CAR(slotType))) {
-        type = Slot::WasteSlot;
+        type = WasteSlot;
     }
 #undef EQUALS_SYMBOL
 
-    auto slot = QSharedPointer<Slot>::create(scm_to_int(SCM_CAR(slotData)), type,
-                                             scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
-                                             scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData)))),
-                                             expansionDepth, expandedDown, expandedRight);
-
+    int id = scm_to_int(SCM_CAR(slotData));
+    int x = scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData))));
+    int y = scm_to_double(SCM_CADR(SCM_CADR(SCM_CADDR(slotData))));
     auto cards = Scheme::cardsFromSlot(SCM_CADR(slotData));
-    if (!cards.isEmpty())
-        slot->setCards(cards);
-
-    engine->addSlot(slot);
+    engine->addSlot(id, cards, type, x, y, expansionDepth, expandedDown, expandedRight);
 
     return SCM_EOL;
 }
@@ -284,49 +286,28 @@ SCM Interface::addCardSlot(SCM slotData)
 SCM Interface::getCardSlot(SCM slotId)
 {
     auto *engine = EnginePrivate::instance();
-    QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    if (!slot)
-        return SCM_EOL;
-
+    const QList<EnginePrivate::Card> slot = engine->getSlot(scm_to_int(slotId));
     return scm_cons(slotId, scm_cons(Scheme::slotToSCM(slot), SCM_EOL));
 }
 
 SCM Interface::setCards(SCM slotId, SCM newCards)
 {
     auto *engine = EnginePrivate::instance();
-    QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    if (!slot)
-        engine->die("no such slot");
-    slot->setCards(Scheme::cardsFromSlot(newCards));
-
+    engine->setCards(scm_to_int(slotId), Scheme::cardsFromSlot(newCards));
     return SCM_BOOL_T;
 }
 
 SCM Interface::setSlotYExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
-    QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    if (!slot)
-        engine->die("no such slot");
-    if (!slot->expandsDown())
-        return SCM_EOL;
-    if (slot->expandedRight())
-        return SCM_EOL;
-    slot->setExpansionToDown(scm_to_double(value));
+    engine->setExpansionToDown(scm_to_int(slotId), scm_to_double(value));
     return SCM_EOL;
 }
 
 SCM Interface::setSlotXExpansion(SCM slotId, SCM value)
 {
     auto *engine = EnginePrivate::instance();
-    QSharedPointer<Slot> slot = engine->getSlot(scm_to_int(slotId));
-    if (!slot)
-        engine->die("no such slot");
-    if (!slot->expandsRight())
-        return SCM_EOL;
-    if (slot->expandedDown())
-        return SCM_EOL;
-    slot->setExpansionToRight(scm_to_double(value));
+    engine->setExpansionToRight(scm_to_int(slotId), scm_to_double(value));
     return SCM_EOL;
 }
 

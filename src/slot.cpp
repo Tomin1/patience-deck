@@ -2,9 +2,9 @@
 #include "slot.h"
 #include "logging.h"
 
-Slot::Slot(int id, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight)
-    : QObject(nullptr)
+Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
+           bool expandedDown, bool expandedRight, QObject *parent)
+    : QObject(parent)
     , m_id(id)
     , m_type(type)
     , m_exposed(false)
@@ -14,29 +14,17 @@ Slot::Slot(int id, SlotType type, double x, double y,
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
-    , m_needsUpdate(true)
 {
 }
 
-void Slot::setCards(QList<QSharedPointer<Card>> cards)
+void Slot::addCard(Suit suit, Rank rank, bool faceDown)
 {
-    if (!cards.empty()) {
-        // TODO: Could this be done more efficiently?
-        if (cards.count() == m_cards.count()) {
-            bool same = true;
-            for (int i = 0; i < m_cards.count(); ++i) {
-                if (cards[i] != m_cards[i]) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same)
-                return;
-        }
-    }
-    m_cards.swap(cards);
-    qCDebug(lcEngine) << "Set" << m_cards.count() << "cards to slot";
-    emit cardsChanged();
+    m_cards.append(new Card(suit, rank, faceDown, this));
+}
+
+void Slot::clear()
+{
+    m_cards.clear();
 }
 
 bool Slot::expandsRight()
@@ -69,4 +57,24 @@ void Slot::setExpansionToDown(double expansion)
 {
     m_expansion |= ExpandedAtY;
     m_expansionDelta = expansion;
+}
+
+Slot::const_iterator Slot::constBegin()
+{
+    return m_cards.constBegin();
+}
+
+Slot::const_iterator Slot::constEnd()
+{
+    return m_cards.constEnd();
+}
+
+Slot::iterator Slot::begin()
+{
+    return m_cards.begin();
+}
+
+Slot::iterator Slot::end()
+{
+    return m_cards.end();
 }

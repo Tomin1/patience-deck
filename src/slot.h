@@ -2,24 +2,14 @@
 #define SLOT_H
 
 #include <QObject>
-#include <QSharedPointer>
+#include "card.h"
+#include "enginedata.h"
 
-class Card;
 class Slot : public QObject
 {
     Q_OBJECT
 
 public:
-    enum SlotType {
-        UnknownSlot,
-        ChooserSlot,
-        FoundationSlot,
-        ReserveSlot,
-        StockSlot,
-        TableauSlot,
-        WasteSlot
-    };
-
     enum ExpansionType {
         DoesNotExpand = 0x00,
         ExpandsInX = 0x01,
@@ -30,10 +20,11 @@ public:
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
-    Slot(int id, SlotType type, double x, double y,
-         int expansionDepth, bool expandedDown, bool expandedRight);
+    Slot(int id, SlotType type, double x, double y, int expansionDepth,
+         bool expandedDown, bool expandedRight, QObject *parent = nullptr);
 
-    void setCards(QList<QSharedPointer<Card>> cards);
+    void addCard(Suit suit, Rank rank, bool faceDown);
+    void clear();
 
     bool expandsRight();
     bool expandedRight();
@@ -42,7 +33,13 @@ public:
     bool expandedDown();
     void setExpansionToDown(double expansion);
 
-    QList<QSharedPointer<Card>> cards() { return m_cards; };
+    typedef QList<Card *>::const_iterator const_iterator;
+    const_iterator constBegin();
+    const_iterator constEnd();
+
+    typedef QList<Card *>::iterator iterator;
+    iterator begin();
+    iterator end();
 
 signals:
     void cardsChanged();
@@ -51,14 +48,13 @@ private:
 
     int m_id;
     SlotType m_type;
-    QList<QSharedPointer<Card>> m_cards;
+    QList<Card *> m_cards;
     bool m_exposed;
     double m_x;
     double m_y;
     double m_expansionDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
-    bool m_needsUpdate;
 };
 
 #endif // SLOT_H

@@ -3,10 +3,8 @@
 
 #include <QObject>
 #include <QString>
-#include <QSharedPointer>
-#include <QVector>
+#include "enginedata.h"
 
-class Slot;
 class EnginePrivate;
 class Engine : public QObject
 {
@@ -14,49 +12,40 @@ class Engine : public QObject
 public:
     ~Engine();
 
-    static QSharedPointer<Engine> instance();
+    static Engine *instance();
 
-    // The same as EnginePrivate::GameState
-    enum GameState : int {
-        UninitializedState,
-        LoadedState,
-        BeginState,
-        RunningState,
-        GameOverState,
-        WonState,
-        LastGameState,
-    };
-    Q_ENUM(GameState)
-
-    bool load(const QString &gameFile);
-    bool start();
+public slots:
+    void init();
+    void load(const QString &gameFile);
+    void start();
+    void restart();
     void undoMove();
     void redoMove();
 
-    bool canUndo() const;
-    bool canRedo() const;
-    bool canDeal() const;
-    GameState state() const;
-    int score() const;
-    QString gameFile() const;
-    QString message() const;
-
 signals:
-    void canUndoChanged();
-    void canRedoChanged();
-    void canDealChanged();
-    void stateChanged();
-    void scoreChanged();
-    void gameFileChanged();
-    void messageChanged();
-    void gameLoaded();
+    void canUndoChanged(bool canUndo);
+    void canRedoChanged(bool canRedo);
+    void canDealChanged(bool canDeal);
+    void scoreChanged(int score);
+    void messageChanged(const QString &message);
+
     void engineFailure(QString message);
+    void gameLoaded(const QString &gameFile);
+    void gameStarted();
+    void gameOver(bool won);
+
+    void newSlot(int id, int type, double x, double y,
+                 int expansionDepth, bool expandedDown, bool expandedRight);
+    void setExpansionToDown(int id, double expansion);
+    void setExpansionToRight(int id, double expansion);
+    void clearSlot(int id);
+    void newCard(int slotId, int suit, int rank, bool faceDown);
 
 private:
     friend EnginePrivate;
 
     explicit Engine(QObject *parent = nullptr);
-    static QSharedPointer<Engine> s_engine;
+    static Engine *s_engine;
     EnginePrivate *d_ptr;
 };
 

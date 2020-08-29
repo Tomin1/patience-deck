@@ -1,9 +1,6 @@
 #include <libguile.h>
 #include <QString>
-#include <QSharedPointer>
-
-class Card;
-class Slot;
+#include "engine_p.h"
 
 namespace Interface {
 
@@ -70,10 +67,10 @@ SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 // Helpers
 inline QString getMessage(SCM message);
-QSharedPointer<Card> createCard(SCM data);
-QList<QSharedPointer<Card>> cardsFromSlot(SCM cards);
-SCM cardToSCM(QSharedPointer<Card> card);
-SCM slotToSCM(QSharedPointer<Slot> slot);
+EnginePrivate::Card createCard(SCM data);
+QList<EnginePrivate::Card> cardsFromSlot(SCM cards);
+SCM cardToSCM(const EnginePrivate::Card &card);
+SCM slotToSCM(const QList<EnginePrivate::Card> &slot);
 
 // Calls from C to SCM
 SCM startNewGame(void *data);

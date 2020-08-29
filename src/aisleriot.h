@@ -2,12 +2,12 @@
 #define AISLERIOT_H
 
 #include <QObject>
-#include <QSharedPointer>
+#include <QThread>
 #include "engine.h"
 
 class QQmlEngine;
 class QJSEngine;
-class Slot;
+class QThread;
 class Aisleriot : public QObject
 {
     Q_OBJECT
@@ -24,22 +24,19 @@ public:
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
     ~Aisleriot();
 
-    // The same as Engine::GameState
-    enum GameState : int {
+    enum GameState {
         UninitializedState,
         LoadedState,
-        BeginState,
         RunningState,
         GameOverState,
         WonState,
-        LastGameState,
     };
-    Q_ENUM(GameState)
+    Q_ENUM(GameState);
 
     // QML API
     Q_INVOKABLE void startNewGame();
     Q_INVOKABLE void restartGame();
-    Q_INVOKABLE bool loadGame(QString gameFile);
+    Q_INVOKABLE void loadGame(const QString &gameFile);
     Q_INVOKABLE void undoMove();
     Q_INVOKABLE void redoMove();
 
@@ -60,15 +57,36 @@ signals:
     void stateChanged();
     void gameFileChanged();
     void messageChanged();
-    void gameLoaded();
+
+    void doStart();
+    void doRestart();
+    void doLoad(const QString &gameFile);
+    void doUndoMove();
+    void doRedoMove();
 
 private slots:
     void catchFailure(QString message);
+    void handleGameLoaded(const QString &gameFile);
+    void handleGameStarted();
+    void handleGameOver(bool won);
+    void handleCanUndoChanged(bool canUndo);
+    void handleCanRedoChanged(bool canRedo);
+    void handleCanDealChanged(bool canDeal);
+    void handleScoreChanged(int score);
+    void handleMessageChanged(const QString &message);
 
 private:
     explicit Aisleriot(QObject *parent = nullptr);
+    void setState(GameState state);
 
-    QSharedPointer<Engine> m_engine;
+    QThread m_engineThread;
+    bool m_canUndo;
+    bool m_canRedo;
+    bool m_canDeal;
+    int m_score;
+    GameState m_state;
+    QString m_gameFile;
+    QString m_message;
 
     static Aisleriot *s_game;
 };
