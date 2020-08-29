@@ -4,12 +4,12 @@
 #include <QObject>
 #include "enginedata.h"
 
+class Board;
 class Card : public QObject
 {
     Q_OBJECT
 
 public:
-
     Card(Suit suit, Rank rank, bool faceDown, QObject *parent = nullptr);
 
     Suit suit() const { return m_suit; };

@@ -5,6 +5,7 @@
 
 namespace Constants {
 extern const QString GameDirectory;
+extern const QString DataDirectory;
 };
 
 #endif // DATA_H

@@ -2,6 +2,7 @@
 #define SLOT_H
 
 #include <QObject>
+#include <QPointF>
 #include "card.h"
 #include "enginedata.h"
 
@@ -23,19 +24,22 @@ public:
     Slot(int id, SlotType type, double x, double y, int expansionDepth,
          bool expandedDown, bool expandedRight, QObject *parent = nullptr);
 
+    int id() const;
+    QPointF position() const;
+
     void addCard(Suit suit, Rank rank, bool faceDown);
     void clear();
 
-    bool expandsRight();
-    bool expandedRight();
+    bool expandsRight() const;
+    bool expandedRight() const;
     void setExpansionToRight(double expansion);
-    bool expandsDown();
-    bool expandedDown();
+    bool expandsDown() const;
+    bool expandedDown() const;
     void setExpansionToDown(double expansion);
 
     typedef QList<Card *>::const_iterator const_iterator;
-    const_iterator constBegin();
-    const_iterator constEnd();
+    const_iterator constBegin() const;
+    const_iterator constEnd() const;
 
     typedef QList<Card *>::iterator iterator;
     iterator begin();
@@ -45,13 +49,11 @@ signals:
     void cardsChanged();
 
 private:
-
     int m_id;
     SlotType m_type;
     QList<Card *> m_cards;
     bool m_exposed;
-    double m_x;
-    double m_y;
+    QPointF m_position;
     double m_expansionDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;

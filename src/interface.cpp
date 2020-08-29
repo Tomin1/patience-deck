@@ -214,7 +214,6 @@ SCM Interface::setStatusbarMessage(SCM newMessage)
     scm_dynwind_free(message);
 
     engine->setMessage(QString::fromUtf8(message));
-    qCDebug(lcScheme) << "Set statusbar message to" << message;
 
     scm_dynwind_end();
     return SCM_EOL;

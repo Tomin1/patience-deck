@@ -2,6 +2,8 @@
 #define BOARD_H
 
 #include <QHash>
+#include <QPointF>
+#include <QSizeF>
 #include <QtQuick/QQuickPaintedItem>
 #include "engine.h"
 #include "enginedata.h"
@@ -11,11 +13,22 @@ class QPainter;
 class Board : public QQuickPaintedItem
 {
     Q_OBJECT
+    Q_PROPERTY(qreal horizontalMargin READ horizontalMargin WRITE setHorizontalMargin NOTIFY horizontalMarginChanged);
+    Q_PROPERTY(qreal verticalMargin READ verticalMargin WRITE setVerticalMargin NOTIFY verticalMarginChanged);
 
 public:
     explicit Board(QQuickItem *parent = nullptr);
 
     void paint(QPainter *painter);
+
+    qreal horizontalMargin() const;
+    void setHorizontalMargin(qreal horizontalMargin);
+    qreal verticalMargin() const;
+    void setVerticalMargin(qreal verticalMargin);
+
+signals:
+    void horizontalMarginChanged();
+    void verticalMarginChanged();
 
 private slots:
     void handleNewSlot(int id, int type, double x, double y,
@@ -24,9 +37,21 @@ private slots:
     void handleSetExpansionToRight(int id, double expansion);
     void handleClearSlot(int id);
     void handleNewCard(int slotId, int suit, int rank, bool faceDown);
+    void handleClearData();
+    void handleWidthChanged(double width);
+    void handleHeightChanged(double height);
+    void updateCardSize();
 
 private:
+    bool readyToPaint();
+    QPointF getPoint(const QPointF &position) const;
+
     QHash<int, Slot *> m_slots;
+    QSizeF m_margin;
+    QSizeF m_boardSize;
+    QSizeF m_cardSize;
+    QSizeF m_cardSpace;
+    QSizeF m_cardMargin;
 };
 
 #endif // BOARD_H

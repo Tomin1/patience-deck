@@ -6,6 +6,7 @@ Page {
     id: page
 
     allowedOrientations: Orientation.All
+    property bool isPortrait: orientation & Orientation.PortraitMask
 
     SilicaFlickable {
         anchors.fill: parent
@@ -30,6 +31,8 @@ Page {
             Board {
                 height: page.height - header.height
                 width: parent.width
+                horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge;
+                verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall;
             }
         }
     }

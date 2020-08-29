@@ -8,13 +8,22 @@ Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
     , m_id(id)
     , m_type(type)
     , m_exposed(false)
-    , m_x(x)
-    , m_y(y)
+    , m_position(x, y)
     , m_expansionDelta(0.0)
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
 {
+}
+
+int Slot::id() const
+{
+    return m_id;
+}
+
+QPointF Slot::position() const
+{
+    return m_position;
 }
 
 void Slot::addCard(Suit suit, Rank rank, bool faceDown)
@@ -27,12 +36,12 @@ void Slot::clear()
     m_cards.clear();
 }
 
-bool Slot::expandsRight()
+bool Slot::expandsRight() const
 {
     return m_expansion & ExpandsInX;
 }
 
-bool Slot::expandedRight()
+bool Slot::expandedRight() const
 {
     return m_expansion & ExpandedAtX;
 }
@@ -43,12 +52,12 @@ void Slot::setExpansionToRight(double expansion)
     m_expansionDelta = expansion;
 }
 
-bool Slot::expandsDown()
+bool Slot::expandsDown() const
 {
     return m_expansion & ExpandsInY;
 }
 
-bool Slot::expandedDown()
+bool Slot::expandedDown() const
 {
     return m_expansion & ExpandedAtY;
 }
@@ -59,12 +68,12 @@ void Slot::setExpansionToDown(double expansion)
     m_expansionDelta = expansion;
 }
 
-Slot::const_iterator Slot::constBegin()
+Slot::const_iterator Slot::constBegin() const
 {
     return m_cards.constBegin();
 }
 
-Slot::const_iterator Slot::constEnd()
+Slot::const_iterator Slot::constEnd() const
 {
     return m_cards.constEnd();
 }

@@ -40,6 +40,9 @@ signals:
     void setExpansionToRight(int id, double expansion);
     void clearSlot(int id);
     void newCard(int slotId, int suit, int rank, bool faceDown);
+    void clearData();
+    void widthChanged(double width);
+    void heightChanged(double height);
 
 private:
     friend EnginePrivate;

@@ -157,6 +157,7 @@ void EnginePrivate::clear()
     setCanUndo(false);
     setCanRedo(false);
     setCanDeal(false);
+    emit engine()->clearData();
 }
 
 void EnginePrivate::testGameOver()
@@ -202,21 +203,18 @@ void EnginePrivate::setScore(int score)
 
 void EnginePrivate::setMessage(QString message)
 {
-    qCDebug(lcEngine) << "Setting message to" << message;
     emit engine()->messageChanged(message);
 }
 
 void EnginePrivate::setWidth(double width)
 {
-    Q_UNUSED(width); // TODO
-    qCWarning(lcEngine) << "Setting width is not yet implemented!";
+    emit engine()->widthChanged(width);
 }
 
 
 void EnginePrivate::setHeight(double height)
 {
-    Q_UNUSED(height); // TODO
-    qCWarning(lcEngine) << "Setting height is not yet implemented!";
+    emit engine()->heightChanged(height);
 }
 
 void EnginePrivate::addSlot(int id, QList<Card> cards, SlotType type,
@@ -224,7 +222,6 @@ void EnginePrivate::addSlot(int id, QList<Card> cards, SlotType type,
                             bool expandedDown, bool expandedRight)
 {
     m_cardSlots.insert(id, cards);
-    qCDebug(lcEngine) << "Added new slot with id" << id << "and" << cards.count() << "cards";
     emit engine()->newSlot(id, type, x, y, expansionDepth, expandedDown, expandedRight);
     for (const Card &card : cards) {
         emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
@@ -242,7 +239,6 @@ void EnginePrivate::setCards(int id, QList<Card> cards)
     // check what needs to be changed and adjust
     emit engine()->clearSlot(id);
     m_cardSlots.insert(id, cards);
-    qCDebug(lcEngine) << "Set" << cards.count() << "cards to slot with id" << id;
     for (const Card &card : cards) {
         emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
     }
