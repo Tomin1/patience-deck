@@ -51,6 +51,9 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 games.files = $$files(aisleriot/games/*.scm)
 games.files -= aisleriot/games/api.scm
+games.files -= aisleriot/games/card-monkey.scm
+games.files -= aisleriot/games/template.scm
+games.files -= aisleriot/games/test.scm
 games.path = /usr/share/$$TARGET/games/
 
 api.files = aisleriot/games/api.scm
