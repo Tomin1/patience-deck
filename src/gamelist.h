@@ -8,6 +8,9 @@ class GameList : public QAbstractListModel
     Q_OBJECT
 
 public:
+    static QString displayable(const QString &fileName);
+    static QString name(const QString &fileName);
+
     explicit GameList(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -15,19 +18,14 @@ public:
 
     enum Roles {
         DisplayRole = Qt::DisplayRole,
-        FileNameRole = Qt::UserRole
+        FileNameRole = Qt::UserRole,
+        NameRole = Qt::UserRole + 1,
     };
 
 private:
-    static QString displayable(const QString &fileName);
     static QHash<int, QByteArray> s_roleNames;
 
-    struct Game {
-        QString fileName;
-        QString displayName;
-    };
-
-    QList<Game> m_games;
+    QStringList m_games;
 };
 
 #endif // GAMELIST_H

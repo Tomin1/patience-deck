@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include "aisleriot.h"
 #include "constants.h"
+#include "gamelist.h"
 #include "logging.h"
 
 Aisleriot* Aisleriot::s_game = nullptr;
@@ -105,9 +106,9 @@ bool Aisleriot::canDeal() const
     return m_canDeal;
 }
 
-QString Aisleriot::gameFile() const
+QString Aisleriot::gameName() const
 {
-    return m_gameFile;
+    return GameList::displayable(m_gameFile);
 }
 
 int Aisleriot::score() const
@@ -144,7 +145,7 @@ void Aisleriot::handleGameLoaded(const QString &gameFile)
     qCDebug(lcAisleriot) << "Loaded game" << gameFile;
     if (m_gameFile != gameFile) {
         m_gameFile = gameFile;
-        emit gameFileChanged();
+        emit gameNameChanged();
     }
     setState(LoadedState);
 }

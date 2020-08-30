@@ -26,7 +26,7 @@ Page {
             width: page.width
             PageHeader {
                 id: header
-                title: qsTr("Aisleriot")
+                title: (Aisleriot.gameName) ? Aisleriot.gameName : qsTr("Aisleriot")
             }
             Board {
                 height: page.height - header.height

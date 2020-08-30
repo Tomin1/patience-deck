@@ -4,18 +4,16 @@
 
 QHash<int, QByteArray> GameList::s_roleNames = {
     { Qt::DisplayRole, "display" },
-    { FileNameRole, "filename" }
+    { FileNameRole, "filename" },
+    { NameRole, "name" }
 };
 
 GameList::GameList(QObject *parent)
     : QAbstractListModel(parent)
 {
     QDir gameDirectory(Constants::GameDirectory);
-    for (QString &name : gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
-                                                 QDir::Files | QDir::Readable, 
-                                                 QDir::Name)) {
-        m_games.append({ name, displayable(name) });
-    }
+    m_games = gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
+                                      QDir::Files | QDir::Readable, QDir::Name);
 }
 
 int GameList::rowCount(const QModelIndex &parent) const
@@ -31,9 +29,11 @@ QVariant GameList::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case DisplayRole:
-        return m_games[index.row()].displayName;
+        return displayable(m_games[index.row()]);
     case FileNameRole:
-        return m_games[index.row()].fileName;
+        return m_games[index.row()];
+    case NameRole:
+        return name(m_games[index.row()]);
     default:
         return QVariant();
     }
@@ -41,7 +41,7 @@ QVariant GameList::data(const QModelIndex &index, int role) const
 
 QString GameList::displayable(const QString &fileName)
 {
-    QString displayName(fileName.left(fileName.length()-4));
+    QString displayName(name(fileName));
     bool startOfWord = true;
     for (int i = 0; i < displayName.length(); i++) {
         if (startOfWord) {
@@ -53,6 +53,11 @@ QString GameList::displayable(const QString &fileName)
         }
     }
     return displayName;
+}
+
+QString GameList::name(const QString &fileName)
+{
+    return fileName.left(fileName.length()-4);
 }
 
 QHash<int, QByteArray> GameList::roleNames() const

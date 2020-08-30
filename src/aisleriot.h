@@ -16,7 +16,7 @@ class Aisleriot : public QObject
     Q_PROPERTY(bool canDeal READ canDeal NOTIFY canDealChanged)
     Q_PROPERTY(int score READ score NOTIFY scoreChanged)
     Q_PROPERTY(int state READ state NOTIFY stateChanged);
-    Q_PROPERTY(QString gameFile READ gameFile NOTIFY gameFileChanged)
+    Q_PROPERTY(QString gameName READ gameName NOTIFY gameNameChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged);
 
 public:
@@ -44,7 +44,7 @@ public:
     bool canUndo() const;
     bool canRedo() const;
     bool canDeal() const;
-    QString gameFile() const;
+    QString gameName() const;
     int score() const;
     GameState state() const;
     QString message() const;
@@ -55,7 +55,7 @@ signals:
     void canDealChanged();
     void scoreChanged();
     void stateChanged();
-    void gameFileChanged();
+    void gameNameChanged();
     void messageChanged();
 
     void doStart();
