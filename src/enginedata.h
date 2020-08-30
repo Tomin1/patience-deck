@@ -45,4 +45,9 @@ enum SlotType : int {
     WasteSlot
 };
 
+enum Expansion : int {
+    Full = -1,
+    None = 0
+};
+
 #endif // ENGINEDATA_H

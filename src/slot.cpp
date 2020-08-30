@@ -26,6 +26,16 @@ QPointF Slot::position() const
     return m_position;
 }
 
+int Slot::count() const
+{
+    return m_cards.count();
+}
+
+bool Slot::empty() const
+{
+    return m_cards.empty();
+}
+
 void Slot::addCard(Suit suit, Rank rank, bool faceDown)
 {
     m_cards.append(new Card(suit, rank, faceDown, this));
@@ -36,36 +46,40 @@ void Slot::clear()
     m_cards.clear();
 }
 
-bool Slot::expandsRight() const
+bool Slot::expanded() const
 {
-    return m_expansion & ExpandsInX;
+    return m_expansion != DoesNotExpand;
 }
 
 bool Slot::expandedRight() const
 {
-    return m_expansion & ExpandedAtX;
-}
-
-void Slot::setExpansionToRight(double expansion)
-{
-    m_expansion |= ExpandedAtX;
-    m_expansionDelta = expansion;
-}
-
-bool Slot::expandsDown() const
-{
-    return m_expansion & ExpandsInY;
+    return m_expansion & ExpandsInX;
 }
 
 bool Slot::expandedDown() const
 {
-    return m_expansion & ExpandedAtY;
+    return m_expansion & ExpandsInY;
 }
 
-void Slot::setExpansionToDown(double expansion)
+bool Slot::explicitDelta() const
 {
-    m_expansion |= ExpandedAtY;
-    m_expansionDelta = expansion;
+    return m_expansion & DeltaSet;
+}
+
+qreal Slot::delta() const
+{
+    return m_expansionDelta;
+}
+
+void Slot::setDelta(double delta)
+{
+    m_expansion |= DeltaSet;
+    m_expansionDelta = delta;
+}
+
+int Slot::expansionDepth() const
+{
+    return m_expansionDepth;
 }
 
 Slot::const_iterator Slot::constBegin() const

@@ -12,6 +12,7 @@
 # The name of your application
 TARGET = mobile-aisleriot
 
+QT += svg
 CONFIG += link_pkgconfig
 PKGCONFIG += guile-2.2
 
@@ -55,7 +56,10 @@ games.path = /usr/share/$$TARGET/games/
 api.files = aisleriot/games/api.scm
 api.path = /usr/share/$$TARGET/games/aisleriot/
 
-INSTALLS += games api
+data.files = aisleriot/cards/anglo.svg
+data.path = /usr/share/$$TARGET/data/
+
+INSTALLS += games api data
 
 #CONFIG += sailfishapp_i18n
 #TRANSLATIONS += translations/mobile-aisleriot-de.ts

@@ -97,7 +97,7 @@ EnginePrivate::Card Scheme::createCard(SCM data)
     return {
         Suit(scm_to_int(SCM_CADR(data))),
         Rank(scm_to_int(SCM_CAR(data))),
-        !scm_is_true(SCM_CADDR(data))
+        scm_is_true(SCM_CADDR(data))
     };
 }
 
@@ -107,7 +107,7 @@ QList<EnginePrivate::Card> Scheme::cardsFromSlot(SCM cards)
     QList<EnginePrivate::Card> newCards;
     if (scm_is_true(scm_list_p(cards))) {
         for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
-            newCards.append(createCard(SCM_CAR(it)));
+            newCards.insert(0, createCard(SCM_CAR(it)));
         }
     }
     return newCards;
@@ -120,7 +120,7 @@ SCM Scheme::cardToSCM(const EnginePrivate::Card &card)
         scm_cons(
             scm_from_uint(card.suit),
             scm_cons(
-                SCM_BOOL(!card.faceDown),
+                SCM_BOOL(card.show),
                 SCM_EOL
             )
         )
@@ -239,12 +239,14 @@ SCM Interface::addCardSlot(SCM slotData)
 #define EQUALS_SYMBOL(string, object) (scm_is_true(scm_equal_p(scm_from_locale_symbol(string), object)))
 
     SCM slotPlacement = SCM_CADDR(slotData);
-    bool expandedDown, expandedRight;
-    double expansionDepth = 0.0;
+    bool expandedDown = false, expandedRight = false;
+    int expansionDepth = Expansion::None;
     if (EQUALS_SYMBOL("expanded", SCM_CAR(slotPlacement))) {
         expandedDown = true;
+        expansionDepth = Expansion::Full;
     } else if (EQUALS_SYMBOL("expanded-right", SCM_CAR(slotPlacement))) {
         expandedRight = true;
+        expansionDepth = Expansion::Full;
     } else if (EQUALS_SYMBOL("partially-expanded", SCM_CAR(slotPlacement))) {
         expandedDown = true;
         expansionDepth = scm_to_int(SCM_CADDR(slotPlacement));
@@ -274,8 +276,8 @@ SCM Interface::addCardSlot(SCM slotData)
 #undef EQUALS_SYMBOL
 
     int id = scm_to_int(SCM_CAR(slotData));
-    int x = scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData))));
-    int y = scm_to_double(SCM_CADR(SCM_CADR(SCM_CADDR(slotData))));
+    double x = scm_to_double(SCM_CAR(SCM_CADR(SCM_CADDR(slotData))));
+    double y = scm_to_double(SCM_CADR(SCM_CADR(SCM_CADDR(slotData))));
     auto cards = Scheme::cardsFromSlot(SCM_CADR(slotData));
     engine->addSlot(id, cards, type, x, y, expansionDepth, expandedDown, expandedRight);
 

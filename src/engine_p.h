@@ -54,7 +54,7 @@ public:
     struct Card {
         Suit suit;
         Rank rank;
-        bool faceDown;
+        bool show;
     };
 
     explicit EnginePrivate(QObject *parent = nullptr);

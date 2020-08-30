@@ -36,7 +36,7 @@ private slots:
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
     void handleClearSlot(int id);
-    void handleNewCard(int slotId, int suit, int rank, bool faceDown);
+    void handleNewCard(int slotId, int suit, int rank, bool show);
     void handleClearData();
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);
@@ -45,6 +45,7 @@ private slots:
 private:
     bool readyToPaint();
     QPointF getPoint(const QPointF &position) const;
+    qreal getExpansion(Slot *slot) const;
 
     QHash<int, Slot *> m_slots;
     QSizeF m_margin;

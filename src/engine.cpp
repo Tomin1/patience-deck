@@ -224,7 +224,7 @@ void EnginePrivate::addSlot(int id, QList<Card> cards, SlotType type,
     m_cardSlots.insert(id, cards);
     emit engine()->newSlot(id, type, x, y, expansionDepth, expandedDown, expandedRight);
     for (const Card &card : cards) {
-        emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
+        emit engine()->newCard(id, card.suit, card.rank, card.show);
     }
 }
 
@@ -240,7 +240,7 @@ void EnginePrivate::setCards(int id, QList<Card> cards)
     emit engine()->clearSlot(id);
     m_cardSlots.insert(id, cards);
     for (const Card &card : cards) {
-        emit engine()->newCard(id, card.suit, card.rank, card.faceDown);
+        emit engine()->newCard(id, card.suit, card.rank, card.show);
     }
 }
 

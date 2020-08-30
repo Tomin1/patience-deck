@@ -15,8 +15,7 @@ public:
         DoesNotExpand = 0x00,
         ExpandsInX = 0x01,
         ExpandsInY = 0x02,
-        ExpandedAtX = 0x04,
-        ExpandedAtY = 0x08,
+        DeltaSet = 0x04,
     };
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
@@ -26,16 +25,19 @@ public:
 
     int id() const;
     QPointF position() const;
+    int count() const;
+    bool empty() const;
 
     void addCard(Suit suit, Rank rank, bool faceDown);
     void clear();
 
-    bool expandsRight() const;
+    bool expanded() const;
     bool expandedRight() const;
-    void setExpansionToRight(double expansion);
-    bool expandsDown() const;
     bool expandedDown() const;
-    void setExpansionToDown(double expansion);
+    bool explicitDelta() const;
+    qreal delta() const;
+    void setDelta(double delta);
+    int expansionDepth() const;
 
     typedef QList<Card *>::const_iterator const_iterator;
     const_iterator constBegin() const;
@@ -54,7 +56,7 @@ private:
     QList<Card *> m_cards;
     bool m_exposed;
     QPointF m_position;
-    double m_expansionDelta;
+    qreal m_expansionDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
 };

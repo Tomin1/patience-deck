@@ -39,7 +39,7 @@ signals:
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
     void clearSlot(int id);
-    void newCard(int slotId, int suit, int rank, bool faceDown);
+    void newCard(int slotId, int suit, int rank, bool show);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);
