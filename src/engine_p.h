@@ -6,6 +6,7 @@
 #include <QList>
 #include <QObject>
 #include <QTimer>
+#include <random>
 #include "enginedata.h"
 
 class Engine;
