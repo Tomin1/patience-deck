@@ -14,6 +14,7 @@ License: LGPLv3+
 BuildRequires: libtool libtool-ltdl-devel gmp-devel readline-devel
 BuildRequires: gettext-devel libunistring-devel libffi-devel gc-devel
 BuildRequires: texinfo
+BuildRequires: automake
 Requires: coreutils
 
 Provides: bundled(gnulib)

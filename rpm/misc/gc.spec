@@ -16,9 +16,7 @@ Source0: http://www.hboehm.info/gc/gc_source/gc-%{version}%{?pre}.tar.gz
 #Patch100: gc-7.6.4-dont_disable_exceptions.patch
 
 BuildRequires: automake libtool
-BuildRequires: gcc-c++
 ## https://www.hboehm.info/gc/ says: "Starting with 8.0, libatomic_ops is only required if the compiler does not understand C atomics."
-#BuildRequires: pkgconfig(atomic_ops) >= 7.4
 BuildRequires: pkgconfig
 
 # rpmforge compatibility

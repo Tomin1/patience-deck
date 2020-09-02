@@ -6,3 +6,4 @@ translations/
 *.list
 RPMS/
 mobile-aisleriot
+installroot/
