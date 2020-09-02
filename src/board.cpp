@@ -1,7 +1,6 @@
 #include <QBrush>
 #include <QColor>
 #include <QPainter>
-#include <QSvgRenderer>
 #include "board.h"
 #include "constants.h"
 #include "engine.h"
@@ -23,6 +22,7 @@ const QString Constants::DataDirectory = QStringLiteral("/usr/share/mobile-aisle
 Board::Board(QQuickItem *parent)
     : QQuickPaintedItem(parent)
     , m_margin(0, 0)
+    , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
 {
     // Fill the scene with suitable color, nothing behind this is displayed
     setOpaquePainting(true);
@@ -40,6 +40,9 @@ Board::Board(QQuickItem *parent)
     connect(engine, &Engine::heightChanged, this, &Board::handleHeightChanged);
     connect(this, &Board::heightChanged, this, &Board::updateCardSize);
     connect(this, &Board::widthChanged, this, &Board::updateCardSize);
+
+    if (!m_cardRenderer.isValid())
+        qCCritical(lcAisleriot) << "SVG file is not valid! Can not render cards!";
 }
 
 void Board::paint(QPainter *painter)
@@ -52,18 +55,14 @@ void Board::paint(QPainter *painter)
     QPen slotPen(Qt::gray);
     slotPen.setWidth(SlotOutlineWidth);
     painter->setPen(slotPen);
-    QSvgRenderer cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"));
-    if (!cardRenderer.isValid())
-        qCCritical(lcAisleriot) << "SVG file is not valid! Can not render cards!";
     for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
         Slot *slot = it.value();
         QPointF point = getPoint(slot->position());
         qCDebug(lcAisleriot) << "Drawing slot" << slot->id()
                              << "at" << slot->position() << "to" << point;
         QRectF target(point, m_cardSize);
-        painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
         if (slot->empty()) {
-            // continue
+            painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
         } else if (slot->expanded()) {
             qreal expansion = getExpansion(slot);
             bool first = true;
@@ -81,13 +80,13 @@ void Board::paint(QPainter *painter)
                 }
 
                 qCDebug(lcAisleriot) << "Rendering" << element << "to" << target;
-                cardRenderer.render(painter, element, target);
+                m_cardRenderer.render(painter, element, target);
             } // cards
         } else {
             // FIXME: Ugly code, add proper interface to Slot
             auto element = (*(--slot->constEnd()))->elementName();
             qCDebug(lcAisleriot) << "Rendering" << element << "to" << target;
-            cardRenderer.render(painter, element, target);
+            m_cardRenderer.render(painter, element, target);
         }
     } // slots
 }

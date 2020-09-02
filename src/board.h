@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QPointF>
 #include <QSizeF>
+#include <QSvgRenderer>
 #include <QtQuick/QQuickPaintedItem>
 #include "engine.h"
 #include "enginedata.h"
@@ -53,6 +54,7 @@ private:
     QSizeF m_cardSize;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
+    QSvgRenderer m_cardRenderer;
 };
 
 #endif // BOARD_H
