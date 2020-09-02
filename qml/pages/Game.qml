@@ -26,13 +26,14 @@ Page {
             width: page.width
             PageHeader {
                 id: header
-                title: (Aisleriot.gameName) ? Aisleriot.gameName : qsTr("Aisleriot")
+                title: Aisleriot.gameName
             }
             Board {
                 height: page.height - header.height
                 width: parent.width
-                horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge;
-                verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall;
+                horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
+                verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
+                Component.onCompleted: Aisleriot.loadGame("klondike.scm")
             }
         }
     }
