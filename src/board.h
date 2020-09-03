@@ -1,7 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <QHash>
+#include <QMap>
 #include <QPointF>
 #include <QSizeF>
 #include <QSvgRenderer>
@@ -48,7 +48,7 @@ private:
     QPointF getPoint(const QPointF &position) const;
     qreal getExpansion(Slot *slot) const;
 
-    QHash<int, Slot *> m_slots;
+    QMap<int, Slot *> m_slots;
     QSizeF m_margin;
     QSizeF m_boardSize;
     QSizeF m_cardSize;
