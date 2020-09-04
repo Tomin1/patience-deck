@@ -1,10 +1,12 @@
+#include "board.h"
 #include "card.h"
 #include "slot.h"
 #include "logging.h"
 
 Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight, QObject *parent)
-    : QObject(parent)
+           int expansionDepth, bool expandedDown, bool expandedRight, Board *parent)
+    : QQuickPaintedItem(parent)
+    , m_board(parent)
     , m_id(id)
     , m_type(type)
     , m_exposed(false)
@@ -16,6 +18,11 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
 {
     for (const CardData &card : cards)
         m_cards.append(new Card(card, this));
+}
+
+void Slot::paint(QPainter *painter)
+{
+    Q_UNUSED(painter) // TODO
 }
 
 int Slot::id() const

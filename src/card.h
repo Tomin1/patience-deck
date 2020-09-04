@@ -1,16 +1,19 @@
 #ifndef CARD_H
 #define CARD_H
 
-#include <QObject>
+#include <QtQuick/QQuickPaintedItem>
 #include "enginedata.h"
 
-class Board;
-class Card : public QObject
+class QPainter;
+class Slot;
+class Card : public QQuickPaintedItem
 {
     Q_OBJECT
 
 public:
-    Card(const CardData &card, QObject *parent = nullptr);
+    Card(const CardData &card, Slot *parent = nullptr);
+
+    void paint(QPainter *painter);
 
     Suit suit() const;
     Rank rank() const;
@@ -21,6 +24,7 @@ public:
     friend inline bool operator==(const Card &a, const Card &b);
 
 private:
+    Slot *m_slot;
     CardData m_data;
 };
 

@@ -1,4 +1,5 @@
 #include "card.h"
+#include "slot.h"
 
 namespace Id {
 
@@ -32,10 +33,16 @@ const QString &getSuitTemplate(Suit suit)
 
 }; // Id
 
-Card::Card(const CardData &card, QObject *parent)
-    : QObject(parent)
+Card::Card(const CardData &card, Slot *parent)
+    : QQuickPaintedItem(parent)
+    , m_slot(parent)
     , m_data(card)
 {
+}
+
+void Card::paint(QPainter *painter)
+{
+    Q_UNUSED(painter) // TODO
 }
 
 Suit Card::suit() const

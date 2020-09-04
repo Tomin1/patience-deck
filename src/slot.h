@@ -1,13 +1,15 @@
 #ifndef SLOT_H
 #define SLOT_H
 
-#include <QObject>
 #include <QPointF>
+#include <QtQuick/QQuickPaintedItem>
 #include "card.h"
 #include "enginedata.h"
 #include "engine.h"
 
-class Slot : public QObject
+class Board;
+class QPainter;
+class Slot : public QQuickPaintedItem
 {
     Q_OBJECT
 
@@ -22,7 +24,9 @@ public:
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
     Slot(int id, const CardList &cards, SlotType type, double x, double y,
-         int expansionDepth, bool expandedDown, bool expandedRight, QObject *parent = nullptr);
+         int expansionDepth, bool expandedDown, bool expandedRight, Board *parent = nullptr);
+
+    void paint(QPainter *painter);
 
     int id() const;
     QPointF position() const;
@@ -53,6 +57,7 @@ signals:
     void cardsChanged();
 
 private:
+    Board *m_board;
     int m_id;
     SlotType m_type;
     QList<Card *> m_cards;
