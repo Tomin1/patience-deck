@@ -33,8 +33,9 @@ Board::Board(QQuickItem *parent)
     connect(engine, &Engine::newSlot, this, &Board::handleNewSlot);
     connect(engine, &Engine::setExpansionToDown, this, &Board::handleSetExpansionToDown);
     connect(engine, &Engine::setExpansionToRight, this, &Board::handleSetExpansionToRight);
-    connect(engine, &Engine::clearSlot, this, &Board::handleClearSlot);
-    connect(engine, &Engine::newCard, this, &Board::handleNewCard);
+    connect(engine, &Engine::insertCard, this, &Board::handleInsertCard);
+    connect(engine, &Engine::appendCard, this, &Board::handleAppendCard);
+    connect(engine, &Engine::removeCard, this, &Board::handleRemoveCard);
     connect(engine, &Engine::clearData, this, &Board::handleClearData);
     connect(engine, &Engine::widthChanged, this, &Board::handleWidthChanged);
     connect(engine, &Engine::heightChanged, this, &Board::handleHeightChanged);
@@ -122,10 +123,12 @@ void Board::setVerticalMargin(qreal verticalMargin)
     }
 }
 
-void Board::handleNewSlot(int id, int type, double x, double y,
-                          int expansionDepth, bool expandedDown, bool expandedRight)
+void Board::handleNewSlot(int id, const CardList &cards, int type,
+                          double x, double y, int expansionDepth,
+                          bool expandedDown, bool expandedRight)
 {
-    m_slots.insert(id, new Slot(id, SlotType(type), x, y, expansionDepth, expandedDown, expandedRight, this));
+    m_slots.insert(id, new Slot(id, cards, SlotType(type), x, y, expansionDepth,
+                                expandedDown, expandedRight, this));
     update();
 }
 
@@ -156,17 +159,24 @@ void Board::handleSetExpansionToRight(int id, double expansion)
     }
 }
 
-void Board::handleClearSlot(int id)
+void Board::handleInsertCard(int slotId, int index, const CardData &card)
 {
-    m_slots[id]->clear();
+    m_slots[slotId]->insertCard(index, card);
     update();
 }
 
-void Board::handleNewCard(int slotId, const CardData &card)
+void Board::handleAppendCard(int slotId, const CardData &card)
 {
-    m_slots[slotId]->addCard(card);
+    m_slots[slotId]->appendCard(card);
     update();
 }
+
+void Board::handleRemoveCard(int slotId, int index)
+{
+    m_slots[slotId]->removeCard(index);
+    update();
+}
+
 
 void Board::handleClearData()
 {

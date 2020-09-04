@@ -1,6 +1,10 @@
 #ifndef ENGINEDATA_H
 #define ENGINEDATA_H
 
+#include <QList>
+#include <QMetaEnum>
+#include <QMetaType>
+
 enum Rank : int {
     RankJoker = 0,
     RankAce = 1,
@@ -54,6 +58,16 @@ struct CardData {
     Suit suit;
     Rank rank;
     bool show;
+
+    bool operator==(const CardData &other) const;
+    bool operator!=(const CardData &other) const;
+    operator QString() const;
 };
+
+typedef QList<CardData> CardList;
+
+Q_DECLARE_METATYPE(struct CardData)
+
+Q_DECLARE_METATYPE(CardList)
 
 #endif // ENGINEDATA_H

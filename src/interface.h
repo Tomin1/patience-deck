@@ -67,10 +67,10 @@ SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 // Helpers
 inline QString getMessage(SCM message);
-CardData createCard(SCM data);
-QList<CardData> cardsFromSlot(SCM cards);
+const CardData createCard(SCM data);
+CardList cardsFromSlot(SCM cards);
 SCM cardToSCM(const CardData &card);
-SCM slotToSCM(const QList<CardData> &slot);
+SCM slotToSCM(const CardList &slot);
 
 // Calls from C to SCM
 SCM startNewGame(void *data);

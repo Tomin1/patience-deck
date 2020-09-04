@@ -2,8 +2,8 @@
 #include "slot.h"
 #include "logging.h"
 
-Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
-           bool expandedDown, bool expandedRight, QObject *parent)
+Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
+           int expansionDepth, bool expandedDown, bool expandedRight, QObject *parent)
     : QObject(parent)
     , m_id(id)
     , m_type(type)
@@ -14,6 +14,8 @@ Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
 {
+    for (const CardData &card : cards)
+        m_cards.append(new Card(card, this));
 }
 
 int Slot::id() const
@@ -36,14 +38,19 @@ bool Slot::empty() const
     return m_cards.empty();
 }
 
-void Slot::addCard(const CardData &card)
+void Slot::appendCard(const CardData &card)
 {
     m_cards.append(new Card(card, this));
 }
 
-void Slot::clear()
+void Slot::insertCard(int index, const CardData &card)
 {
-    m_cards.clear();
+    m_cards.insert(index, new Card(card, this));
+}
+
+void Slot::removeCard(int index)
+{
+    m_cards.removeAt(index);
 }
 
 bool Slot::expanded() const

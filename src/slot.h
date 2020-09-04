@@ -5,6 +5,7 @@
 #include <QPointF>
 #include "card.h"
 #include "enginedata.h"
+#include "engine.h"
 
 class Slot : public QObject
 {
@@ -20,16 +21,17 @@ public:
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
-    Slot(int id, SlotType type, double x, double y, int expansionDepth,
-         bool expandedDown, bool expandedRight, QObject *parent = nullptr);
+    Slot(int id, const CardList &cards, SlotType type, double x, double y,
+         int expansionDepth, bool expandedDown, bool expandedRight, QObject *parent = nullptr);
 
     int id() const;
     QPointF position() const;
     int count() const;
     bool empty() const;
 
-    void addCard(const CardData &card);
-    void clear();
+    void appendCard(const CardData &card);
+    void insertCard(int index, const CardData &card);
+    void removeCard(int index);
 
     bool expanded() const;
     bool expandedRight() const;

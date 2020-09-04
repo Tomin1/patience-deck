@@ -10,8 +10,6 @@ class Engine : public QObject
 {
     Q_OBJECT
 public:
-    typedef QList<CardData> CardList;
-
     ~Engine();
 
     static Engine *instance();
@@ -39,12 +37,13 @@ signals:
     void gameStarted();
     void gameOver(bool won);
 
-    void newSlot(int id, int type, double x, double y,
+    void newSlot(int id, const CardList &cards, int type, double x, double y,
                  int expansionDepth, bool expandedDown, bool expandedRight);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
-    void clearSlot(int id);
-    void newCard(int slotId, const CardData &card);
+    void insertCard(int slotId, int index, const CardData &card);
+    void appendCard(int slotId, const CardData &card);
+    void removeCard(int slotId, int index);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);

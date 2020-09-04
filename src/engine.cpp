@@ -7,6 +7,24 @@
 
 const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
 
+bool CardData::operator==(const CardData &other) const
+{
+    return suit == other.suit && rank == other.rank && show == other.show;
+};
+
+bool CardData::operator!=(const CardData &other) const
+{
+    return !(*this == other);
+};
+
+CardData::operator QString() const
+{
+    return QStringLiteral("Rank %1 of %2%3")
+        .arg(QString::number(rank))
+        .arg(QString::number(suit))
+        .arg(!show ? QStringLiteral(" from behind") : QString());
+};
+
 EnginePrivate::EnginePrivate(QObject *parent)
     : QObject(parent)
     , m_generator(m_rd())
@@ -50,6 +68,9 @@ Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
 {
+    qRegisterMetaType<CardData>();
+    qRegisterMetaType<CardList>();
+    qCDebug(lcEngine) << "Aisleriot Engine created";
 }
 
 void Engine::init()
@@ -83,8 +104,10 @@ void Engine::load(const QString &gameFile)
 void Engine::start()
 {
     qCDebug(lcEngine) << "Starting engine";
-    if (d_ptr->m_state == EnginePrivate::UninitializedState)
+    if (d_ptr->m_state == EnginePrivate::UninitializedState) {
         emit engineFailure("Game must be initialized first");
+        return;
+    }
     d_ptr->m_state = EnginePrivate::BeginState;
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
@@ -271,31 +294,43 @@ void EnginePrivate::setHeight(double height)
     emit engine()->heightChanged(height);
 }
 
-void EnginePrivate::addSlot(int id, QList<CardData> cards, SlotType type,
+void EnginePrivate::addSlot(int id, const CardList &cards, SlotType type,
                             double x, double y, int expansionDepth,
                             bool expandedDown, bool expandedRight)
 {
     m_cardSlots.insert(id, cards);
-    emit engine()->newSlot(id, type, x, y, expansionDepth, expandedDown, expandedRight);
-    for (const CardData &card : cards) {
-        emit engine()->newCard(id, card);
-    }
+    emit engine()->newSlot(id, cards, type, x, y, expansionDepth, expandedDown, expandedRight);
 }
 
-const QList<CardData> EnginePrivate::getSlot(int slot)
+const CardList &EnginePrivate::getSlot(int slot)
 {
     return m_cardSlots[slot];
 }
 
-void EnginePrivate::setCards(int id, QList<CardData> cards)
+void EnginePrivate::setCards(int id, const CardList &cards)
 {
-    // TODO: Instead of clearing it every time,
-    // check what needs to be changed and adjust
-    emit engine()->clearSlot(id);
-    m_cardSlots.insert(id, cards);
-    for (const CardData &card : cards) {
-        emit engine()->newCard(id, card);
+    auto it = cards.constBegin();
+    int i = 0;
+    for (; it != cards.end() && i < m_cardSlots[id].count(); it++, i++) {
+        if (*it != m_cardSlots[id][i]) {
+            qCDebug(lcEngine) << "Inserting" << *it << "to position" << i << "at slot" << id;
+            emit engine()->insertCard(id, i, *it);
+            m_cardSlots[id].insert(i, *it);
+        }
     }
+    for (; it != cards.end(); it++, i++) {
+        qCDebug(lcEngine) << "Appending" << *it << "to slot" << id;
+        emit engine()->appendCard(id, *it);
+        m_cardSlots[id].append(*it);
+    }
+    while (i < m_cardSlots[id].count()) {
+        qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id;
+        emit engine()->removeCard(id, i);
+        m_cardSlots[id].removeAt(i);
+    }
+
+    if (m_cardSlots[id] != cards)
+        die("Cards don't match!");
 }
 
 void EnginePrivate::setExpansionToDown(int id, double expansion)

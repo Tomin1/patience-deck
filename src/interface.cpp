@@ -92,7 +92,7 @@ inline QString Scheme::getMessage(SCM message)
     return QString::fromUtf8(string);
 }
 
-CardData Scheme::createCard(SCM data)
+const CardData Scheme::createCard(SCM data)
 {
     return {
         Suit(scm_to_int(SCM_CADR(data))),
@@ -101,10 +101,10 @@ CardData Scheme::createCard(SCM data)
     };
 }
 
-QList<CardData> Scheme::cardsFromSlot(SCM cards)
+CardList Scheme::cardsFromSlot(SCM cards)
 {
     // mimics aisleriot/src/game.c:cscmi_slot_set_cards
-    QList<CardData> newCards;
+    CardList newCards;
     if (scm_is_true(scm_list_p(cards))) {
         for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
             newCards.insert(0, createCard(SCM_CAR(it)));
@@ -127,7 +127,7 @@ SCM Scheme::cardToSCM(const CardData &card)
     );
 }
 
-SCM Scheme::slotToSCM(const QList<CardData> &slot)
+SCM Scheme::slotToSCM(const CardList &slot)
 {
     SCM cards = SCM_EOL;
     for (const CardData &card : slot) {
@@ -287,7 +287,7 @@ SCM Interface::addCardSlot(SCM slotData)
 SCM Interface::getCardSlot(SCM slotId)
 {
     auto *engine = EnginePrivate::instance();
-    const QList<CardData> slot = engine->getSlot(scm_to_int(slotId));
+    const CardList slot = engine->getSlot(scm_to_int(slotId));
     return scm_cons(slotId, scm_cons(Scheme::slotToSCM(slot), SCM_EOL));
 }
 
@@ -392,8 +392,10 @@ SCM Interface::updateScore(SCM newScore)
     char *score = scm_to_utf8_string(newScore);
     bool ok;
     int value = QString::fromUtf8(score).toInt(&ok);
-    if (!ok)
+    if (!ok) {
         engine->die("expected an integer value");
+        return 0;
+    }
     engine->setScore(value);
     qCDebug(lcScheme) << "Set score to" << value;
     free(score);

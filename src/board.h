@@ -31,17 +31,19 @@ signals:
     void horizontalMarginChanged();
     void verticalMarginChanged();
 
-    void doCheckDrag(int slotId, const Engine::CardList &cards);
-    void doCheckDrop(int startSlotId, int endSlotId, const Engine::CardList &cards);
-    void doDrop(int startSlotId, int endSlotId, const Engine::CardList &cards);
+    void doCheckDrag(int slotId, const CardList &cards);
+    void doCheckDrop(int startSlotId, int endSlotId, const CardList &cards);
+    void doDrop(int startSlotId, int endSlotId, const CardList &cards);
 
 private slots:
-    void handleNewSlot(int id, int type, double x, double y,
-                       int expansionDepth, bool expandedDown, bool expandedRight);
+    void handleNewSlot(int id, const CardList &cards, int type,
+                       double x, double y, int expansionDepth,
+                       bool expandedDown, bool expandedRight);
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
-    void handleClearSlot(int id);
-    void handleNewCard(int slotId, const CardData &card);
+    void handleInsertCard(int slotId, int index, const CardData &card);
+    void handleAppendCard(int slotId, const CardData &card);
+    void handleRemoveCard(int slotId, int index);
     void handleClearData();
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);

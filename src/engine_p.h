@@ -72,10 +72,11 @@ public:
     void setWidth(double width);
     void setHeight(double height);
 
-    void addSlot(int id, QList<CardData> cards, SlotType type, double x, double y,
-                 int expansionDepth, bool expandedDown, bool expandedRight);
-    const QList<CardData> getSlot(int slot);
-    void setCards(int id, QList<CardData> cards);
+    void addSlot(int id, const CardList &cards, SlotType type,
+                 double x, double y, int expansionDepth,
+                 bool expandedDown, bool expandedRight);
+    const CardList &getSlot(int slot);
+    void setCards(int id, const CardList &cards);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
     void setLambda(Lambda lambda, SCM func);
@@ -98,7 +99,7 @@ public:
 private:
     friend Engine;
 
-    QHash<int, QList<CardData>> m_cardSlots;
+    QHash<int, CardList> m_cardSlots;
     SCM m_lambdas[LambdaCount];
     GameFeatures m_features;
     GameState m_state;
