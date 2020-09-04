@@ -92,7 +92,7 @@ inline QString Scheme::getMessage(SCM message)
     return QString::fromUtf8(string);
 }
 
-EnginePrivate::Card Scheme::createCard(SCM data)
+CardData Scheme::createCard(SCM data)
 {
     return {
         Suit(scm_to_int(SCM_CADR(data))),
@@ -101,10 +101,10 @@ EnginePrivate::Card Scheme::createCard(SCM data)
     };
 }
 
-QList<EnginePrivate::Card> Scheme::cardsFromSlot(SCM cards)
+QList<CardData> Scheme::cardsFromSlot(SCM cards)
 {
     // mimics aisleriot/src/game.c:cscmi_slot_set_cards
-    QList<EnginePrivate::Card> newCards;
+    QList<CardData> newCards;
     if (scm_is_true(scm_list_p(cards))) {
         for (SCM it = cards; it != SCM_EOL; it = SCM_CDR(it)) {
             newCards.insert(0, createCard(SCM_CAR(it)));
@@ -113,7 +113,7 @@ QList<EnginePrivate::Card> Scheme::cardsFromSlot(SCM cards)
     return newCards;
 }
 
-SCM Scheme::cardToSCM(const EnginePrivate::Card &card)
+SCM Scheme::cardToSCM(const CardData &card)
 {
     return scm_cons(
         scm_from_uint(card.rank),
@@ -127,10 +127,10 @@ SCM Scheme::cardToSCM(const EnginePrivate::Card &card)
     );
 }
 
-SCM Scheme::slotToSCM(const QList<EnginePrivate::Card> &slot)
+SCM Scheme::slotToSCM(const QList<CardData> &slot)
 {
     SCM cards = SCM_EOL;
-    for (const EnginePrivate::Card &card : slot) {
+    for (const CardData &card : slot) {
         cards = scm_cons(cardToSCM(card), cards);
     }
     return cards;
@@ -287,7 +287,7 @@ SCM Interface::addCardSlot(SCM slotData)
 SCM Interface::getCardSlot(SCM slotId)
 {
     auto *engine = EnginePrivate::instance();
-    const QList<EnginePrivate::Card> slot = engine->getSlot(scm_to_int(slotId));
+    const QList<CardData> slot = engine->getSlot(scm_to_int(slotId));
     return scm_cons(slotId, scm_cons(Scheme::slotToSCM(slot), SCM_EOL));
 }
 

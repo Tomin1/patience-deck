@@ -10,7 +10,7 @@ class Card : public QObject
     Q_OBJECT
 
 public:
-    Card(Suit suit, Rank rank, bool show, QObject *parent = nullptr);
+    Card(const CardData &card, QObject *parent = nullptr);
 
     Suit suit() const;
     Rank rank() const;
@@ -21,14 +21,12 @@ public:
     friend inline bool operator==(const Card &a, const Card &b);
 
 private:
-    Suit m_suit;
-    Rank m_rank;
-    bool m_show;
+    CardData m_data;
 };
 
 inline bool operator==(const Card &a, const Card &b)
 {
-    return a.m_show == b.m_show && a.m_suit == b.m_suit && a.m_rank == b.m_rank;
+    return a.m_data == b.m_data;
 }
 
 #endif // CARD_H

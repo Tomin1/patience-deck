@@ -10,6 +10,8 @@ class Engine : public QObject
 {
     Q_OBJECT
 public:
+    typedef QList<CardData> CardList;
+
     ~Engine();
 
     static Engine *instance();
@@ -21,6 +23,9 @@ public slots:
     void restart();
     void undoMove();
     void redoMove();
+    void checkDrag(int slotId, const CardList &cards);
+    void checkDrop(int startSlotId, int endSlotId, const CardList &cards);
+    void drop(int startSlotId, int endSlotId, const CardList &cards);
 
 signals:
     void canUndoChanged(bool canUndo);
@@ -39,10 +44,14 @@ signals:
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
     void clearSlot(int id);
-    void newCard(int slotId, int suit, int rank, bool show);
+    void newCard(int slotId, const CardData &card);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);
+
+    void couldDrag(bool could, int slotId, const CardList &cards);
+    void couldDrop(bool could, int startSlotId, int endSlotId, const CardList &cards);
+    void dropped(bool could, int startSlotId, int endSlotId, const CardList &cards);
 
 private:
     friend EnginePrivate;

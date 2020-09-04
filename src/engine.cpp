@@ -120,6 +120,60 @@ void Engine::redoMove()
     d_ptr->testGameOver();
 }
 
+void Engine::checkDrag(int slotId, const CardList &cards)
+{
+    SCM args[2];
+    args[0] = scm_from_int(slotId);
+    args[1] = Scheme::slotToSCM(cards);
+
+    SCM rv;
+    d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 2, &rv);
+
+    scm_remember_upto_here_2(args[0], args[1]);
+
+    emit couldDrag(scm_is_true(rv), slotId, cards);
+}
+
+void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
+{
+    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
+        emit couldDrop(false, startSlotId, endSlotId, cards);
+        return;
+    }
+
+    SCM args[3];
+    args[0] = scm_from_int(startSlotId);
+    args[1] = Scheme::slotToSCM(cards);
+    args[2] = scm_from_int(endSlotId);
+
+    SCM rv;
+    d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 3, &rv);
+
+    scm_remember_upto_here(args[0], args[1], args[2]);
+
+    emit couldDrop(scm_is_true(rv), startSlotId, endSlotId, cards);
+}
+
+void Engine::drop(int startSlotId, int endSlotId, const CardList &cards)
+{
+    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
+        emit couldDrop(false, startSlotId, endSlotId, cards);
+        return;
+    }
+
+    SCM args[3];
+    args[0] = scm_from_int(startSlotId);
+    args[1] = Scheme::slotToSCM(cards);
+    args[2] = scm_from_int(endSlotId);
+
+    SCM rv;
+    d_ptr->makeSCMCall(EnginePrivate::ButtonReleasedLambda, args, 3, &rv);
+
+    scm_remember_upto_here(args[0], args[1], args[2]);
+
+    emit dropped(scm_is_true(rv), startSlotId, endSlotId, cards);
+}
+
 void EnginePrivate::updateDealable()
 {
     SCM rv;
@@ -217,30 +271,30 @@ void EnginePrivate::setHeight(double height)
     emit engine()->heightChanged(height);
 }
 
-void EnginePrivate::addSlot(int id, QList<Card> cards, SlotType type,
+void EnginePrivate::addSlot(int id, QList<CardData> cards, SlotType type,
                             double x, double y, int expansionDepth,
                             bool expandedDown, bool expandedRight)
 {
     m_cardSlots.insert(id, cards);
     emit engine()->newSlot(id, type, x, y, expansionDepth, expandedDown, expandedRight);
-    for (const Card &card : cards) {
-        emit engine()->newCard(id, card.suit, card.rank, card.show);
+    for (const CardData &card : cards) {
+        emit engine()->newCard(id, card);
     }
 }
 
-const QList<EnginePrivate::Card> EnginePrivate::getSlot(int slot)
+const QList<CardData> EnginePrivate::getSlot(int slot)
 {
     return m_cardSlots[slot];
 }
 
-void EnginePrivate::setCards(int id, QList<Card> cards)
+void EnginePrivate::setCards(int id, QList<CardData> cards)
 {
     // TODO: Instead of clearing it every time,
     // check what needs to be changed and adjust
     emit engine()->clearSlot(id);
     m_cardSlots.insert(id, cards);
-    for (const Card &card : cards) {
-        emit engine()->newCard(id, card.suit, card.rank, card.show);
+    for (const CardData &card : cards) {
+        emit engine()->newCard(id, card);
     }
 }
 

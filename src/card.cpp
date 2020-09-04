@@ -32,54 +32,52 @@ const QString &getSuitTemplate(Suit suit)
 
 }; // Id
 
-Card::Card(Suit suit, Rank rank, bool show, QObject *parent)
+Card::Card(const CardData &card, QObject *parent)
     : QObject(parent)
-    , m_suit(suit)
-    , m_rank(rank)
-    , m_show(show)
+    , m_data(card)
 {
 }
 
 Suit Card::suit() const
 {
-    return m_suit;
+    return m_data.suit;
 }
 
 Rank Card::rank() const
 {
-    return m_rank;
+    return m_data.rank;
 }
 
 bool Card::show() const
 {
-    return m_show;
+    return m_data.show;
 }
 
 bool Card::isBlack() const
 {
-    return m_suit == SuitClubs || m_suit == SuitSpade;
+    return m_data.suit == SuitClubs || m_data.suit == SuitSpade;
 }
 
 const QString Card::elementName() const
 {
-    if (!m_show) {
+    if (!m_data.show) {
         return Id::Back;
     } else {
-        int rank = m_rank;
-        switch (m_rank) {
+        int rank = m_data.rank;
+        switch (m_data.rank) {
         case RankJoker:
             return isBlack() ? Id::JokerBlack : Id::JokerRed;
         case RankJack:
-            return Id::getSuitTemplate(m_suit).arg(Id::Jack);
+            return Id::getSuitTemplate(m_data.suit).arg(Id::Jack);
         case RankQueen:
-            return Id::getSuitTemplate(m_suit).arg(Id::Queen);
+            return Id::getSuitTemplate(m_data.suit).arg(Id::Queen);
         case RankKing:
-            return Id::getSuitTemplate(m_suit).arg(Id::King);
+            return Id::getSuitTemplate(m_data.suit).arg(Id::King);
         case RankAceHigh:
             rank = 1;
             // fallthrough
         default:
-            return Id::getSuitTemplate(m_suit).arg(rank);
+            return Id::getSuitTemplate(m_data.suit).arg(rank);
         }
     }
 }

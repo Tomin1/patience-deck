@@ -36,9 +36,9 @@ bool Slot::empty() const
     return m_cards.empty();
 }
 
-void Slot::addCard(Suit suit, Rank rank, bool faceDown)
+void Slot::addCard(const CardData &card)
 {
-    m_cards.append(new Card(suit, rank, faceDown, this));
+    m_cards.append(new Card(card, this));
 }
 
 void Slot::clear()

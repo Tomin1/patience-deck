@@ -52,12 +52,6 @@ public:
     };
     Q_ENUM(GameState);
 
-    struct Card {
-        Suit suit;
-        Rank rank;
-        bool show;
-    };
-
     explicit EnginePrivate(QObject *parent = nullptr);
     ~EnginePrivate();
     static EnginePrivate *instance();
@@ -78,10 +72,10 @@ public:
     void setWidth(double width);
     void setHeight(double height);
 
-    void addSlot(int id, QList<Card> cards, SlotType type, double x, double y,
+    void addSlot(int id, QList<CardData> cards, SlotType type, double x, double y,
                  int expansionDepth, bool expandedDown, bool expandedRight);
-    const QList<Card> getSlot(int slot);
-    void setCards(int id, QList<Card> cards);
+    const QList<CardData> getSlot(int slot);
+    void setCards(int id, QList<CardData> cards);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
     void setLambda(Lambda lambda, SCM func);
@@ -104,7 +98,7 @@ public:
 private:
     friend Engine;
 
-    QHash<int, QList<Card>> m_cardSlots;
+    QHash<int, QList<CardData>> m_cardSlots;
     SCM m_lambdas[LambdaCount];
     GameFeatures m_features;
     GameState m_state;

@@ -40,6 +40,9 @@ Board::Board(QQuickItem *parent)
     connect(engine, &Engine::heightChanged, this, &Board::handleHeightChanged);
     connect(this, &Board::heightChanged, this, &Board::updateCardSize);
     connect(this, &Board::widthChanged, this, &Board::updateCardSize);
+    connect(this, &Board::doCheckDrag, engine, &Engine::checkDrag);
+    connect(this, &Board::doCheckDrop, engine, &Engine::checkDrop);
+    connect(this, &Board::doDrop, engine, &Engine::drop);
 
     if (!m_cardRenderer.isValid())
         qCCritical(lcAisleriot) << "SVG file is not valid! Can not render cards!";
@@ -159,9 +162,9 @@ void Board::handleClearSlot(int id)
     update();
 }
 
-void Board::handleNewCard(int slotId, int suit, int rank, bool show)
+void Board::handleNewCard(int slotId, const CardData &card)
 {
-    m_slots[slotId]->addCard(Suit(suit), Rank(rank), show);
+    m_slots[slotId]->addCard(card);
     update();
 }
 

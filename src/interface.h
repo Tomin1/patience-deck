@@ -67,10 +67,10 @@ SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 // Helpers
 inline QString getMessage(SCM message);
-EnginePrivate::Card createCard(SCM data);
-QList<EnginePrivate::Card> cardsFromSlot(SCM cards);
-SCM cardToSCM(const EnginePrivate::Card &card);
-SCM slotToSCM(const QList<EnginePrivate::Card> &slot);
+CardData createCard(SCM data);
+QList<CardData> cardsFromSlot(SCM cards);
+SCM cardToSCM(const CardData &card);
+SCM slotToSCM(const QList<CardData> &slot);
 
 // Calls from C to SCM
 SCM startNewGame(void *data);

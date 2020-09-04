@@ -28,7 +28,7 @@ public:
     int count() const;
     bool empty() const;
 
-    void addCard(Suit suit, Rank rank, bool faceDown);
+    void addCard(const CardData &card);
     void clear();
 
     bool expanded() const;

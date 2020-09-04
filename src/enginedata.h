@@ -50,4 +50,10 @@ enum Expansion : int {
     None = 0
 };
 
+struct CardData {
+    Suit suit;
+    Rank rank;
+    bool show;
+};
+
 #endif // ENGINEDATA_H
