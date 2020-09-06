@@ -19,14 +19,16 @@ public:
         ExpandsInX = 0x01,
         ExpandsInY = 0x02,
         DeltaSet = 0x04,
+        DeltaCalculated = 0x08
     };
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
     Slot(int id, const CardList &cards, SlotType type, double x, double y,
-         int expansionDepth, bool expandedDown, bool expandedRight, Board *parent = nullptr);
+         int expansionDepth, bool expandedDown, bool expandedRight, Board *board);
 
     void paint(QPainter *painter);
+    void updateDimensions();
 
     int id() const;
     QPointF position() const;
@@ -40,10 +42,10 @@ public:
     bool expanded() const;
     bool expandedRight() const;
     bool expandedDown() const;
-    bool explicitDelta() const;
-    qreal delta() const;
+    qreal delta(int index);
     void setDelta(double delta);
     int expansionDepth() const;
+    int firstExpandedIndex() const;
 
     typedef QList<Card *>::const_iterator const_iterator;
     const_iterator constBegin() const;
@@ -64,8 +66,10 @@ private:
     bool m_exposed;
     QPointF m_position;
     qreal m_expansionDelta;
+    qreal m_calculatedDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
+    QPen m_pen;
 };
 
 #endif // SLOT_H

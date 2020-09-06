@@ -1,3 +1,5 @@
+#include <QPainter>
+#include "board.h"
 #include "card.h"
 #include "slot.h"
 
@@ -33,16 +35,17 @@ const QString &getSuitTemplate(Suit suit)
 
 }; // Id
 
-Card::Card(const CardData &card, Slot *parent)
-    : QQuickPaintedItem(parent)
-    , m_slot(parent)
+Card::Card(const CardData &card, Board *board, Slot *slot)
+    : QQuickPaintedItem(slot)
+    , m_board(board)
+    , m_slot(slot)
     , m_data(card)
 {
 }
 
 void Card::paint(QPainter *painter)
 {
-    Q_UNUSED(painter) // TODO
+    m_board->cardRenderer()->render(painter, elementName());
 }
 
 Suit Card::suit() const

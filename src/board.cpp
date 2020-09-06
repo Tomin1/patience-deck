@@ -10,10 +10,6 @@
 namespace {
 
 const qreal CardRatio = 79.0 / 123.0;
-const qreal CardStep = 0.2;
-const qreal MinCardStep = 0.2;
-const qreal SlotRounding = 10.0;
-const int SlotOutlineWidth = 3;
 
 }; // namespace
 
@@ -51,48 +47,7 @@ Board::Board(QQuickItem *parent)
 
 void Board::paint(QPainter *painter)
 {
-    // TODO: Too slow!
-    // TODO: Doesn't handle expansion depth
-    if (!readyToPaint())
-        return;
-    qCDebug(lcAisleriot) << "Time to paint";
-    QPen slotPen(Qt::gray);
-    slotPen.setWidth(SlotOutlineWidth);
-    painter->setPen(slotPen);
-    for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
-        Slot *slot = it.value();
-        QPointF point = getPoint(slot->position());
-        qCDebug(lcAisleriot) << "Drawing slot" << slot->id()
-                             << "at" << slot->position() << "to" << point;
-        QRectF target(point, m_cardSize);
-        if (slot->empty()) {
-            painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
-        } else if (slot->expanded()) {
-            qreal expansion = getExpansion(slot);
-            bool first = true;
-            for (auto cardIt = slot->constBegin(); cardIt != slot->constEnd(); cardIt++) {
-                Card *card = *cardIt;
-                auto element = card->elementName();
-                if (first) {
-                    first = false;
-                } else if (slot->expandedRight()) {
-                    qCDebug(lcAisleriot) << "expansion to right from"  << target.left() << "by" << expansion;
-                    target.moveLeft(target.left() + expansion);
-                } else if (slot->expandedDown()) {
-                    qCDebug(lcAisleriot) << "expansion to down from" << target.top() << "by" << expansion;
-                    target.moveTop(target.top() + expansion);
-                }
-
-                qCDebug(lcAisleriot) << "Rendering" << element << "to" << target;
-                m_cardRenderer.render(painter, element, target);
-            } // cards
-        } else {
-            // FIXME: Ugly code, add proper interface to Slot
-            auto element = (*(--slot->constEnd()))->elementName();
-            qCDebug(lcAisleriot) << "Rendering" << element << "to" << target;
-            m_cardRenderer.render(painter, element, target);
-        }
-    } // slots
+    Q_UNUSED(painter) // Nothing to paint here
 }
 
 qreal Board::horizontalMargin() const
@@ -105,7 +60,7 @@ void Board::setHorizontalMargin(qreal horizontalMargin)
     if (m_margin.width() != horizontalMargin) {
         m_margin.setWidth(horizontalMargin);
         emit horizontalMarginChanged();
-        update();
+        updateSlots();
     }
 }
 
@@ -119,8 +74,38 @@ void Board::setVerticalMargin(qreal verticalMargin)
     if (m_margin.height() != verticalMargin) {
         m_margin.setHeight(verticalMargin);
         emit verticalMarginChanged();
-        update();
+        updateSlots();
     }
+}
+
+QSizeF Board::margin() const
+{
+    return m_margin;
+}
+
+QSizeF Board::boardSize() const
+{
+    return m_boardSize;
+}
+
+QSizeF Board::cardSize() const
+{
+    return m_cardSize;
+}
+
+QSizeF Board::cardSpace() const
+{
+    return m_cardSpace;
+}
+
+QSizeF Board::cardMargin() const
+{
+    return m_cardMargin;
+}
+
+QSvgRenderer *Board::cardRenderer()
+{
+    return &m_cardRenderer;
 }
 
 void Board::handleNewSlot(int id, const CardList &cards, int type,
@@ -220,40 +205,13 @@ void Board::updateCardSize()
     qCInfo(lcAisleriot) << "Set card dimensions to" << m_cardSize
                         << "with space of" << m_cardSpace
                         << "and margin of" << m_cardMargin;
-    update();
+    updateSlots();
 }
 
-bool Board::readyToPaint()
+void Board::updateSlots() const
 {
-    return m_boardSize.isValid() && m_cardSize.isValid();
-}
-
-QPointF Board::getPoint(const QPointF &position) const
-{
-    qreal x = m_margin.width() + (m_cardSpace.width() + m_margin.width()) * position.x();
-    qreal y = m_margin.height() + (m_cardSpace.height() + m_margin.height()) * position.y();
-    return QPointF(x + m_cardMargin.width(), y + m_cardMargin.height());
-}
-
-qreal Board::getExpansion(Slot *slot) const
-{
-    if (!slot->expanded())
-        return 0.0;
-
-    int count = slot->expansionDepth();
-    if (count == Expansion::Full)
-        count = slot->count();
-    qreal maximumExpansion = slot->explicitDelta() ? slot->delta() : CardStep;
-    qreal expansion;
-
-    if (slot->expandedRight())
-        expansion = (m_boardSize.width() - slot->position().x()) / m_boardSize.width() / slot->expansionDepth();
-    else // slot->expandedDown()
-        expansion = (m_boardSize.height() - slot->position().y()) / m_boardSize.height() / slot->expansionDepth();
-    if (expansion < MinCardStep)
-        expansion = MinCardStep;
-    else if (expansion > maximumExpansion)
-        expansion = maximumExpansion;
-
-    return (slot->expandedRight() ? m_cardSize.width() : m_cardSize.height()) * expansion;
+    for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
+        Slot *slot = it.value();
+        slot->updateDimensions();
+    }
 }

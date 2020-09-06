@@ -27,6 +27,14 @@ public:
     qreal verticalMargin() const;
     void setVerticalMargin(qreal verticalMargin);
 
+    QSizeF margin() const;
+    QSizeF boardSize() const;
+    QSizeF cardSize() const;
+    QSizeF cardSpace() const;
+    QSizeF cardMargin() const;
+
+    QSvgRenderer *cardRenderer();
+
 signals:
     void horizontalMarginChanged();
     void verticalMarginChanged();
@@ -50,9 +58,7 @@ private slots:
     void updateCardSize();
 
 private:
-    bool readyToPaint();
-    QPointF getPoint(const QPointF &position) const;
-    qreal getExpansion(Slot *slot) const;
+    void updateSlots() const;
 
     QMap<int, Slot *> m_slots;
     QSizeF m_margin;

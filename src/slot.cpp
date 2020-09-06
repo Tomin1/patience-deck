@@ -1,28 +1,78 @@
+#include <QPainter>
 #include "board.h"
 #include "card.h"
 #include "slot.h"
 #include "logging.h"
 
+namespace {
+
+const qreal CardStep = 0.2;
+const qreal MinCardStep = 0.05;
+const qreal SlotRounding = 10.0;
+const int SlotOutlineWidth = 3;
+const QMarginsF SlotMargins(3, 3, 3, 3);
+
+}; // namespace
+
 Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight, Board *parent)
-    : QQuickPaintedItem(parent)
-    , m_board(parent)
+           int expansionDepth, bool expandedDown, bool expandedRight, Board *board)
+    : QQuickPaintedItem(board)
+    , m_board(board)
     , m_id(id)
     , m_type(type)
     , m_exposed(false)
     , m_position(x, y)
     , m_expansionDelta(0.0)
+    , m_calculatedDelta(0.0)
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
+    , m_pen(Qt::gray)
 {
+    setParentItem(board);
     for (const CardData &card : cards)
-        m_cards.append(new Card(card, this));
+        m_cards.append(new Card(card, board, this));
+    m_pen.setWidth(SlotOutlineWidth);
 }
 
 void Slot::paint(QPainter *painter)
 {
-    Q_UNUSED(painter) // TODO
+    painter->setPen(m_pen);
+    if (empty()) {
+        QRectF target = QRectF(0, 0, width(), height()) - SlotMargins;
+        painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
+    }
+}
+
+void Slot::updateDimensions()
+{
+    QSizeF margin = m_board->margin();
+    QSizeF cardSpace = m_board->cardSpace();
+    QSizeF cardMargin = m_board->cardMargin();
+    setX(margin.width() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
+    setY(margin.height() + (cardSpace.height() + margin.height()) * m_position.y() + cardMargin.height());
+
+    QSizeF cardSize = m_board->cardSize();
+    setWidth(cardSize.width());
+    setHeight(cardSize.height());
+
+    m_expansion &= ~DeltaCalculated;
+
+    int index = 0;
+    for (Card *card : *this) {
+        if (expandedRight()) {
+            card->setX(delta(index));
+            card->setY(0);
+        } else if (expandedDown()) {
+            card->setX(0);
+            card->setY(delta(index));
+        } else {
+            card->setX(0);
+            card->setY(0);
+        }
+        card->setSize(cardSize);
+        index++;
+    }
 }
 
 int Slot::id() const
@@ -47,12 +97,12 @@ bool Slot::empty() const
 
 void Slot::appendCard(const CardData &card)
 {
-    m_cards.append(new Card(card, this));
+    m_cards.append(new Card(card, m_board, this));
 }
 
 void Slot::insertCard(int index, const CardData &card)
 {
-    m_cards.insert(index, new Card(card, this));
+    m_cards.insert(index, new Card(card, m_board, this));
 }
 
 void Slot::removeCard(int index)
@@ -75,25 +125,51 @@ bool Slot::expandedDown() const
     return m_expansion & ExpandsInY;
 }
 
-bool Slot::explicitDelta() const
+qreal Slot::delta(int index)
 {
-    return m_expansion & DeltaSet;
-}
+    if (index == 0 || !expanded() || index < firstExpandedIndex())
+        return 0.0;
 
-qreal Slot::delta() const
-{
-    return m_expansionDelta;
+    if (!(m_expansion & DeltaCalculated)) {
+        qreal expansion;
+        if (expandedRight())
+            expansion = (m_board->boardSize().width() - position().x()) / expansionDepth();
+        else // expandedDown()
+            expansion = (m_board->boardSize().height() - position().y()) / expansionDepth();
+
+        qreal maximumExpansion = m_expansion & DeltaSet ? m_expansionDelta : CardStep;
+        if (expansion < MinCardStep)
+            expansion = MinCardStep;
+        else if (expansion > maximumExpansion)
+            expansion = maximumExpansion;
+
+        QSizeF cardSize = m_board->cardSize();
+        m_calculatedDelta = (expandedRight() ? cardSize.width() : cardSize.height()) * expansion;
+        m_expansion |= DeltaCalculated;
+    }
+
+    return m_calculatedDelta*(index - firstExpandedIndex());
 }
 
 void Slot::setDelta(double delta)
 {
     m_expansion |= DeltaSet;
+    m_expansion &= ~DeltaCalculated;
     m_expansionDelta = delta;
 }
 
 int Slot::expansionDepth() const
 {
+    if (m_expansionDepth == Expansion::Full)
+        return count();
     return m_expansionDepth;
+}
+
+int Slot::firstExpandedIndex() const
+{
+    if (m_expansionDepth == Expansion::Full)
+        return 0;
+    return count() - m_expansionDepth;
 }
 
 Slot::const_iterator Slot::constBegin() const
