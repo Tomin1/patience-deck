@@ -1,6 +1,9 @@
+#include <QGuiApplication>
 #include <QPainter>
+#include <QScreen>
 #include "board.h"
 #include "card.h"
+#include "logging.h"
 #include "slot.h"
 
 namespace Id {
@@ -35,12 +38,30 @@ const QString &getSuitTemplate(Suit suit)
 
 }; // Id
 
+namespace {
+
+QPointF mapPos(const QPointF &pos)
+{
+    switch (QGuiApplication::primaryScreen()->orientation()) {
+    case Qt::LandscapeOrientation:
+        return QPointF(pos.y(), -pos.x());
+    case Qt::InvertedLandscapeOrientation:
+        return QPointF(-pos.y(), pos.x());
+    default:
+        return QPointF(pos.x(), pos.y());
+    };
+}
+
+}; // namespace
+
 Card::Card(const CardData &card, Board *board, Slot *slot)
     : QQuickPaintedItem(slot)
     , m_board(board)
     , m_slot(slot)
     , m_data(card)
+    , m_dragged(false)
 {
+    setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 void Card::paint(QPainter *painter)
@@ -90,4 +111,47 @@ const QString Card::elementName() const
             return Id::getSuitTemplate(m_data.suit).arg(rank);
         }
     }
+}
+
+bool Card::operator==(const Card &other) const
+{
+    return m_data == other.m_data;
+}
+
+void Card::mousePressEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+    setKeepMouseGrab(true);
+    m_dragLast = mapPos(event->screenPos());
+    m_board->doCheckDrag(m_slot->id(), CardList() << m_data);
+    // TODO: connect to couldDrag and allow/deny dragging
+}
+
+void Card::mouseReleaseEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+    // TODO: finish drag, check if drag was acceptable
+    // TODO: apply final position (in old or new slot)
+    setKeepMouseGrab(false);
+}
+
+void Card::mouseMoveEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+    QPointF newPosition = mapPos(event->screenPos()) - m_dragLast;
+    setX(x() + newPosition.x());
+    setY(y() + newPosition.y());
+    m_dragLast = mapPos(event->screenPos());
+}
+
+QDebug operator<<(QDebug debug, const Card &card)
+{
+    debug.nospace() << "Card(rank=";
+    debug.nospace() << card.rank();
+    debug.nospace() << ", suit=";
+    debug.nospace() << card.suit();
+    debug.nospace() << ", show=";
+    debug.nospace() << card.show();
+    debug.nospace() << ")";
+    return debug.maybeSpace();
 }

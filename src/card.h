@@ -23,17 +23,22 @@ public:
     bool isBlack() const;
     const QString elementName() const;
 
-    friend inline bool operator==(const Card &a, const Card &b);
+    bool operator==(const Card &other) const;
 
 private:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+
     Board *m_board;
     Slot *m_slot;
     CardData m_data;
+
+    // Temporary
+    bool m_dragged;
+    QPointF m_dragLast;
 };
 
-inline bool operator==(const Card &a, const Card &b)
-{
-    return a.m_data == b.m_data;
-}
+QDebug operator<<(QDebug debug, const Card &card);
 
 #endif // CARD_H

@@ -72,4 +72,6 @@ private:
     QPen m_pen;
 };
 
+QDebug operator<<(QDebug debug, const Slot &slot);
+
 #endif // SLOT_H

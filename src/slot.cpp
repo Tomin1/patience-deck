@@ -29,7 +29,6 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
     , m_expansionDepth(expansionDepth)
     , m_pen(Qt::gray)
 {
-    setParentItem(board);
     for (const CardData &card : cards)
         m_cards.append(new Card(card, board, this));
     m_pen.setWidth(SlotOutlineWidth);
@@ -190,4 +189,14 @@ Slot::iterator Slot::begin()
 Slot::iterator Slot::end()
 {
     return m_cards.end();
+}
+
+QDebug operator<<(QDebug debug, const Slot &slot)
+{
+    debug.nospace() << "Slot(id=";
+    debug.nospace() << slot.id();
+    debug.nospace() << ", #cards=";
+    debug.nospace() << slot.count();
+    debug.nospace() << ")";
+    return debug.maybeSpace();
 }

@@ -20,6 +20,8 @@ Board::Board(QQuickItem *parent)
     , m_margin(0, 0)
     , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
 {
+    setFlag(QQuickItem::ItemClipsChildrenToShape);
+
     // Fill the scene with suitable color, nothing behind this is displayed
     setOpaquePainting(true);
     QColor backgroundColor(Qt::darkGreen);
