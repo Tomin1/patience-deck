@@ -14,20 +14,36 @@ class QPainter;
 class Board : public QQuickPaintedItem
 {
     Q_OBJECT
-    Q_PROPERTY(qreal horizontalMargin READ horizontalMargin WRITE setHorizontalMargin NOTIFY horizontalMarginChanged);
-    Q_PROPERTY(qreal verticalMargin READ verticalMargin WRITE setVerticalMargin NOTIFY verticalMarginChanged);
+    Q_PROPERTY(qreal minimumSideMargin READ minimumSideMargin
+               WRITE setMinimumSideMargin NOTIFY minimumSideMarginChanged);
+    Q_PROPERTY(qreal horizontalMargin READ horizontalMargin
+               WRITE setHorizontalMargin NOTIFY horizontalMarginChanged);
+    Q_PROPERTY(qreal maximumHorizontalMargin READ maximumHorizontalMargin
+               WRITE setMaximumHorizontalMargin NOTIFY maximumHorizontalMarginChanged);
+    Q_PROPERTY(qreal verticalMargin READ verticalMargin
+               WRITE setVerticalMargin NOTIFY verticalMarginChanged);
+    Q_PROPERTY(qreal maximumVerticalMargin READ maximumVerticalMargin
+               WRITE setMaximumVerticalMargin NOTIFY maximumVerticalMarginChanged);
 
 public:
     explicit Board(QQuickItem *parent = nullptr);
 
     void paint(QPainter *painter);
 
+    qreal minimumSideMargin() const;
+    void setMinimumSideMargin(qreal minimumSideMargin);
     qreal horizontalMargin() const;
     void setHorizontalMargin(qreal horizontalMargin);
+    qreal maximumHorizontalMargin() const;
+    void setMaximumHorizontalMargin(qreal maximumHorizontalMargin);
     qreal verticalMargin() const;
     void setVerticalMargin(qreal verticalMargin);
+    qreal maximumVerticalMargin() const;
+    void setMaximumVerticalMargin(qreal maximumVerticalMargin);
 
+    qreal sideMargin() const;
     QSizeF margin() const;
+    QSizeF maximumMargin() const;
     QSizeF boardSize() const;
     QSizeF cardSize() const;
     QSizeF cardSpace() const;
@@ -36,8 +52,11 @@ public:
     QSvgRenderer *cardRenderer();
 
 signals:
+    void minimumSideMarginChanged();
     void horizontalMarginChanged();
+    void maximumHorizontalMarginChanged();
     void verticalMarginChanged();
+    void maximumVerticalMarginChanged();
 
     void doCheckDrag(int slotId, const CardList &cards);
     void doCheckDrop(int startSlotId, int endSlotId, const CardList &cards);
@@ -58,10 +77,11 @@ private slots:
     void updateCardSize();
 
 private:
-    void updateSlots() const;
-
     QMap<int, Slot *> m_slots;
+    qreal m_minimumSideMargin;
+    qreal m_sideMargin;
     QSizeF m_margin;
+    QSizeF m_maximumMargin;
     QSizeF m_boardSize;
     QSizeF m_cardSize;
     QSizeF m_cardSpace;

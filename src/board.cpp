@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <QBrush>
 #include <QColor>
 #include <QPainter>
@@ -17,7 +18,8 @@ const QString Constants::DataDirectory = QStringLiteral("/usr/share/mobile-aisle
 
 Board::Board(QQuickItem *parent)
     : QQuickPaintedItem(parent)
-    , m_margin(0, 0)
+    , m_minimumSideMargin(0)
+    , m_sideMargin(0)
     , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
 {
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -52,6 +54,20 @@ void Board::paint(QPainter *painter)
     Q_UNUSED(painter) // Nothing to paint here
 }
 
+qreal Board::minimumSideMargin() const
+{
+    return m_minimumSideMargin;
+}
+
+void Board::setMinimumSideMargin(qreal minimumSideMargin)
+{
+    if (m_minimumSideMargin != minimumSideMargin) {
+        m_minimumSideMargin = minimumSideMargin;
+        emit minimumSideMarginChanged();
+        updateCardSize();
+    }
+}
+
 qreal Board::horizontalMargin() const
 {
     return m_margin.width();
@@ -62,7 +78,21 @@ void Board::setHorizontalMargin(qreal horizontalMargin)
     if (m_margin.width() != horizontalMargin) {
         m_margin.setWidth(horizontalMargin);
         emit horizontalMarginChanged();
-        updateSlots();
+        updateCardSize();
+    }
+}
+
+qreal Board::maximumHorizontalMargin() const
+{
+    return m_maximumMargin.width();
+}
+
+void Board::setMaximumHorizontalMargin(qreal maximumHorizontalMargin)
+{
+    if (m_maximumMargin.width() != maximumHorizontalMargin) {
+        m_maximumMargin.setWidth(maximumHorizontalMargin);
+        emit maximumHorizontalMarginChanged();
+        updateCardSize();
     }
 }
 
@@ -76,13 +106,37 @@ void Board::setVerticalMargin(qreal verticalMargin)
     if (m_margin.height() != verticalMargin) {
         m_margin.setHeight(verticalMargin);
         emit verticalMarginChanged();
-        updateSlots();
+        updateCardSize();
     }
+}
+
+qreal Board::maximumVerticalMargin() const
+{
+    return m_maximumMargin.height();
+}
+
+void Board::setMaximumVerticalMargin(qreal maximumVerticalMargin)
+{
+    if (m_maximumMargin.height() != maximumVerticalMargin) {
+        m_maximumMargin.setHeight(maximumVerticalMargin);
+        emit maximumVerticalMarginChanged();
+        updateCardSize();
+    }
+}
+
+qreal Board::sideMargin() const
+{
+    return m_sideMargin;
 }
 
 QSizeF Board::margin() const
 {
     return m_margin;
+}
+
+QSizeF Board::maximumMargin() const
+{
+    return m_maximumMargin;
 }
 
 QSizeF Board::boardSize() const
@@ -190,12 +244,20 @@ void Board::handleHeightChanged(double height)
 
 void Board::updateCardSize()
 {
+    // TODO: Queue this, don't update many times in a row
     if (!m_boardSize.isValid())
         return;
-    qCDebug(lcAisleriot) << "Drawing to" << QSize(width(), height()) << "area with margin of"
-                         << m_margin << "and board size of" << m_boardSize;
-    qreal maximumWidth = (width()-m_margin.width()) / m_boardSize.width() - m_margin.width();
-    qreal maximumHeight = (height()-m_margin.height()) / m_boardSize.height() - m_margin.height();
+
+    qCDebug(lcAisleriot).nospace() << "Drawing to " << QSize(width(), height())
+                                   << " area with margin of " << m_margin
+                                   << ", maximum margin of " << m_maximumMargin
+                                   << ", minimum side margin of " << m_minimumSideMargin
+                                   << " and board size of " << m_boardSize;
+
+    qreal verticalSpace = width() - m_minimumSideMargin*2.0;
+    qreal horizontalSpace = height() - m_margin.height()*2.0;
+    qreal maximumWidth = (verticalSpace + m_margin.width()) / m_boardSize.width() - m_margin.width();
+    qreal maximumHeight = (horizontalSpace + m_margin.height()) / m_boardSize.height() - m_margin.height();
     if ((maximumHeight * CardRatio) < maximumWidth) {
         m_cardSize = QSizeF(maximumHeight * CardRatio, maximumHeight);
         m_cardMargin = QSizeF((maximumWidth - m_cardSize.width()) / 2.0, 0.0);
@@ -203,15 +265,26 @@ void Board::updateCardSize()
         m_cardSize = QSizeF(maximumWidth, maximumWidth / CardRatio);
         m_cardMargin = QSizeF(0.0, (maximumHeight - m_cardSize.height()) / 2.0);
     }
-    m_cardSpace = QSizeF(maximumWidth, maximumHeight);
+
+    qCDebug(lcAisleriot) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
+                         << "and card margin of" << m_cardMargin;
+
+    if (m_maximumMargin.width() > 0 && m_cardMargin.width() + m_margin.width() > m_maximumMargin.width())
+        m_cardMargin.setWidth(std::max(m_maximumMargin.width() - m_margin.width(), (qreal)0.0F));
+    if (m_maximumMargin.height() > 0 && m_cardMargin.height() + m_margin.height() > m_maximumMargin.height())
+        m_cardMargin.setHeight(std::max(m_maximumMargin.height() - m_margin.height(), (qreal)0.0F));
+
+    m_cardSpace = m_cardSize + m_cardMargin;
+    m_sideMargin = (width() - (m_cardSpace.width()+m_margin.width())*m_boardSize.width() + m_margin.width()) / 2.0;
+    if (m_sideMargin < m_minimumSideMargin)
+        qCWarning(lcAisleriot) << "Miscalculated side margin! Current is" << m_sideMargin
+                               << "but it should be" << m_minimumSideMargin;
+
     qCInfo(lcAisleriot) << "Set card dimensions to" << m_cardSize
                         << "with space of" << m_cardSpace
                         << "and margin of" << m_cardMargin;
-    updateSlots();
-}
+    qCDebug(lcAisleriot) << "Side margin is" << m_sideMargin;
 
-void Board::updateSlots() const
-{
     for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
         Slot *slot = it.value();
         slot->updateDimensions();

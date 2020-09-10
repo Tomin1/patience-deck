@@ -48,7 +48,7 @@ void Slot::updateDimensions()
     QSizeF margin = m_board->margin();
     QSizeF cardSpace = m_board->cardSpace();
     QSizeF cardMargin = m_board->cardMargin();
-    setX(margin.width() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
+    setX(m_board->sideMargin() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
     setY(margin.height() + (cardSpace.height() + margin.height()) * m_position.y() + cardMargin.height());
 
     QSizeF cardSize = m_board->cardSize();

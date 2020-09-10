@@ -31,8 +31,11 @@ Page {
             Board {
                 height: page.height - header.height
                 width: parent.width
+                minimumSideMargin: Theme.horizontalPageMargin
                 horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
+                maximumHorizontalMargin: Theme.paddingLarge
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
+                maximumVerticalMargin: Theme.paddingLarge
                 Component.onCompleted: Aisleriot.loadGame("klondike.scm")
             }
         }
