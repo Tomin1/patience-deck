@@ -43,6 +43,7 @@ Card::Card(const CardData &card, Board *board, Slot *slot)
     , m_data(card)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
+    setZ(1);
 }
 
 void Card::paint(QPainter *painter)

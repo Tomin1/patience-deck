@@ -96,8 +96,15 @@ void Drag::finish(Slot *target)
 
 void Drag::handleCouldDrag(bool could)
 {
-    if (could)
+    if (could) {
         m_cards = m_source->take(m_card);
+        for (Card *card : m_cards) {
+            card->setParentItem(m_board);
+            QPointF position = m_board->mapFromItem(m_source, QPointF(card->x(), card->y()));
+            card->setX(position.x());
+            card->setY(position.y());
+        }
+    }
     disconnect(Engine::instance(), &Engine::couldDrag, this, &Drag::handleCouldDrag);
 }
 

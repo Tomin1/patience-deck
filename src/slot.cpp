@@ -150,8 +150,10 @@ QList<Card *> Slot::take(Card *first)
 void Slot::put(const QList<Card *> &cards)
 {
     m_cards.append(cards);
-    for (Card *card : cards)
+    for (Card *card : cards) {
         card->setParent(this);
+        card->setParentItem(this);
+    }
     updateLocations();
 }
 
