@@ -137,8 +137,7 @@ void Card::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
 
-    m_drag->finish(m_board->getSlotAt(m_board->mapFromScene(event->screenPos()),
-                   m_drag->source()));
+    m_drag->finish(event);
 
     setKeepMouseGrab(false);
 }

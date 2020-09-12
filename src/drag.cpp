@@ -4,6 +4,7 @@
 #include "board.h"
 #include "card.h"
 #include "slot.h"
+#include "constants.h"
 #include "logging.h"
 
 namespace {
@@ -34,11 +35,17 @@ CardList toCardData(const QList<Card *> &cards)
 
 }; // namespace
 
+const qint64 Constants::ClickTimeout = 200;
+
+const qreal Constants::DragDistance = 5;
+
 quint32 Drag::s_count = 0;
 
 Drag::Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card)
     : QObject(card)
     , m_id(s_count++)
+    , m_mayBeAClick(true)
+    , m_completed(false)
     , m_board(board)
     , m_card(card)
     , m_source(slot)
@@ -49,11 +56,13 @@ Drag::Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card)
     connect(this, &Drag::doCancelDrag, engine, &Engine::cancelDrag);
     connect(this, &Drag::doCheckDrop, engine, &Engine::checkDrop);
     connect(this, &Drag::doDrop, engine, &Engine::drop);
+    connect(this, &Drag::doClick, engine, &Engine::click);
     connect(engine, &Engine::couldDrag, this, &Drag::handleCouldDrag);
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
 
-    m_lastPoint = mapPos(event->screenPos());
+    m_startPoint = m_lastPoint = mapPos(event->screenPos());
+    m_timer.start();
 
     emit doDrag(m_id, slot->id(), slot->asCardData(card));
 }
@@ -61,9 +70,14 @@ Drag::Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card)
 Drag::~Drag()
 {
     if (!m_cards.isEmpty()) {
-        for (Card *card : m_cards) {
-            card->setVisible(false);
-            card->deleteLater();
+        if (m_completed) {
+            for (Card *card : m_cards) {
+                card->setVisible(false);
+                card->deleteLater();
+            }
+        } else {
+            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
+            m_source->put(m_cards);
         }
         m_cards.clear();
     }
@@ -81,6 +95,8 @@ Slot *Drag::source() const
 
 void Drag::update(QMouseEvent *event)
 {
+    testClick(event);
+
     if (m_cards.isEmpty())
         return;
 
@@ -92,13 +108,22 @@ void Drag::update(QMouseEvent *event)
     m_lastPoint = mapPos(event->screenPos());
 }
 
-void Drag::finish(Slot *target)
+void Drag::finish(QMouseEvent *event)
 {
+    if (testClick(event)) {
+        qCDebug(lcAisleriot) << "Detected click on" << m_card;
+        emit doClick(m_id, m_source->id());
+        cancel();
+        deleteLater();
+        return;
+    }
+
     if (m_cards.isEmpty())
         return;
 
-    if (target) {
-        m_target = target;
+    m_target = m_board->getSlotAt(m_board->mapFromScene(event->screenPos()), m_source);
+
+    if (m_target) {
         qCDebug(lcAisleriot) << "Moving from" << m_source->id() << "to" << m_target->id();
         emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
@@ -114,6 +139,8 @@ void Drag::cancel()
         m_source->put(m_cards);
         m_cards.clear();
     }
+
+    deleteLater();
 }
 
 void Drag::handleCouldDrag(quint32 id, bool could)
@@ -150,8 +177,24 @@ void Drag::handleDropped(quint32 id, bool could)
     if (id != m_id)
         return;
 
-    if (!could) {
+    if (could)
+        m_completed = true;
+    else
         cancel();
-    } // else all changes should be done already
+
     deleteLater();
+}
+
+bool Drag::testClick(QMouseEvent *event)
+{
+    if (!m_mayBeAClick)
+        return false;
+
+    if (m_timer.hasExpired(Constants::ClickTimeout))
+        m_mayBeAClick = false;
+
+    if ((m_startPoint - mapPos(event->screenPos())).manhattanLength() >= Constants::DragDistance)
+        m_mayBeAClick = false;
+
+    return m_mayBeAClick;
 }

@@ -1,6 +1,7 @@
 #ifndef DRAG_H
 #define DRAG_H
 
+#include <QElapsedTimer>
 #include <QObject>
 #include <QPointF>
 #include "enginedata.h"
@@ -21,7 +22,7 @@ public:
     Slot *source() const;
 
     void update(QMouseEvent *event);
-    void finish(Slot *target);
+    void finish(QMouseEvent *event);
     void cancel();
 
 signals:
@@ -29,6 +30,7 @@ signals:
     void doCancelDrag(quint32 id, int slotId, const CardList &cards);
     void doCheckDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
     void doDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
+    void doClick(quint32 id, int slotId);
 
 private slots:
     void handleCouldDrag(quint32 id, bool could);
@@ -36,9 +38,15 @@ private slots:
     void handleDropped(quint32 id, bool could);
 
 private:
+    bool testClick(QMouseEvent *event);
+
     static quint32 s_count;
     quint32 m_id;
+    QElapsedTimer m_timer;
+    QPointF m_startPoint;
     QPointF m_lastPoint;
+    bool m_mayBeAClick;
+    bool m_completed;
     Board *m_board;
     Card *m_card;
     Slot *m_source;

@@ -1,6 +1,7 @@
 #ifndef SLOT_H
 #define SLOT_H
 
+#include <QElapsedTimer>
 #include <QPointF>
 #include <QtQuick/QQuickPaintedItem>
 #include "card.h"
@@ -64,9 +65,12 @@ public:
     iterator find(Card *card);
 
 signals:
-    void cardsChanged();
+    void doClick(quint32 id, int slotId);
 
 private:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
     Board *m_board;
     int m_id;
     SlotType m_type;
@@ -78,6 +82,9 @@ private:
     ExpansionTypes m_expansion;
     int m_expansionDepth;
     QPen m_pen;
+
+    QElapsedTimer m_timer;
+    QPointF m_startPoint;
 };
 
 QDebug operator<<(QDebug debug, const Slot &slot);

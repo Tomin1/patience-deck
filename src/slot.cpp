@@ -2,6 +2,7 @@
 #include "board.h"
 #include "card.h"
 #include "slot.h"
+#include "constants.h"
 #include "logging.h"
 
 namespace {
@@ -29,9 +30,12 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
     , m_expansionDepth(expansionDepth)
     , m_pen(Qt::gray)
 {
+    setAcceptedMouseButtons(Qt::LeftButton);
     for (const CardData &card : cards)
         m_cards.append(new Card(card, board, this));
     m_pen.setWidth(SlotOutlineWidth);
+    auto engine = Engine::instance();
+    connect(this, &Slot::doClick, engine, &Engine::click);
 }
 
 void Slot::paint(QPainter *painter)
@@ -264,6 +268,24 @@ Slot::iterator Slot::find(Card *card)
             return it;
     }
     return end();
+}
+
+void Slot::mousePressEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+    m_timer.start();
+    m_startPoint = event->pos();
+}
+
+void Slot::mouseReleaseEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+
+    if (!m_timer.hasExpired(Constants::ClickTimeout)
+            && (m_startPoint - event->pos()).manhattanLength() < Constants::DragDistance) {
+        qCDebug(lcAisleriot) << "Detected click on" << this;
+        emit doClick(-1, id());
+    }
 }
 
 QDebug operator<<(QDebug debug, const Slot &slot)

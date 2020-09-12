@@ -4,6 +4,8 @@
 #include <QString>
 
 namespace Constants {
+extern const qint64 ClickTimeout;
+extern const qreal DragDistance;
 extern const QString GameDirectory;
 extern const QString DataDirectory;
 };
