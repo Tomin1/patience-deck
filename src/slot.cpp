@@ -37,10 +37,8 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
 void Slot::paint(QPainter *painter)
 {
     painter->setPen(m_pen);
-    if (empty()) {
-        QRectF target = QRectF(0, 0, width(), height()) - SlotMargins;
-        painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
-    }
+    QRectF target = QRectF(0, 0, width(), height()) - SlotMargins;
+    painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
 }
 
 void Slot::updateDimensions()
