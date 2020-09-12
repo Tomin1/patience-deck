@@ -9,6 +9,7 @@
 #include "engine.h"
 #include "enginedata.h"
 #include "slot.h"
+#include "drag.h"
 
 class QPainter;
 class Board : public QQuickPaintedItem
@@ -48,8 +49,13 @@ public:
     QSizeF cardSize() const;
     QSizeF cardSpace() const;
     QSizeF cardMargin() const;
+    bool preparing() const;
 
     QSvgRenderer *cardRenderer();
+
+    void cardGrabbed(QMouseEvent *event, Slot *slot, Card *card);
+    void cardMoved(QMouseEvent *event, Card *card);
+    void cardReleased(QMouseEvent *event, Card *card);
 
 signals:
     void minimumSideMarginChanged();
@@ -57,10 +63,6 @@ signals:
     void maximumHorizontalMarginChanged();
     void verticalMarginChanged();
     void maximumVerticalMarginChanged();
-
-    void doCheckDrag(int slotId, const CardList &cards);
-    void doCheckDrop(int startSlotId, int endSlotId, const CardList &cards);
-    void doDrop(int startSlotId, int endSlotId, const CardList &cards);
 
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type,
@@ -72,11 +74,14 @@ private slots:
     void handleAppendCard(int slotId, const CardData &card);
     void handleRemoveCard(int slotId, int index);
     void handleClearData();
+    void handleGameStarted();
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);
     void updateCardSize();
 
 private:
+    Slot *getSlotAt(const QPointF &point, Slot *source);
+
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
     qreal m_sideMargin;
@@ -87,6 +92,8 @@ private:
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
     QSvgRenderer m_cardRenderer;
+    Drag *m_drag;
+    bool m_preparing;
 };
 
 #endif // BOARD_H

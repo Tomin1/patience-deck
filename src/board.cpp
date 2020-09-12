@@ -21,6 +21,8 @@ Board::Board(QQuickItem *parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
     , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
+    , m_drag(nullptr)
+    , m_preparing(true)
 {
     setFlag(QQuickItem::ItemClipsChildrenToShape);
 
@@ -37,13 +39,11 @@ Board::Board(QQuickItem *parent)
     connect(engine, &Engine::appendCard, this, &Board::handleAppendCard);
     connect(engine, &Engine::removeCard, this, &Board::handleRemoveCard);
     connect(engine, &Engine::clearData, this, &Board::handleClearData);
+    connect(engine, &Engine::gameStarted, this, &Board::handleGameStarted);
     connect(engine, &Engine::widthChanged, this, &Board::handleWidthChanged);
     connect(engine, &Engine::heightChanged, this, &Board::handleHeightChanged);
     connect(this, &Board::heightChanged, this, &Board::updateCardSize);
     connect(this, &Board::widthChanged, this, &Board::updateCardSize);
-    connect(this, &Board::doCheckDrag, engine, &Engine::checkDrag);
-    connect(this, &Board::doCheckDrop, engine, &Engine::checkDrop);
-    connect(this, &Board::doDrop, engine, &Engine::drop);
 
     if (!m_cardRenderer.isValid())
         qCCritical(lcAisleriot) << "SVG file is not valid! Can not render cards!";
@@ -159,9 +159,45 @@ QSizeF Board::cardMargin() const
     return m_cardMargin;
 }
 
+bool Board::preparing() const
+{
+    return m_preparing;
+}
+
 QSvgRenderer *Board::cardRenderer()
 {
     return &m_cardRenderer;
+}
+
+void Board::cardGrabbed(QMouseEvent *event, Slot *slot, Card *card)
+{
+    if (m_drag) {
+        qCCritical(lcAisleriot) << "Drag is already happening, can't drag two cards at the same time";
+        return;
+    }
+
+    m_drag = new Drag(event, slot, card, this);
+}
+
+void Board::cardMoved(QMouseEvent *event, Card *card)
+{
+    if (m_drag->card() != card) {
+        qCCritical(lcAisleriot) << "Drag is for another card!";
+        return;
+    }
+
+    m_drag->update(event);
+}
+
+void Board::cardReleased(QMouseEvent *event, Card *card)
+{
+    if (m_drag->card() != card) {
+        qCCritical(lcAisleriot) << "Drag is for another card!";
+        return;
+    }
+
+    m_drag->finish(getSlotAt(mapFromScene(event->screenPos()), m_drag->source()));
+    m_drag = nullptr;
 }
 
 void Board::handleNewSlot(int id, const CardList &cards, int type,
@@ -221,6 +257,7 @@ void Board::handleRemoveCard(int slotId, int index)
 
 void Board::handleClearData()
 {
+    m_preparing = true;
     for (auto it = m_slots.begin(); it != m_slots.end(); it++) {
         it.value()->deleteLater();
     }
@@ -228,6 +265,11 @@ void Board::handleClearData()
     m_boardSize = QSizeF();
     m_cardSize = QSizeF();
     update();
+}
+
+void Board::handleGameStarted()
+{
+    m_preparing = false;
 }
 
 void Board::handleWidthChanged(double width)
@@ -289,4 +331,24 @@ void Board::updateCardSize()
         Slot *slot = it.value();
         slot->updateDimensions();
     }
+}
+
+Slot *Board::getSlotAt(const QPointF &point, Slot *source)
+{
+    for (Slot *slot : m_slots) {
+        if (slot == source)
+            continue;
+        QRectF children = slot->childrenRect();
+        if (children.isValid() && (children.x() != 0 || children.y() != 0)) {
+            qCCritical(lcAisleriot) << "Children rect" << children
+                                    << "for slot" << slot->id() << "looks wrong"
+                                    << "while source slot is" << source->id();
+        }
+        QRectF box(slot->x(), slot->y(),
+                   std::max(slot->width(), children.width()),
+                   std::max(slot->height(), children.height()));
+        if (box.contains(point))
+            return slot;
+    }
+    return nullptr;
 }

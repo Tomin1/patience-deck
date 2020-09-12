@@ -87,7 +87,7 @@ Engine::~Engine()
 void Engine::load(const QString &gameFile)
 {
     qCDebug(lcEngine) << "Loading game from" << gameFile;
-    d_ptr->clear();
+    d_ptr->clear(true);
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::loadGameFromFile, (void *)&gameFile,
                 Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
@@ -143,7 +143,7 @@ void Engine::redoMove()
     d_ptr->testGameOver();
 }
 
-void Engine::checkDrag(int slotId, const CardList &cards)
+void Engine::drag(int slotId, const CardList &cards)
 {
     SCM args[2];
     args[0] = scm_from_int(slotId);
@@ -154,7 +154,18 @@ void Engine::checkDrag(int slotId, const CardList &cards)
 
     scm_remember_upto_here_2(args[0], args[1]);
 
+    if (scm_is_true(rv)) {
+        // Remove cards from the slot, assumes that they are removed from the end
+        for (int i = cards.count(); i > 0; i--)
+            d_ptr->m_cardSlots[slotId].removeLast();
+    }
+
     emit couldDrag(scm_is_true(rv), slotId, cards);
+}
+
+void Engine::cancelDrag(int slotId, const CardList &cards)
+{
+    d_ptr->m_cardSlots[slotId].append(cards);
 }
 
 void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
@@ -170,7 +181,7 @@ void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
     args[2] = scm_from_int(endSlotId);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 3, &rv);
+    d_ptr->makeSCMCall(EnginePrivate::DroppableLambda, args, 3, &rv);
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
@@ -179,11 +190,6 @@ void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
 
 void Engine::drop(int startSlotId, int endSlotId, const CardList &cards)
 {
-    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
-        emit couldDrop(false, startSlotId, endSlotId, cards);
-        return;
-    }
-
     SCM args[3];
     args[0] = scm_from_int(startSlotId);
     args[1] = Scheme::slotToSCM(cards);
@@ -227,13 +233,16 @@ bool EnginePrivate::isInitialized()
     return m_state > BeginState;
 }
 
-void EnginePrivate::clear()
+void EnginePrivate::clear(bool resetData)
 {
-    m_state = UninitializedState;
-    setFeatures(0);
-    setCanUndo(false);
-    setCanRedo(false);
-    setCanDeal(false);
+    if (resetData) {
+        m_state = UninitializedState;
+        setFeatures(0);
+        setCanUndo(false);
+        setCanRedo(false);
+        setCanDeal(false);
+    }
+    m_cardSlots.clear();
     emit engine()->clearData();
 }
 
@@ -356,12 +365,13 @@ uint EnginePrivate::getFeatures()
 
 void EnginePrivate::setFeatures(uint features)
 {
+    qCDebug(lcEngine) << "Setting features to" << static_cast<EnginePrivate::GameFeatures>(features);
     m_features = static_cast<EnginePrivate::GameFeatures>(features);
 }
 
 bool EnginePrivate::hasFeature(GameFeature feature)
 {
-    return (m_features & feature) != 0;
+    return m_features.testFlag(feature);
 }
 
 int EnginePrivate::getTimeout()

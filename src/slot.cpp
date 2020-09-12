@@ -54,11 +54,19 @@ void Slot::updateDimensions()
     QSizeF cardSize = m_board->cardSize();
     setWidth(cardSize.width());
     setHeight(cardSize.height());
+    for (Card *card : m_cards)
+        card->setSize(cardSize);
 
     m_expansion &= ~DeltaCalculated;
 
-    int index = 0;
-    for (Card *card : *this) {
+    updateLocations();
+}
+
+void Slot::updateLocations(Card *first)
+{
+    int index = (first) ? m_cards.indexOf(first) : 0;
+    for (auto it = find(first); it != end(); it++) {
+        Card *card = *it;
         if (expandedRight()) {
             card->setX(delta(index));
             card->setY(0);
@@ -69,7 +77,6 @@ void Slot::updateDimensions()
             card->setX(0);
             card->setY(0);
         }
-        card->setSize(cardSize);
         index++;
     }
 }
@@ -96,17 +103,56 @@ bool Slot::empty() const
 
 void Slot::appendCard(const CardData &card)
 {
-    m_cards.append(new Card(card, m_board, this));
+    Card *newCard = new Card(card, m_board, this);
+    m_cards.append(newCard);
+    if (!m_board->preparing()) {
+        newCard->setSize(m_board->cardSize());
+        updateLocations(newCard);
+    }
 }
 
 void Slot::insertCard(int index, const CardData &card)
 {
-    m_cards.insert(index, new Card(card, m_board, this));
+    Card *newCard = new Card(card, m_board, this);
+    m_cards.insert(index, newCard);
+    if (!m_board->preparing()) {
+        newCard->setSize(m_board->cardSize());
+        updateLocations();
+    }
 }
 
 void Slot::removeCard(int index)
 {
-    m_cards.removeAt(index);
+    Card *card = m_cards.takeAt(index);
+    card->deleteLater();
+    // TODO: Store to card cache and take it from there to new slot
+}
+
+CardList Slot::asCardData(Card *first)
+{
+    CardList list;
+    for (auto it = constFind(first); it != constEnd(); it++)
+        list << (*it)->data();
+    if (list.isEmpty()) {
+        qCCritical(lcAisleriot) << "Returning an empty list of CardData";
+        abort();
+    }
+    return list;
+}
+
+QList<Card *> Slot::take(Card *first)
+{
+    QList<Card *> tail = m_cards.mid(m_cards.indexOf(first));
+    m_cards.erase(find(first), end());
+    return tail;
+}
+
+void Slot::put(const QList<Card *> &cards)
+{
+    m_cards.append(cards);
+    for (Card *card : cards)
+        card->setParent(this);
+    updateLocations();
 }
 
 bool Slot::expanded() const
@@ -181,6 +227,18 @@ Slot::const_iterator Slot::constEnd() const
     return m_cards.constEnd();
 }
 
+Slot::const_iterator Slot::constFind(Card *card) const
+{
+    if (!card)
+        return constBegin();
+
+    for (auto it = constEnd(); it-- != constBegin();) {
+        if (*it == card)
+            return it;
+    }
+    return constEnd();
+}
+
 Slot::iterator Slot::begin()
 {
     return m_cards.begin();
@@ -189,6 +247,18 @@ Slot::iterator Slot::begin()
 Slot::iterator Slot::end()
 {
     return m_cards.end();
+}
+
+Slot::iterator Slot::find(Card *card)
+{
+    if (!card)
+        return begin();
+
+    for (auto it = end(); it-- != begin();) {
+        if (*it == card)
+            return it;
+    }
+    return end();
 }
 
 QDebug operator<<(QDebug debug, const Slot &slot)

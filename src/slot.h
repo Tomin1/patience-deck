@@ -29,6 +29,7 @@ public:
 
     void paint(QPainter *painter);
     void updateDimensions();
+    void updateLocations(Card *card = nullptr);
 
     int id() const;
     QPointF position() const;
@@ -38,6 +39,10 @@ public:
     void appendCard(const CardData &card);
     void insertCard(int index, const CardData &card);
     void removeCard(int index);
+
+    CardList asCardData(Card *first);
+    QList<Card *> take(Card *first);
+    void put(const QList<Card *> &cards);
 
     bool expanded() const;
     bool expandedRight() const;
@@ -50,10 +55,12 @@ public:
     typedef QList<Card *>::const_iterator const_iterator;
     const_iterator constBegin() const;
     const_iterator constEnd() const;
+    const_iterator constFind(Card *card) const;
 
     typedef QList<Card *>::iterator iterator;
     iterator begin();
     iterator end();
+    iterator find(Card *card);
 
 signals:
     void cardsChanged();

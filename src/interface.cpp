@@ -192,7 +192,6 @@ SCM Interface::setFeatureWord(SCM features)
 {
     auto *engine = EnginePrivate::instance();
     engine->setFeatures(scm_to_uint(features));
-    qCDebug(lcScheme) << "Set features to" << EnginePrivate::GameFeatures(engine->getFeatures());
     return SCM_EOL;
 }
 

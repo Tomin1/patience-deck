@@ -21,7 +21,8 @@ public slots:
     void restart();
     void undoMove();
     void redoMove();
-    void checkDrag(int slotId, const CardList &cards);
+    void drag(int slotId, const CardList &cards);
+    void cancelDrag(int slotId, const CardList &cards);
     void checkDrop(int startSlotId, int endSlotId, const CardList &cards);
     void drop(int startSlotId, int endSlotId, const CardList &cards);
 

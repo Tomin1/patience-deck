@@ -61,7 +61,7 @@ public:
     bool isGameOver();
     bool isWinningGame();
     bool isInitialized();
-    void clear();
+    void clear(bool resetData = false);
     void testGameOver();
 
     void setCanUndo(bool canUndo);

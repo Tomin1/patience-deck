@@ -23,6 +23,8 @@ public:
     bool isBlack() const;
     const QString elementName() const;
 
+    CardData data() const;
+
     bool operator==(const Card &other) const;
 
 private:
@@ -33,10 +35,6 @@ private:
     Board *m_board;
     Slot *m_slot;
     CardData m_data;
-
-    // Temporary
-    bool m_dragged;
-    QPointF m_dragLast;
 };
 
 QDebug operator<<(QDebug debug, const Card &card);
