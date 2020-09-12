@@ -204,6 +204,32 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     emit dropped(id, scm_is_true(rv));
 }
 
+void Engine::click(quint32 id, int slotId)
+{
+    SCM args[1];
+    args[0] = scm_from_int(slotId);
+
+    SCM rv;
+    d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv);
+
+    scm_remember_upto_here_1(args[0]);
+
+    emit clicked(id, scm_is_true(rv));
+}
+
+void Engine::doubleClick(quint32 id, int slotId)
+{
+    SCM args[1];
+    args[0] = scm_from_int(slotId);
+
+    SCM rv;
+    d_ptr->makeSCMCall(EnginePrivate::ButtonDoubleClickedLambda, args, 1, &rv);
+
+    scm_remember_upto_here_1(args[0]);
+
+    emit doubleClicked(id, scm_is_true(rv));
+}
+
 void EnginePrivate::updateDealable()
 {
     SCM rv;

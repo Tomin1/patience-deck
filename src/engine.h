@@ -25,6 +25,8 @@ public slots:
     void cancelDrag(quint32 id, int slotId, const CardList &cards);
     void checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
     void drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
+    void click(quint32 id);
+    void doubleClick(quint32 id);
 
 signals:
     void canUndoChanged(bool canUndo);
@@ -52,6 +54,8 @@ signals:
     void couldDrag(quint32 id, bool could);
     void couldDrop(quint32 id, bool could);
     void dropped(quint32 id, bool could);
+    void clicked(quint32 id, bool could);
+    void doubleClicked(quint32 id, bool could);
 
 private:
     friend EnginePrivate;
