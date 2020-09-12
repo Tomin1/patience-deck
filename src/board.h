@@ -9,7 +9,6 @@
 #include "engine.h"
 #include "enginedata.h"
 #include "slot.h"
-#include "drag.h"
 
 class QPainter;
 class Board : public QQuickPaintedItem
@@ -52,10 +51,7 @@ public:
     bool preparing() const;
 
     QSvgRenderer *cardRenderer();
-
-    void cardGrabbed(QMouseEvent *event, Slot *slot, Card *card);
-    void cardMoved(QMouseEvent *event, Card *card);
-    void cardReleased(QMouseEvent *event, Card *card);
+    Slot *getSlotAt(const QPointF &point, Slot *source);
 
 signals:
     void minimumSideMarginChanged();
@@ -80,8 +76,6 @@ private slots:
     void updateCardSize();
 
 private:
-    Slot *getSlotAt(const QPointF &point, Slot *source);
-
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
     qreal m_sideMargin;
@@ -92,7 +86,6 @@ private:
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
     QSvgRenderer m_cardRenderer;
-    Drag *m_drag;
     bool m_preparing;
 };
 

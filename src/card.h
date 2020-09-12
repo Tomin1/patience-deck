@@ -4,6 +4,7 @@
 #include <QtQuick/QQuickPaintedItem>
 #include <QPen>
 #include "enginedata.h"
+#include "drag.h"
 
 class QPainter;
 class Board;
@@ -22,6 +23,7 @@ public:
     bool show() const;
     bool isBlack() const;
     const QString elementName() const;
+    bool dragged() const;
 
     CardData data() const;
 
@@ -35,6 +37,7 @@ private:
     Board *m_board;
     Slot *m_slot;
     CardData m_data;
+    Drag *m_drag;
 };
 
 QDebug operator<<(QDebug debug, const Card &card);

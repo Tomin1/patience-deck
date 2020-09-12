@@ -143,7 +143,7 @@ void Engine::redoMove()
     d_ptr->testGameOver();
 }
 
-void Engine::drag(int slotId, const CardList &cards)
+void Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
     SCM args[2];
     args[0] = scm_from_int(slotId);
@@ -160,18 +160,19 @@ void Engine::drag(int slotId, const CardList &cards)
             d_ptr->m_cardSlots[slotId].removeLast();
     }
 
-    emit couldDrag(scm_is_true(rv), slotId, cards);
+    emit couldDrag(id, scm_is_true(rv));
 }
 
-void Engine::cancelDrag(int slotId, const CardList &cards)
+void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 {
+    Q_UNUSED(id) // There is no signal to send back
     d_ptr->m_cardSlots[slotId].append(cards);
 }
 
-void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
+void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
     if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
-        emit couldDrop(false, startSlotId, endSlotId, cards);
+        emit couldDrop(id, false);
         return;
     }
 
@@ -185,10 +186,10 @@ void Engine::checkDrop(int startSlotId, int endSlotId, const CardList &cards)
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
-    emit couldDrop(scm_is_true(rv), startSlotId, endSlotId, cards);
+    emit couldDrop(id, scm_is_true(rv));
 }
 
-void Engine::drop(int startSlotId, int endSlotId, const CardList &cards)
+void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
     SCM args[3];
     args[0] = scm_from_int(startSlotId);
@@ -200,7 +201,7 @@ void Engine::drop(int startSlotId, int endSlotId, const CardList &cards)
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
-    emit dropped(scm_is_true(rv), startSlotId, endSlotId, cards);
+    emit dropped(id, scm_is_true(rv));
 }
 
 void EnginePrivate::updateDealable()

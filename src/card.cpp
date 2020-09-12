@@ -41,6 +41,7 @@ Card::Card(const CardData &card, Board *board, Slot *slot)
     , m_board(board)
     , m_slot(slot)
     , m_data(card)
+    , m_drag(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setZ(1);
@@ -95,6 +96,11 @@ const QString Card::elementName() const
     }
 }
 
+bool Card::dragged() const
+{
+    return m_drag != nullptr;
+}
+
 CardData Card::data() const
 {
     return m_data;
@@ -108,21 +114,45 @@ bool Card::operator==(const Card &other) const
 void Card::mousePressEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
+
+    if (m_drag)
+        m_drag->cancel();
+
     setKeepMouseGrab(true);
-    m_board->cardGrabbed(event, m_slot, this);
+
+    m_drag = new Drag(event, m_board, m_slot, this);
+    Drag *drag = m_drag;
+    connect(m_drag, &Drag::destroyed, this, [this, drag] {
+        if (m_drag == drag)
+            m_drag = nullptr;
+    });
 }
 
 void Card::mouseReleaseEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
-    m_board->cardReleased(event, this);
+
+    if (!m_drag) {
+        qCCritical(lcAisleriot) << "Can not handle mouse release! There is no drag ongoing!";
+        return;
+    }
+
+    m_drag->finish(m_board->getSlotAt(m_board->mapFromScene(event->screenPos()),
+                   m_drag->source()));
+
     setKeepMouseGrab(false);
 }
 
 void Card::mouseMoveEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
-    m_board->cardMoved(event, this);
+
+    if (!m_drag) {
+        qCCritical(lcAisleriot) << "Can not handle mouse move! There is no drag ongoing!";
+        return;
+    }
+
+    m_drag->update(event);
 }
 
 QDebug operator<<(QDebug debug, const Card &card)

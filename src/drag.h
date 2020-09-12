@@ -14,28 +14,30 @@ class Drag : public QObject
     Q_OBJECT
 
 public:
-    Drag(QMouseEvent *event, Slot *slot, Card *card, Board *board);
+    Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card);
+    ~Drag();
 
     Card *card() const;
     Slot *source() const;
 
     void update(QMouseEvent *event);
     void finish(Slot *target);
+    void cancel();
 
 signals:
-    void doDrag(int slotId, const CardList &cards);
-    void doCancelDrag(int slotId, const CardList &cards);
-    void doCheckDrop(int startSlotId, int endSlotId, const CardList &cards);
-    void doDrop(int startSlotId, int endSlotId, const CardList &cards);
+    void doDrag(quint32 id, int slotId, const CardList &cards);
+    void doCancelDrag(quint32 id, int slotId, const CardList &cards);
+    void doCheckDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
+    void doDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
 
 private slots:
-    void handleCouldDrag(bool could);
-    void handleCouldDrop(bool could);
-    void handleDropped(bool could);
+    void handleCouldDrag(quint32 id, bool could);
+    void handleCouldDrop(quint32 id, bool could);
+    void handleDropped(quint32 id, bool could);
 
 private:
-    void end();
-
+    static quint32 s_count;
+    quint32 m_id;
     QPointF m_lastPoint;
     Board *m_board;
     Card *m_card;

@@ -21,7 +21,6 @@ Board::Board(QQuickItem *parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
     , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
-    , m_drag(nullptr)
     , m_preparing(true)
 {
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -169,35 +168,24 @@ QSvgRenderer *Board::cardRenderer()
     return &m_cardRenderer;
 }
 
-void Board::cardGrabbed(QMouseEvent *event, Slot *slot, Card *card)
+Slot *Board::getSlotAt(const QPointF &point, Slot *source)
 {
-    if (m_drag) {
-        qCCritical(lcAisleriot) << "Drag is already happening, can't drag two cards at the same time";
-        return;
+    for (Slot *slot : m_slots) {
+        if (slot == source)
+            continue;
+        QRectF children = slot->childrenRect();
+        if (children.isValid() && (children.x() != 0 || children.y() != 0)) {
+            qCCritical(lcAisleriot) << "Children rect" << children
+                                    << "for slot" << slot->id() << "looks wrong"
+                                    << "while source slot is" << source->id();
+        }
+        QRectF box(slot->x(), slot->y(),
+                   std::max(slot->width(), children.width()),
+                   std::max(slot->height(), children.height()));
+        if (box.contains(point))
+            return slot;
     }
-
-    m_drag = new Drag(event, slot, card, this);
-}
-
-void Board::cardMoved(QMouseEvent *event, Card *card)
-{
-    if (m_drag->card() != card) {
-        qCCritical(lcAisleriot) << "Drag is for another card!";
-        return;
-    }
-
-    m_drag->update(event);
-}
-
-void Board::cardReleased(QMouseEvent *event, Card *card)
-{
-    if (m_drag->card() != card) {
-        qCCritical(lcAisleriot) << "Drag is for another card!";
-        return;
-    }
-
-    m_drag->finish(getSlotAt(mapFromScene(event->screenPos()), m_drag->source()));
-    m_drag = nullptr;
+    return nullptr;
 }
 
 void Board::handleNewSlot(int id, const CardList &cards, int type,
@@ -331,24 +319,4 @@ void Board::updateCardSize()
         Slot *slot = it.value();
         slot->updateDimensions();
     }
-}
-
-Slot *Board::getSlotAt(const QPointF &point, Slot *source)
-{
-    for (Slot *slot : m_slots) {
-        if (slot == source)
-            continue;
-        QRectF children = slot->childrenRect();
-        if (children.isValid() && (children.x() != 0 || children.y() != 0)) {
-            qCCritical(lcAisleriot) << "Children rect" << children
-                                    << "for slot" << slot->id() << "looks wrong"
-                                    << "while source slot is" << source->id();
-        }
-        QRectF box(slot->x(), slot->y(),
-                   std::max(slot->width(), children.width()),
-                   std::max(slot->height(), children.height()));
-        if (box.contains(point))
-            return slot;
-    }
-    return nullptr;
 }

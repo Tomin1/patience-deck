@@ -34,8 +34,11 @@ CardList toCardData(const QList<Card *> &cards)
 
 }; // namespace
 
-Drag::Drag(QMouseEvent *event, Slot *slot, Card *card, Board *board)
-    : QObject(board)
+quint32 Drag::s_count = 0;
+
+Drag::Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card)
+    : QObject(card)
+    , m_id(s_count++)
     , m_board(board)
     , m_card(card)
     , m_source(slot)
@@ -46,11 +49,24 @@ Drag::Drag(QMouseEvent *event, Slot *slot, Card *card, Board *board)
     connect(this, &Drag::doCancelDrag, engine, &Engine::cancelDrag);
     connect(this, &Drag::doCheckDrop, engine, &Engine::checkDrop);
     connect(this, &Drag::doDrop, engine, &Engine::drop);
+    connect(engine, &Engine::couldDrag, this, &Drag::handleCouldDrag);
+    connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
+    connect(engine, &Engine::dropped, this, &Drag::handleDropped);
 
     m_lastPoint = mapPos(event->screenPos());
 
-    connect(engine, &Engine::couldDrag, this, &Drag::handleCouldDrag);
-    emit doDrag(slot->id(), slot->asCardData(card));
+    emit doDrag(m_id, slot->id(), slot->asCardData(card));
+}
+
+Drag::~Drag()
+{
+    if (!m_cards.isEmpty()) {
+        for (Card *card : m_cards) {
+            card->setVisible(false);
+            card->deleteLater();
+        }
+        m_cards.clear();
+    }
 }
 
 Card *Drag::card() const
@@ -84,18 +100,27 @@ void Drag::finish(Slot *target)
     if (target) {
         m_target = target;
         qCDebug(lcAisleriot) << "Moving from" << m_source->id() << "to" << m_target->id();
-        connect(Engine::instance(), &Engine::couldDrop, this, &Drag::handleCouldDrop);
-        emit doCheckDrop(m_source->id(), m_target->id(), toCardData(m_cards));
+        emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
-        emit doCancelDrag(m_source->id(), toCardData(m_cards));
-        m_source->put(m_cards);
-        m_cards.clear();
-        end();
+        cancel();
+        deleteLater();
     }
 }
 
-void Drag::handleCouldDrag(bool could)
+void Drag::cancel()
 {
+    if (!m_cards.isEmpty()) {
+        emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
+        m_source->put(m_cards);
+        m_cards.clear();
+    }
+}
+
+void Drag::handleCouldDrag(quint32 id, bool could)
+{
+    if (id != m_id)
+        return;
+
     if (could) {
         m_cards = m_source->take(m_card);
         for (Card *card : m_cards) {
@@ -105,45 +130,28 @@ void Drag::handleCouldDrag(bool could)
             card->setY(position.y());
         }
     }
-    disconnect(Engine::instance(), &Engine::couldDrag, this, &Drag::handleCouldDrag);
 }
 
-void Drag::handleCouldDrop(bool could)
+void Drag::handleCouldDrop(quint32 id, bool could)
 {
+    if (id != m_id)
+        return;
+
     if (could) {
-        connect(Engine::instance(), &Engine::dropped, this, &Drag::handleDropped);
-        emit doDrop(m_source->id(), m_target->id(), toCardData(m_cards));
+        emit doDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
-        if (!m_cards.isEmpty()) {
-            emit doCancelDrag(m_source->id(), toCardData(m_cards));
-            m_source->put(m_cards);
-            m_cards.clear();
-        }
-        end();
+        cancel();
+        deleteLater();
     }
-    disconnect(Engine::instance(), &Engine::couldDrop, this, &Drag::handleCouldDrop);
 }
 
-void Drag::handleDropped(bool could)
+void Drag::handleDropped(quint32 id, bool could)
 {
-    if (!could && !m_cards.isEmpty()) {
-        emit doCancelDrag(m_source->id(), toCardData(m_cards));
-        m_source->put(m_cards);
-        m_cards.clear();
-    }
-    end();
-    disconnect(Engine::instance(), &Engine::dropped, this, &Drag::handleDropped);
-}
+    if (id != m_id)
+        return;
 
-void Drag::end()
-{
-    if (!m_cards.isEmpty()) {
-        for (Card *card : m_cards) {
-            card->setVisible(false);
-            card->deleteLater();
-        }
-        m_cards.clear();
-    }
-
+    if (!could) {
+        cancel();
+    } // else all changes should be done already
     deleteLater();
 }

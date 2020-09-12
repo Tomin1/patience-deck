@@ -128,7 +128,7 @@ void Slot::removeCard(int index)
     // TODO: Store to card cache and take it from there to new slot
 }
 
-CardList Slot::asCardData(Card *first)
+CardList Slot::asCardData(Card *first) const
 {
     CardList list;
     for (auto it = constFind(first); it != constEnd(); it++)
@@ -155,6 +155,11 @@ void Slot::put(const QList<Card *> &cards)
         card->setParentItem(this);
     }
     updateLocations();
+}
+
+bool Slot::contains(Card *card) const
+{
+    return m_cards.contains(card);
 }
 
 bool Slot::expanded() const

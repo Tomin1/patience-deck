@@ -40,9 +40,10 @@ public:
     void insertCard(int index, const CardData &card);
     void removeCard(int index);
 
-    CardList asCardData(Card *first);
+    CardList asCardData(Card *first) const;
     QList<Card *> take(Card *first);
     void put(const QList<Card *> &cards);
+    bool contains(Card *card) const;
 
     bool expanded() const;
     bool expandedRight() const;
