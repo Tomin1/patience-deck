@@ -204,8 +204,10 @@ SCM Interface::getFeatureWord()
 SCM Interface::setStatusbarMessage(SCM newMessage)
 {
     auto *engine = EnginePrivate::instance();
-    if (!scm_is_string(newMessage))
+    if (!scm_is_string(newMessage)) {
+        qCWarning(lcScheme) << "Game wants to set message which is not a string";
         return SCM_EOL;
+    }
 
     scm_dynwind_begin((scm_t_dynwind_flags)0);
 

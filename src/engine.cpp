@@ -316,6 +316,7 @@ void EnginePrivate::setScore(int score)
 
 void EnginePrivate::setMessage(QString message)
 {
+    qCDebug(lcEngine) << "Message changed to" << message;
     emit engine()->messageChanged(message);
 }
 

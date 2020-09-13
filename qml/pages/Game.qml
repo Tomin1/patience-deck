@@ -24,12 +24,34 @@ Page {
             id: column
 
             width: page.width
+
             PageHeader {
                 id: header
                 title: Aisleriot.gameName
+
+                Row {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                    IconButton {
+                        icon.source: "image://theme/icon-m-back"
+                        enabled: Aisleriot.canUndo
+                        onClicked: Aisleriot.undoMove()
+                    }
+
+                    IconButton {
+                        icon.source: "image://theme/icon-m-forward"
+                        enabled: Aisleriot.canRedo
+                        onClicked: Aisleriot.redoMove()
+                    }
+                }
             }
+
             Board {
-                height: page.height - header.height
+                height: page.height - header.height - message.height
                 width: parent.width
                 minimumSideMargin: Theme.horizontalPageMargin
                 horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
@@ -37,6 +59,15 @@ Page {
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
                 Component.onCompleted: Aisleriot.loadGame("klondike.scm")
+            }
+
+            Label {
+                id: message
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                }
+                text: Aisleriot.message
             }
         }
     }
