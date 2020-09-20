@@ -7,7 +7,7 @@
 #include "enginedata.h"
 
 class QMouseEvent;
-class Board;
+class Table;
 class Card;
 class Slot;
 class Drag : public QObject
@@ -15,7 +15,7 @@ class Drag : public QObject
     Q_OBJECT
 
 public:
-    Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card);
+    Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card);
     ~Drag();
 
     Card *card() const;
@@ -47,7 +47,7 @@ private:
     QPointF m_lastPoint;
     bool m_mayBeAClick;
     bool m_completed;
-    Board *m_board;
+    Table *m_table;
     Card *m_card;
     Slot *m_source;
     Slot *m_target;

@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Aisleriot 1.0
+import Patience 1.0
 
 Page {
     id: page
@@ -27,7 +27,7 @@ Page {
 
             PageHeader {
                 id: header
-                title: Aisleriot.gameName
+                title: Patience.gameName
 
                 Row {
                     anchors {
@@ -38,19 +38,19 @@ Page {
 
                     IconButton {
                         icon.source: "image://theme/icon-m-back"
-                        enabled: Aisleriot.canUndo
-                        onClicked: Aisleriot.undoMove()
+                        enabled: Patience.canUndo
+                        onClicked: Patience.undoMove()
                     }
 
                     IconButton {
                         icon.source: "image://theme/icon-m-forward"
-                        enabled: Aisleriot.canRedo
-                        onClicked: Aisleriot.redoMove()
+                        enabled: Patience.canRedo
+                        onClicked: Patience.redoMove()
                     }
                 }
             }
 
-            Board {
+            Table {
                 height: page.height - header.height - message.height
                 width: parent.width
                 minimumSideMargin: Theme.horizontalPageMargin
@@ -58,7 +58,7 @@ Page {
                 maximumHorizontalMargin: Theme.paddingLarge
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
-                Component.onCompleted: Aisleriot.loadGame("klondike.scm")
+                Component.onCompleted: Patience.loadGame("klondike.scm")
             }
 
             Label {
@@ -67,16 +67,16 @@ Page {
                     left: parent.left
                     right: parent.right
                 }
-                text: Aisleriot.message
+                text: Patience.message
             }
         }
     }
 
     Connections {
-        target: Aisleriot
+        target: Patience
         onStateChanged: {
-            if (Aisleriot.state === Aisleriot.LoadedState) {
-                Aisleriot.startNewGame()
+            if (Patience.state === Patience.LoadedState) {
+                Patience.startNewGame()
             }
         }
     }

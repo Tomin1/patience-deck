@@ -1,5 +1,5 @@
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef TABLE_H
+#define TABLE_H
 
 #include <QMap>
 #include <QPointF>
@@ -11,7 +11,7 @@
 #include "slot.h"
 
 class QPainter;
-class Board : public QQuickPaintedItem
+class Table : public QQuickPaintedItem
 {
     Q_OBJECT
     Q_PROPERTY(qreal minimumSideMargin READ minimumSideMargin
@@ -26,7 +26,7 @@ class Board : public QQuickPaintedItem
                WRITE setMaximumVerticalMargin NOTIFY maximumVerticalMarginChanged);
 
 public:
-    explicit Board(QQuickItem *parent = nullptr);
+    explicit Table(QQuickItem *parent = nullptr);
 
     void paint(QPainter *painter);
 
@@ -44,7 +44,7 @@ public:
     qreal sideMargin() const;
     QSizeF margin() const;
     QSizeF maximumMargin() const;
-    QSizeF boardSize() const;
+    QSizeF tableSize() const;
     QSizeF cardSize() const;
     QSizeF cardSpace() const;
     QSizeF cardMargin() const;
@@ -81,7 +81,7 @@ private:
     qreal m_sideMargin;
     QSizeF m_margin;
     QSizeF m_maximumMargin;
-    QSizeF m_boardSize;
+    QSizeF m_tableSize;
     QSizeF m_cardSize;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
@@ -89,4 +89,4 @@ private:
     bool m_preparing;
 };
 
-#endif // BOARD_H
+#endif // TABLE_H

@@ -1,5 +1,5 @@
-#ifndef AISLERIOT_H
-#define AISLERIOT_H
+#ifndef PATIENCE_H
+#define PATIENCE_H
 
 #include <QObject>
 #include <QThread>
@@ -8,7 +8,7 @@
 class QQmlEngine;
 class QJSEngine;
 class QThread;
-class Aisleriot : public QObject
+class Patience : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)
@@ -20,9 +20,9 @@ class Aisleriot : public QObject
     Q_PROPERTY(QString message READ message NOTIFY messageChanged);
 
 public:
-    static Aisleriot* instance();
+    static Patience* instance();
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
-    ~Aisleriot();
+    ~Patience();
 
     enum GameState {
         UninitializedState,
@@ -76,7 +76,7 @@ private slots:
     void handleMessageChanged(const QString &message);
 
 private:
-    explicit Aisleriot(QObject *parent = nullptr);
+    explicit Patience(QObject *parent = nullptr);
     void setState(GameState state);
 
     QThread m_engineThread;
@@ -88,7 +88,7 @@ private:
     QString m_gameFile;
     QString m_message;
 
-    static Aisleriot *s_game;
+    static Patience *s_game;
 };
 
-#endif // AISLERIOT_H
+#endif // PATIENCE_H

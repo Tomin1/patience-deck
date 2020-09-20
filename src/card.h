@@ -7,14 +7,14 @@
 #include "drag.h"
 
 class QPainter;
-class Board;
+class Table;
 class Slot;
 class Card : public QQuickPaintedItem
 {
     Q_OBJECT
 
 public:
-    Card(const CardData &card, Board *board, Slot *slot);
+    Card(const CardData &card, Table *table, Slot *slot);
 
     void paint(QPainter *painter);
 
@@ -34,7 +34,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
-    Board *m_board;
+    Table *m_table;
     Slot *m_slot;
     CardData m_data;
     Drag *m_drag;

@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Aisleriot 1.0
+import Patience 1.0
 
 Page {
     id: page
@@ -24,7 +24,7 @@ Page {
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
             onClicked: {
-                Aisleriot.loadGame(filename)
+                Patience.loadGame(filename)
                 pageStack.pop()
             }
         }

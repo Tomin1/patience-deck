@@ -8,7 +8,7 @@
 #include "enginedata.h"
 #include "engine.h"
 
-class Board;
+class Table;
 class QPainter;
 class Slot : public QQuickPaintedItem
 {
@@ -26,7 +26,7 @@ public:
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
     Slot(int id, const CardList &cards, SlotType type, double x, double y,
-         int expansionDepth, bool expandedDown, bool expandedRight, Board *board);
+         int expansionDepth, bool expandedDown, bool expandedRight, Table *table);
 
     void paint(QPainter *painter);
     void updateDimensions();
@@ -71,7 +71,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
-    Board *m_board;
+    Table *m_table;
     int m_id;
     SlotType m_type;
     QList<Card *> m_cards;

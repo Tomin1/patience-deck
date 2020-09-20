@@ -1,5 +1,5 @@
 #include <QPainter>
-#include "board.h"
+#include "table.h"
 #include "card.h"
 #include "slot.h"
 #include "constants.h"
@@ -16,9 +16,9 @@ const QMarginsF SlotMargins(3, 3, 3, 3);
 }; // namespace
 
 Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight, Board *board)
-    : QQuickPaintedItem(board)
-    , m_board(board)
+           int expansionDepth, bool expandedDown, bool expandedRight, Table *table)
+    : QQuickPaintedItem(table)
+    , m_table(table)
     , m_id(id)
     , m_type(type)
     , m_exposed(false)
@@ -32,7 +32,7 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     for (const CardData &card : cards)
-        m_cards.append(new Card(card, board, this));
+        m_cards.append(new Card(card, table, this));
     m_pen.setWidth(SlotOutlineWidth);
     auto engine = Engine::instance();
     connect(this, &Slot::doClick, engine, &Engine::click);
@@ -47,13 +47,13 @@ void Slot::paint(QPainter *painter)
 
 void Slot::updateDimensions()
 {
-    QSizeF margin = m_board->margin();
-    QSizeF cardSpace = m_board->cardSpace();
-    QSizeF cardMargin = m_board->cardMargin();
-    setX(m_board->sideMargin() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
+    QSizeF margin = m_table->margin();
+    QSizeF cardSpace = m_table->cardSpace();
+    QSizeF cardMargin = m_table->cardMargin();
+    setX(m_table->sideMargin() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
     setY(margin.height() + (cardSpace.height() + margin.height()) * m_position.y() + cardMargin.height());
 
-    QSizeF cardSize = m_board->cardSize();
+    QSizeF cardSize = m_table->cardSize();
     setWidth(cardSize.width());
     setHeight(cardSize.height());
     for (Card *card : m_cards)
@@ -105,20 +105,20 @@ bool Slot::empty() const
 
 void Slot::appendCard(const CardData &card)
 {
-    Card *newCard = new Card(card, m_board, this);
+    Card *newCard = new Card(card, m_table, this);
     m_cards.append(newCard);
-    if (!m_board->preparing()) {
-        newCard->setSize(m_board->cardSize());
+    if (!m_table->preparing()) {
+        newCard->setSize(m_table->cardSize());
         updateLocations(newCard);
     }
 }
 
 void Slot::insertCard(int index, const CardData &card)
 {
-    Card *newCard = new Card(card, m_board, this);
+    Card *newCard = new Card(card, m_table, this);
     m_cards.insert(index, newCard);
-    if (!m_board->preparing()) {
-        newCard->setSize(m_board->cardSize());
+    if (!m_table->preparing()) {
+        newCard->setSize(m_table->cardSize());
         updateLocations();
     }
 }
@@ -136,7 +136,7 @@ CardList Slot::asCardData(Card *first) const
     for (auto it = constFind(first); it != constEnd(); it++)
         list << (*it)->data();
     if (list.isEmpty()) {
-        qCCritical(lcAisleriot) << "Returning an empty list of CardData";
+        qCCritical(lcPatience) << "Returning an empty list of CardData";
         abort();
     }
     return list;
@@ -187,9 +187,9 @@ qreal Slot::delta(int index)
     if (!(m_expansion & DeltaCalculated)) {
         qreal expansion;
         if (expandedRight())
-            expansion = (m_board->boardSize().width() - position().x()) / expansionDepth();
+            expansion = (m_table->tableSize().width() - position().x()) / expansionDepth();
         else // expandedDown()
-            expansion = (m_board->boardSize().height() - position().y()) / expansionDepth();
+            expansion = (m_table->tableSize().height() - position().y()) / expansionDepth();
 
         qreal maximumExpansion = m_expansion & DeltaSet ? m_expansionDelta : CardStep;
         if (expansion < MinCardStep)
@@ -197,7 +197,7 @@ qreal Slot::delta(int index)
         else if (expansion > maximumExpansion)
             expansion = maximumExpansion;
 
-        QSizeF cardSize = m_board->cardSize();
+        QSizeF cardSize = m_table->cardSize();
         m_calculatedDelta = (expandedRight() ? cardSize.width() : cardSize.height()) * expansion;
         m_expansion |= DeltaCalculated;
     }
@@ -283,7 +283,7 @@ void Slot::mouseReleaseEvent(QMouseEvent *event)
 
     if (!m_timer.hasExpired(Constants::ClickTimeout)
             && (m_startPoint - event->pos()).manhattanLength() < Constants::DragDistance) {
-        qCDebug(lcAisleriot) << "Detected click on" << this;
+        qCDebug(lcPatience) << "Detected click on" << this;
         emit doClick(-1, id());
     }
 }

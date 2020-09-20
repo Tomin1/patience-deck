@@ -1,5 +1,5 @@
 #include <QPainter>
-#include "board.h"
+#include "table.h"
 #include "card.h"
 #include "logging.h"
 #include "slot.h"
@@ -36,9 +36,9 @@ const QString &getSuitTemplate(Suit suit)
 
 }; // Id
 
-Card::Card(const CardData &card, Board *board, Slot *slot)
+Card::Card(const CardData &card, Table *table, Slot *slot)
     : QQuickPaintedItem(slot)
-    , m_board(board)
+    , m_table(table)
     , m_slot(slot)
     , m_data(card)
     , m_drag(nullptr)
@@ -49,7 +49,7 @@ Card::Card(const CardData &card, Board *board, Slot *slot)
 
 void Card::paint(QPainter *painter)
 {
-    m_board->cardRenderer()->render(painter, elementName());
+    m_table->cardRenderer()->render(painter, elementName());
 }
 
 Suit Card::suit() const
@@ -120,7 +120,7 @@ void Card::mousePressEvent(QMouseEvent *event)
 
     setKeepMouseGrab(true);
 
-    m_drag = new Drag(event, m_board, m_slot, this);
+    m_drag = new Drag(event, m_table, m_slot, this);
     Drag *drag = m_drag;
     connect(m_drag, &Drag::destroyed, this, [this, drag] {
         if (m_drag == drag)
@@ -133,7 +133,7 @@ void Card::mouseReleaseEvent(QMouseEvent *event)
     qCDebug(lcMouse) << event << "for" << *this;
 
     if (!m_drag) {
-        qCCritical(lcAisleriot) << "Can not handle mouse release! There is no drag ongoing!";
+        qCCritical(lcPatience) << "Can not handle mouse release! There is no drag ongoing!";
         return;
     }
 
@@ -147,7 +147,7 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     qCDebug(lcMouse) << event << "for" << *this;
 
     if (!m_drag) {
-        qCCritical(lcAisleriot) << "Can not handle mouse move! There is no drag ongoing!";
+        qCCritical(lcPatience) << "Can not handle mouse move! There is no drag ongoing!";
         return;
     }
 

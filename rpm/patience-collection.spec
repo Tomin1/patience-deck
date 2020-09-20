@@ -1,5 +1,5 @@
-Name:       mobile-aisleriot
-Summary:    Mobile reimplementation of GNOME Aisleriot
+Name:       patience-collection
+Summary:    Collection of patience games
 Version:    0.1
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
@@ -15,7 +15,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  guile22-devel
 
 %description
-%{summary} for Sailfish.
+%{summary} for Sailfish. Based on GNOME Aisleriot.
 
 %prep
 %setup -q -n %{name}-%{version}

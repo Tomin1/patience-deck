@@ -7,8 +7,8 @@
 #include <QScopedPointer>
 #include <QtQml>
 #include <sailfishapp.h>
-#include "aisleriot.h"
-#include "board.h"
+#include "patience.h"
+#include "table.h"
 #include "gamelist.h"
 
 int main(int argc, char *argv[])
@@ -16,9 +16,9 @@ int main(int argc, char *argv[])
     qputenv("GUILE_AUTO_COMPILE", "0");
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
-    qmlRegisterSingletonType<Aisleriot>("Aisleriot", 1, 0, "Aisleriot", &Aisleriot::instance);
-    qmlRegisterType<Board>("Aisleriot", 1, 0, "Board");
-    qmlRegisterType<GameList>("Aisleriot", 1, 0, "GameList");
+    qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
+    qmlRegisterType<Table>("Patience", 1, 0, "Table");
+    qmlRegisterType<GameList>("Patience", 1, 0, "GameList");
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
     return app->exec();

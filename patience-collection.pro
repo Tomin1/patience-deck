@@ -10,7 +10,7 @@
 #   - translation filenames have to be changed
 
 # The name of your application
-TARGET = mobile-aisleriot
+TARGET = patience-collection
 
 QT += svg
 CONFIG += link_pkgconfig
@@ -18,36 +18,38 @@ PKGCONFIG += guile-2.2
 
 CONFIG += sailfishapp
 
-SOURCES += src/mobile-aisleriot.cpp \
+DEFINES += DATADIR=/usr/share/$$TARGET
+
+SOURCES += src/patience-collection.cpp \
     src/gamelist.cpp \
     src/engine.cpp \
     src/interface.cpp \
-    src/aisleriot.cpp \
-    src/board.cpp \
+    src/patience.cpp \
+    src/table.cpp \
     src/drag.cpp \
     src/card.cpp \
     src/slot.cpp \
     src/logging.cpp
 
-HEADERS += src/aisleriot.h \
+HEADERS += src/patience.h \
     src/constants.h \
     src/gamelist.h \
     src/engine.h \
     src/engine_p.h \
     src/interface.h \
-    src/board.h \
+    src/table.h \
     src/drag.h \
     src/card.h \
     src/slot.h \
     src/logging.h
 
-DISTFILES += qml/mobile-aisleriot.qml \
+DISTFILES += qml/patience-collection.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \
-    rpm/mobile-aisleriot.spec \
+    rpm/patience-collection.spec \
     translations/*.ts \
-    mobile-aisleriot.desktop
+    patience-collection.desktop
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
@@ -67,4 +69,4 @@ data.path = /usr/share/$$TARGET/data/
 INSTALLS += games api data
 
 #CONFIG += sailfishapp_i18n
-#TRANSLATIONS += translations/mobile-aisleriot-de.ts
+#TRANSLATIONS += translations/patience-collection-de.ts

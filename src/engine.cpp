@@ -5,7 +5,7 @@
 #include "interface.h"
 #include "logging.h"
 
-const QString Constants::GameDirectory = QStringLiteral("/usr/share/mobile-aisleriot/games");
+const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 
 bool CardData::operator==(const CardData &other) const
 {
@@ -70,13 +70,13 @@ Engine::Engine(QObject *parent)
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
-    qCDebug(lcEngine) << "Aisleriot Engine created";
+    qCDebug(lcEngine) << "Patience Engine created";
 }
 
 void Engine::init()
 {
     scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
-    qCInfo(lcEngine) << "Initialized Aisleriot Engine";
+    qCInfo(lcEngine) << "Initialized Patience Engine";
 }
 
 Engine::~Engine()

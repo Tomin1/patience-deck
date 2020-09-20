@@ -5,5 +5,5 @@ moc_*.cpp
 translations/
 *.list
 RPMS/
-mobile-aisleriot
+patience-collection
 installroot/

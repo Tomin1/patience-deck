@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include "drag.h"
-#include "board.h"
+#include "table.h"
 #include "card.h"
 #include "slot.h"
 #include "constants.h"
@@ -27,7 +27,7 @@ CardList toCardData(const QList<Card *> &cards)
     for (const Card *card : cards)
         list << card->data();
     if (list.isEmpty()) {
-        qCCritical(lcAisleriot) << "Returning an empty list of CardData";
+        qCCritical(lcPatience) << "Returning an empty list of CardData";
         abort();
     }
     return list;
@@ -41,12 +41,12 @@ const qreal Constants::DragDistance = 5;
 
 quint32 Drag::s_count = 0;
 
-Drag::Drag(QMouseEvent *event, Board *board, Slot *slot, Card *card)
+Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     : QObject(card)
     , m_id(s_count++)
     , m_mayBeAClick(true)
     , m_completed(false)
-    , m_board(board)
+    , m_table(table)
     , m_card(card)
     , m_source(slot)
     , m_target(nullptr)
@@ -111,7 +111,7 @@ void Drag::update(QMouseEvent *event)
 void Drag::finish(QMouseEvent *event)
 {
     if (testClick(event)) {
-        qCDebug(lcAisleriot) << "Detected click on" << m_card;
+        qCDebug(lcPatience) << "Detected click on" << m_card;
         emit doClick(m_id, m_source->id());
         cancel();
         deleteLater();
@@ -121,10 +121,10 @@ void Drag::finish(QMouseEvent *event)
     if (m_cards.isEmpty())
         return;
 
-    m_target = m_board->getSlotAt(m_board->mapFromScene(event->screenPos()), m_source);
+    m_target = m_table->getSlotAt(m_table->mapFromScene(event->screenPos()), m_source);
 
     if (m_target) {
-        qCDebug(lcAisleriot) << "Moving from" << m_source->id() << "to" << m_target->id();
+        qCDebug(lcPatience) << "Moving from" << m_source->id() << "to" << m_target->id();
         emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
         cancel();
@@ -151,8 +151,8 @@ void Drag::handleCouldDrag(quint32 id, bool could)
     if (could) {
         m_cards = m_source->take(m_card);
         for (Card *card : m_cards) {
-            card->setParentItem(m_board);
-            QPointF position = m_board->mapFromItem(m_source, QPointF(card->x(), card->y()));
+            card->setParentItem(m_table);
+            QPointF position = m_table->mapFromItem(m_source, QPointF(card->x(), card->y()));
             card->setX(position.x());
             card->setY(position.y());
         }

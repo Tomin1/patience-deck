@@ -4,7 +4,7 @@
 
 namespace Interface {
 
-// Functions that are part of Aisleriot's Guile interface
+// Functions that are part of GNOME Aisleriot's Guile interface
 SCM setFeatureWord(SCM features);
 SCM getFeatureWord(void);
 SCM setStatusbarMessage(SCM message);
