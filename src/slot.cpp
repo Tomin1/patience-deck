@@ -131,6 +131,16 @@ void Slot::removeCard(int index)
     // TODO: Store to card cache and take it from there to new slot
 }
 
+void Slot::clear()
+{
+    for (Card *card : m_cards) {
+        card->setParentItem(nullptr);
+        card->deleteLater();
+    }
+    m_cards.clear();
+    // TODO: Store to card cache and take from there to new slot
+}
+
 CardList Slot::asCardData(Card *first) const
 {
     CardList list;

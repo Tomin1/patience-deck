@@ -378,6 +378,13 @@ const CardList &EnginePrivate::getSlot(int slot)
 
 void EnginePrivate::setCards(int id, const CardList &cards)
 {
+    if (cards.isEmpty()) {
+        qCDebug(lcEngine) << "Clearing slot" << id;
+        emit engine()->clearSlot(id);
+        m_cardSlots[id].clear();
+        return;
+    }
+
     auto it = cards.constBegin();
     int i = 0;
     for (; it != cards.end() && i < m_cardSlots[id].count(); it++, i++) {

@@ -39,6 +39,7 @@ public:
     void appendCard(const CardData &card);
     void insertCard(int index, const CardData &card);
     void removeCard(int index);
+    void clear();
 
     CardList asCardData(Card *first) const;
     QList<Card *> take(Card *first);

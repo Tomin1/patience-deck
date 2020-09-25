@@ -47,6 +47,7 @@ signals:
     void insertCard(int slotId, int index, const CardData &card);
     void appendCard(int slotId, const CardData &card);
     void removeCard(int slotId, int index);
+    void clearSlot(int slotId);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);

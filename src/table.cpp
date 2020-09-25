@@ -37,6 +37,7 @@ Table::Table(QQuickItem *parent)
     connect(engine, &Engine::insertCard, this, &Table::handleInsertCard);
     connect(engine, &Engine::appendCard, this, &Table::handleAppendCard);
     connect(engine, &Engine::removeCard, this, &Table::handleRemoveCard);
+    connect(engine, &Engine::clearSlot, this, &Table::handleClearSlot);
     connect(engine, &Engine::clearData, this, &Table::handleClearData);
     connect(engine, &Engine::gameStarted, this, &Table::handleGameStarted);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
@@ -239,6 +240,12 @@ void Table::handleAppendCard(int slotId, const CardData &card)
 void Table::handleRemoveCard(int slotId, int index)
 {
     m_slots[slotId]->removeCard(index);
+    update();
+}
+
+void Table::handleClearSlot(int slotId)
+{
+    m_slots[slotId]->clear();
     update();
 }
 

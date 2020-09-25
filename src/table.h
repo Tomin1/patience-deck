@@ -69,6 +69,7 @@ private slots:
     void handleInsertCard(int slotId, int index, const CardData &card);
     void handleAppendCard(int slotId, const CardData &card);
     void handleRemoveCard(int slotId, int index);
+    void handleClearSlot(int slotId);
     void handleClearData();
     void handleGameStarted();
     void handleWidthChanged(double width);

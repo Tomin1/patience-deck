@@ -72,7 +72,7 @@ Drag::~Drag()
     if (!m_cards.isEmpty()) {
         if (m_completed) {
             for (Card *card : m_cards) {
-                card->setVisible(false);
+                card->setParentItem(nullptr);
                 card->deleteLater();
             }
         } else {
