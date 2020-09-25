@@ -214,10 +214,6 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
 void Engine::click(quint32 id, int slotId)
 {
-    // Click implies that there is drag already started,
-    // this is a deviation from the original engine,
-    // which uses threshold until it starts a drag
-    d_ptr->discardMove();
     d_ptr->recordMove(-1);
 
     SCM args[1];

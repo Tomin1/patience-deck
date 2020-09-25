@@ -112,8 +112,8 @@ void Drag::finish(QMouseEvent *event)
 {
     if (testClick(event)) {
         qCDebug(lcPatience) << "Detected click on" << m_card;
-        emit doClick(m_id, m_source->id());
         cancel();
+        emit doClick(m_id, m_source->id());
         deleteLater();
         return;
     }
