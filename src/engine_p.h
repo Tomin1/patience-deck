@@ -57,7 +57,9 @@ public:
     static EnginePrivate *instance();
 
     void updateDealable();
+    void recordMove(int slotId);
     void endMove();
+    void discardMove();
     bool isGameOver();
     bool isWinningGame();
     bool isInitialized();

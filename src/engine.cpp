@@ -145,6 +145,8 @@ void Engine::redoMove()
 
 void Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
+    d_ptr->recordMove(slotId);
+
     SCM args[2];
     args[0] = scm_from_int(slotId);
     args[1] = Scheme::slotToSCM(cards);
@@ -167,6 +169,7 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 {
     Q_UNUSED(id) // There is no signal to send back
     d_ptr->m_cardSlots[slotId].append(cards);
+    d_ptr->discardMove();
 }
 
 void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
@@ -201,11 +204,22 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
+    if (scm_is_true(rv))
+        d_ptr->testGameOver();
+    else
+        d_ptr->discardMove();
+
     emit dropped(id, scm_is_true(rv));
 }
 
 void Engine::click(quint32 id, int slotId)
 {
+    // Click implies that there is drag already started,
+    // this is a deviation from the original engine,
+    // which uses threshold until it starts a drag
+    d_ptr->discardMove();
+    d_ptr->recordMove(-1);
+
     SCM args[1];
     args[0] = scm_from_int(slotId);
 
@@ -213,6 +227,11 @@ void Engine::click(quint32 id, int slotId)
     d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv);
 
     scm_remember_upto_here_1(args[0]);
+
+    if (scm_is_true(rv))
+        d_ptr->testGameOver();
+    else
+        d_ptr->discardMove();
 
     emit clicked(id, scm_is_true(rv));
 }
@@ -238,9 +257,26 @@ void EnginePrivate::updateDealable()
     }
 }
 
+void EnginePrivate::recordMove(int slotId)
+{
+    SCM args[2];
+    args[0] = scm_from_int(slotId);
+    args[1] = Scheme::slotToSCM(m_cardSlots[slotId]);
+
+    if (!makeSCMCall(QStringLiteral("record-move"), args, 2, nullptr))
+        return;
+
+    scm_remember_upto_here_2(args[0], args[1]);
+}
+
 void EnginePrivate::endMove()
 {
     makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr);
+}
+
+void EnginePrivate::discardMove()
+{
+    makeSCMCall(QStringLiteral("discard-move"), nullptr, 0, nullptr);
 }
 
 bool EnginePrivate::isGameOver()
