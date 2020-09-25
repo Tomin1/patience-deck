@@ -19,8 +19,7 @@ public:
         DoesNotExpand = 0x00,
         ExpandsInX = 0x01,
         ExpandsInY = 0x02,
-        DeltaSet = 0x04,
-        DeltaCalculated = 0x08
+        DeltaSet = 0x04
     };
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
@@ -68,6 +67,7 @@ signals:
     void doClick(quint32 id, int slotId);
 
 private:
+    bool reevaluateDelta();
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 

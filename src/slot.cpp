@@ -59,13 +59,14 @@ void Slot::updateDimensions()
     for (Card *card : m_cards)
         card->setSize(cardSize);
 
-    m_expansion &= ~DeltaCalculated;
-
     updateLocations();
 }
 
 void Slot::updateLocations(Card *first)
 {
+    if (reevaluateDelta())
+        first = nullptr;
+
     int index = (first) ? m_cards.indexOf(first) : 0;
     for (auto it = find(first); it != end(); it++) {
         Card *card = *it;
@@ -184,31 +185,12 @@ qreal Slot::delta(int index)
     if (index == 0 || !expanded() || index < firstExpandedIndex())
         return 0.0;
 
-    if (!(m_expansion & DeltaCalculated)) {
-        qreal expansion;
-        if (expandedRight())
-            expansion = (m_table->tableSize().width() - position().x()) / expansionDepth();
-        else // expandedDown()
-            expansion = (m_table->tableSize().height() - position().y()) / expansionDepth();
-
-        qreal maximumExpansion = m_expansion & DeltaSet ? m_expansionDelta : CardStep;
-        if (expansion < MinCardStep)
-            expansion = MinCardStep;
-        else if (expansion > maximumExpansion)
-            expansion = maximumExpansion;
-
-        QSizeF cardSize = m_table->cardSize();
-        m_calculatedDelta = (expandedRight() ? cardSize.width() : cardSize.height()) * expansion;
-        m_expansion |= DeltaCalculated;
-    }
-
     return m_calculatedDelta*(index - firstExpandedIndex());
 }
 
 void Slot::setDelta(double delta)
 {
     m_expansion |= DeltaSet;
-    m_expansion &= ~DeltaCalculated;
     m_expansionDelta = delta;
 }
 
@@ -286,6 +268,28 @@ void Slot::mouseReleaseEvent(QMouseEvent *event)
         qCDebug(lcPatience) << "Detected click on" << this;
         emit doClick(-1, id());
     }
+}
+
+bool Slot::reevaluateDelta()
+{
+    qreal oldDelta = m_calculatedDelta;
+
+    qreal expansion;
+    if (expandedRight())
+        expansion = (m_table->tableSize().width() - position().x()) / expansionDepth();
+    else // expandedDown()
+        expansion = (m_table->tableSize().height() - position().y()) / expansionDepth();
+
+    qreal maximumExpansion = m_expansion & DeltaSet ? m_expansionDelta : CardStep;
+    if (expansion < MinCardStep)
+        expansion = MinCardStep;
+    else if (expansion > maximumExpansion)
+        expansion = maximumExpansion;
+
+    QSizeF cardSize = m_table->cardSize();
+    m_calculatedDelta = (expandedRight() ? cardSize.width() : cardSize.height()) * expansion;
+
+    return oldDelta != m_calculatedDelta;
 }
 
 QDebug operator<<(QDebug debug, const Slot &slot)
