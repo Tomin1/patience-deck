@@ -28,6 +28,7 @@ Page {
                 pageStack.pop()
             }
         }
+
         VerticalScrollDecorator {}
     }
 }

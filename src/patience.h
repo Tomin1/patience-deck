@@ -18,6 +18,7 @@ class Patience : public QObject
     Q_PROPERTY(int state READ state NOTIFY stateChanged);
     Q_PROPERTY(QString gameName READ gameName NOTIFY gameNameChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged);
+    Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT);
 
 public:
     static Patience* instance();
@@ -48,6 +49,7 @@ public:
     int score() const;
     GameState state() const;
     QString message() const;
+    QString aisleriotAuthors() const;
 
 signals:
     void canUndoChanged();

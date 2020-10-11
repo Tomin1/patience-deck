@@ -135,6 +135,25 @@ QString Patience::message() const
     return m_message;
 }
 
+QString Patience::aisleriotAuthors() const
+{
+    QFile file(Constants::DataDirectory + QStringLiteral("/AUTHORS"));
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qCWarning(lcPatience) << "Can not open" << file.fileName() << "for reading";
+        return QString();
+    }
+
+    QTextStream in(&file);
+    QString authors;
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        authors += line.left(line.lastIndexOf(QStringLiteral(" <")));
+        authors += '\n';
+    }
+    return authors;
+}
+
 void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
     abort();
