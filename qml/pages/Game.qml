@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Patience 1.0
 
@@ -40,17 +40,46 @@ Page {
                         leftMargin: Theme.horizontalPageMargin
                         verticalCenter: parent.verticalCenter
                     }
+                    spacing: Theme.paddingSmall
 
                     IconButton {
-                        icon.source: "image://theme/icon-m-back"
+                        icon.source: "../images/icon-m-undo.svg"
+                        icon.height: Theme.itemSizeSmall
+                        icon.width: Theme.itemSizeSmall
                         enabled: Patience.canUndo
                         onClicked: Patience.undoMove()
                     }
 
                     IconButton {
-                        icon.source: "image://theme/icon-m-forward"
+                        icon.source: "../images/icon-m-redo.svg"
+                        icon.height: Theme.itemSizeSmall
+                        icon.width: Theme.itemSizeSmall
                         enabled: Patience.canRedo
                         onClicked: Patience.redoMove()
+                    }
+
+                    IconButton {
+                        icon.source: "../images/icon-m-deal.svg"
+                        icon.height: Theme.itemSizeSmall
+                        icon.width: Theme.itemSizeSmall
+                        enabled: Patience.canDeal
+                        onClicked: Patience.dealCard()
+                        visible: false // TODO
+                    }
+
+                    IconButton {
+                        icon.source: "../images/icon-m-hint.svg"
+                        icon.height: Theme.itemSizeSmall
+                        icon.width: Theme.itemSizeSmall
+                        onClicked: Patience.hint()
+                        visible: false // TODO
+                    }
+
+                    IconButton {
+                        icon.source: "../images/icon-m-restart.svg"
+                        icon.height: Theme.itemSizeSmall
+                        icon.width: Theme.itemSizeSmall
+                        onClicked: Patience.restartGame()
                     }
                 }
             }

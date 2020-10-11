@@ -45,8 +45,10 @@ HEADERS += src/patience.h \
 
 DISTFILES += qml/patience-deck.qml \
     qml/cover/CoverPage.qml \
-    qml/pages/FirstPage.qml \
-    qml/pages/SecondPage.qml \
+    qml/pages/Game.qml \
+    qml/pages/SelectGame.qml \
+    qml/pages/AboutPage.qml \
+    qml/images/*.svg \
     rpm/patience-deck.spec \
     translations/*.ts \
     patience-deck.desktop
