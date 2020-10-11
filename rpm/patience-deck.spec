@@ -1,4 +1,4 @@
-Name:       patience-collection
+Name:       patience-deck
 Summary:    Collection of patience games
 Version:    0.1
 Release:    1

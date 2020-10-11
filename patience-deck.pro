@@ -10,7 +10,7 @@
 #   - translation filenames have to be changed
 
 # The name of your application
-TARGET = patience-collection
+TARGET = patience-deck
 
 QT += svg
 CONFIG += link_pkgconfig
@@ -20,7 +20,7 @@ CONFIG += sailfishapp
 
 DEFINES += DATADIR=/usr/share/$$TARGET
 
-SOURCES += src/patience-collection.cpp \
+SOURCES += src/patience-deck.cpp \
     src/gamelist.cpp \
     src/engine.cpp \
     src/interface.cpp \
@@ -43,13 +43,13 @@ HEADERS += src/patience.h \
     src/slot.h \
     src/logging.h
 
-DISTFILES += qml/patience-collection.qml \
+DISTFILES += qml/patience-deck.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \
-    rpm/patience-collection.spec \
+    rpm/patience-deck.spec \
     translations/*.ts \
-    patience-collection.desktop
+    patience-deck.desktop
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
@@ -63,10 +63,11 @@ games.path = /usr/share/$$TARGET/games/
 api.files = aisleriot/games/api.scm
 api.path = /usr/share/$$TARGET/games/aisleriot/
 
-data.files = aisleriot/cards/anglo.svg
+data.files = aisleriot/AUTHORS \
+    aisleriot/cards/anglo.svg
 data.path = /usr/share/$$TARGET/data/
 
 INSTALLS += games api data
 
 #CONFIG += sailfishapp_i18n
-#TRANSLATIONS += translations/patience-collection-de.ts
+#TRANSLATIONS += translations/patience-deck-de.ts

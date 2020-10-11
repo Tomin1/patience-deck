@@ -5,5 +5,5 @@ moc_*.cpp
 translations/
 *.list
 RPMS/
-patience-collection
+patience-deck
 installroot/
