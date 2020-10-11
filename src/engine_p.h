@@ -87,6 +87,8 @@ public:
     bool hasFeature(GameFeature feature);
     int getTimeout();
     void setTimeout(int timeout);
+    quint32 getRandomValue(quint32 first, quint32 last);
+    void resetGenerator(bool generateNewSeed);
     void die(const char *message);
 
     bool makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval);
@@ -94,8 +96,6 @@ public:
     bool makeSCMCall(QString name, SCM *args, size_t n, SCM *retval);
 
     // TODO: Make private
-    std::random_device m_rd;
-    std::mt19937 m_generator;
     QTimer *m_delayedCallTimer;
 
 private:
@@ -109,6 +109,8 @@ private:
     bool m_canUndo;
     bool m_canRedo;
     bool m_canDeal;
+    uint_fast32_t m_seed;
+    std::mt19937 m_generator;
 
     Engine *engine();
 };

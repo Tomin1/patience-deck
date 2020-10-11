@@ -17,7 +17,7 @@ void Interface::init_module(void* data)
     scm_c_define_gsubr("set-slot-x-expansion!", 2, 0, 0, (void *)&setSlotXExpansion);
     scm_c_define_gsubr("set-lambda", 8, 0, 1, (void *)&setLambda);
     scm_c_define_gsubr("set-lambda!", 2, 0, 0, (void *)&setLambdaX);
-    scm_c_define_gsubr("aisleriot-random", 1, 0, 0, (void *)&myrandom);
+    scm_c_define_gsubr("aisleriot-random", 1, 0, 0, (void *)&getRandomValue);
     scm_c_define_gsubr("click-to-move?", 0, 0, 0, (void *)&clickToMoveP);
     scm_c_define_gsubr("update-score", 1, 0, 0, (void *)&updateScore);
     scm_c_define_gsubr("get-timeout", 0, 0, 0, (void *)&getTimeout);
@@ -373,12 +373,10 @@ SCM Interface::setLambdaX(SCM symbol, SCM lambda)
                      scm_list_1(scm_from_utf8_string("Unknown lambda name in set-lambda!")));
 }
 
-SCM Interface::myrandom(SCM range)
+SCM Interface::getRandomValue(SCM range)
 {
-    // TODO: Needs to be reimplemented
     auto *engine = EnginePrivate::instance();
-    std::uniform_int_distribution<quint32> distribution(0, scm_to_int(range)-1);
-    return scm_from_uint32(distribution(engine->m_generator));
+    return scm_from_uint32(engine->getRandomValue(0, scm_to_int(range)-1));
 }
 
 SCM Interface::clickToMoveP(void)

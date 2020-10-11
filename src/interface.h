@@ -18,7 +18,7 @@ SCM setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLambda,
               SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
               SCM winningGameLambda, SCM hintLambda, SCM rest);
 SCM setLambdaX(SCM symbol, SCM lambda);
-SCM myrandom(SCM range);
+SCM getRandomValue(SCM range);
 SCM clickToMoveP(void);
 SCM updateScore(SCM newScore);
 SCM getTimeout(void);

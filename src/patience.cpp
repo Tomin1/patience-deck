@@ -66,7 +66,7 @@ void Patience::startNewGame()
 
 void Patience::restartGame()
 {
-    qCDebug(lcPatience) << "Retarting game";
+    qCDebug(lcPatience) << "Restarting game";
     emit doRestart();
 }
 

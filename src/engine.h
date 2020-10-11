@@ -61,6 +61,8 @@ signals:
 private:
     friend EnginePrivate;
 
+    void startEngine(bool newSeed);
+
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
     EnginePrivate *d_ptr;

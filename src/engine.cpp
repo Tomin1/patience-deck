@@ -27,7 +27,6 @@ CardData::operator QString() const
 
 EnginePrivate::EnginePrivate(QObject *parent)
     : QObject(parent)
-    , m_generator(m_rd())
     , m_delayedCallTimer(nullptr)
     , m_features(NoFeatures)
     , m_state(UninitializedState)
@@ -35,6 +34,7 @@ EnginePrivate::EnginePrivate(QObject *parent)
     , m_canUndo(false)
     , m_canRedo(false)
     , m_canDeal(false)
+    , m_seed(std::mt19937::default_seed)
 {
 }
 
@@ -101,13 +101,18 @@ void Engine::load(const QString &gameFile)
     }
 }
 
-void Engine::start()
+void Engine::start() {
+    startEngine(true);
+}
+
+void Engine::startEngine(bool newSeed)
 {
     qCDebug(lcEngine) << "Starting engine";
     if (d_ptr->m_state == EnginePrivate::UninitializedState) {
         emit engineFailure("Game must be initialized first");
         return;
     }
+    d_ptr->resetGenerator(newSeed);
     d_ptr->m_state = EnginePrivate::BeginState;
     bool error = false;
     scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
@@ -123,8 +128,11 @@ void Engine::start()
 
 void Engine::restart()
 {
-    // TODO
-    qCWarning(lcEngine) << "Restarting is not implemented yet!";
+    if (d_ptr->m_state < EnginePrivate::BeginState) {
+        emit engineFailure("Game has not been started yet. Can not restart!");
+        return;
+    }
+    startEngine(false);
 }
 
 void Engine::undoMove()
@@ -452,6 +460,19 @@ void EnginePrivate::setTimeout(int timeout)
         m_timeout = timeout;
         // TODO: Emit timeout changed signal
     }
+}
+
+quint32 EnginePrivate::getRandomValue(quint32 first, quint32 last) {
+    std::uniform_int_distribution<quint32> distribution(first, last);
+    return distribution(m_generator);
+}
+
+void EnginePrivate::resetGenerator(bool generateNewSeed)
+{
+    static std::random_device seedGenerator;
+    if (generateNewSeed)
+        m_seed = seedGenerator();
+    m_generator = std::mt19937(m_seed);
 }
 
 void EnginePrivate::die(const char *message)
