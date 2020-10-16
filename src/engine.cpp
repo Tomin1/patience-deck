@@ -70,6 +70,8 @@ Engine::Engine(QObject *parent)
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
+    qRegisterMetaType<GameOption>();
+    qRegisterMetaType<GameOptionList>();
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
@@ -251,6 +253,97 @@ void Engine::doubleClick(quint32 id, int slotId)
     scm_remember_upto_here_1(args[0]);
 
     emit doubleClicked(id, scm_is_true(rv));
+}
+
+void Engine::requestGameOptions()
+{
+    SCM optionsList;
+    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+
+    if (scm_is_false(scm_list_p(optionsList))) {
+        emit gameOptions(GameOptionList());
+        return;
+    }
+
+    scm_dynwind_begin((scm_t_dynwind_flags)0);
+
+    uint length = scm_to_uint(scm_length(optionsList));
+    GameOptionType type = CheckGameOption;
+    GameOptionList list;
+
+    for (uint i = 0; i < length; i++) {
+        SCM entry = scm_list_ref(optionsList, scm_from_uint(i));
+        if (scm_is_false(scm_list_p(entry))) {
+            // Atom => change mode
+            type = (type == CheckGameOption) ? RadioGameOption : CheckGameOption;
+        } else {
+            char *name = scm_to_utf8_string(scm_list_ref(entry, scm_from_uint(0)));
+            scm_dynwind_free(name);
+            if (!name) {
+                qCWarning(lcEngine) << "Bad utf8 string";
+                continue;
+            }
+
+            list.append({ name, type, i, scm_is_true(scm_list_ref(entry, scm_from_uint(1))) });
+        }
+    }
+
+    scm_dynwind_end();
+
+    qCDebug(lcEngine) << "Constructed a list of game options";
+    emit gameOptions(list);
+}
+
+void Engine::setGameOption(const GameOption &option)
+{
+    SCM optionsList;
+    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+
+    if (scm_is_false(scm_list_p(optionsList))) {
+        emit engineFailure("Game doesn't have options but Patience tried to set an option anyway");
+        return;
+    }
+
+    SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
+
+    if (scm_is_false(scm_list_p(entry))) {
+        emit engineFailure("Option is an atom, can not set it");
+        return;
+    }
+
+    scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
+
+    d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL);
+
+    scm_remember_upto_here_1(optionsList);
+}
+
+void Engine::setGameOptions(const GameOptionList &options)
+{
+    SCM optionsList;
+    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+
+    if (scm_is_false(scm_list_p(optionsList))) {
+        emit engineFailure("Game doesn't have options but Patience tried to set an option anyway");
+        return;
+    }
+
+    scm_dynwind_begin((scm_t_dynwind_flags)0);
+
+    for (const GameOption &option : options) {
+        SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
+
+        if (scm_is_false(scm_list_p(entry))) {
+            emit engineFailure("Option is an atom, can not set it");
+            return;
+        }
+
+        scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
+    }
+
+    d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL);
+
+    scm_dynwind_end();
 }
 
 void EnginePrivate::updateDealable()

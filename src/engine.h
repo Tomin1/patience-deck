@@ -27,6 +27,9 @@ public slots:
     void drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
     void click(quint32 id, int slotId);
     void doubleClick(quint32 id, int slotId);
+    void requestGameOptions();
+    void setGameOption(const GameOption &option);
+    void setGameOptions(const GameOptionList &options);
 
 signals:
     void canUndoChanged(bool canUndo);
@@ -39,6 +42,7 @@ signals:
     void gameLoaded(const QString &gameFile);
     void gameStarted();
     void gameOver(bool won);
+    void gameOptions(GameOptionList options);
 
     void newSlot(int id, const CardList &cards, int type, double x, double y,
                  int expansionDepth, bool expandedDown, bool expandedRight);

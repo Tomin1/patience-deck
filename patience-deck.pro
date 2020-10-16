@@ -22,6 +22,7 @@ DEFINES += DATADIR=/usr/share/$$TARGET
 
 SOURCES += src/patience-deck.cpp \
     src/gamelist.cpp \
+    src/gameoptionmodel.cpp \
     src/engine.cpp \
     src/interface.cpp \
     src/patience.cpp \
@@ -34,6 +35,7 @@ SOURCES += src/patience-deck.cpp \
 HEADERS += src/patience.h \
     src/constants.h \
     src/gamelist.h \
+    src/gameoptionmodel.h \
     src/engine.h \
     src/engine_p.h \
     src/interface.h \
@@ -47,6 +49,7 @@ DISTFILES += qml/patience-deck.qml \
     qml/cover/CoverPage.qml \
     qml/pages/Game.qml \
     qml/pages/SelectGame.qml \
+    qml/pages/GameOptions.qml \
     qml/pages/AboutPage.qml \
     qml/images/*.svg \
     rpm/patience-deck.spec \

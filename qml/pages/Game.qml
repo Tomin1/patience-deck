@@ -21,6 +21,11 @@ Page {
                 text: qsTr("Select game")
                 onClicked: pageStack.push(Qt.resolvedUrl("SelectGame.qml"))
             }
+
+            MenuItem {
+                text: qsTr("Game options")
+                onClicked: pageStack.push(Qt.resolvedUrl("GameOptions.qml"))
+            }
         }
 
         contentHeight: column.height

@@ -70,4 +70,22 @@ Q_DECLARE_METATYPE(struct CardData)
 
 Q_DECLARE_METATYPE(CardList)
 
+enum GameOptionType {
+    CheckGameOption,
+    RadioGameOption
+};
+
+struct GameOption {
+    QString displayName;
+    GameOptionType type;
+    uint index;
+    bool set;
+};
+
+typedef QList<GameOption> GameOptionList;
+
+Q_DECLARE_METATYPE(struct GameOption)
+
+Q_DECLARE_METATYPE(GameOptionList)
+
 #endif // ENGINEDATA_H

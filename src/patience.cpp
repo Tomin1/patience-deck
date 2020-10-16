@@ -77,6 +77,7 @@ void Patience::loadGame(const QString &gameFile)
         catchFailure("gameFile can not be empty");
     if (m_gameFile != gameFile)
         emit doLoad(gameFile);
+        // TODO: Load game options from dconf
 }
 
 void Patience::undoMove()
