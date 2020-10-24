@@ -33,13 +33,18 @@ Page {
             width: aboutPage.width
 
             PageHeader {
-                title: qsTr("About")
-                description: qsTr("Patience Deck")
+                //% "About"
+                title: qsTrId("patience-he-about")
+                //: Name of this application
+                //% "Patience Deck"
+                description: qsTrId("patience-de-patience_deck")
             }
 
             Label {
                 color: Theme.highlightColor
-                text: qsTr("This is a collection of patience games for Sailfish OS written by %1.\nIt utilises GNOME Aisleriot's implementations of patience games and artwork.").arg("Tomi Leppänen")
+                //: About this application, %1 is the name of the author. Keep the line break.
+                //% "This is a collection of patience games for Sailfish OS written by %1.<br />It utilises GNOME Aisleriot's implementations of patience games and artwork."
+                text: qsTrId("patience-la-about_text").arg("Tomi Leppänen")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left
@@ -49,12 +54,16 @@ Page {
             }
 
             SectionHeader {
-                text: qsTr("Thanks")
+                //: Thank you section for developers of GNOME Aisleriot
+                //% "Thanks"
+                text: qsTrId("patience-se-thanks")
             }
 
             Label {
                 color: Theme.highlightColor
-                text: qsTr("Thank you to GNOME Aisleriot authors")
+                //: Listing all developers of GNOME Aisleriot developers below this
+                //% "Thank you to GNOME Aisleriot authors"
+                text: qsTrId("patience-la-thank_you_gnome_aisleriot_authors")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left
@@ -77,7 +86,9 @@ Page {
 
             Label {
                 color: Theme.highlightColor
-                text: qsTr("Also thank you to card graphics creator")
+                //: Listing the card graphics creator below this
+                //% "Also thank you to card graphics creator"
+                text: qsTrId("patience-la-thank_you_card_graphics_author")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left

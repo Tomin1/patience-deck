@@ -30,17 +30,20 @@ Page {
 
         PullDownMenu {
             MenuItem {
-                text: qsTr("About")
+                //% "About"
+                text: qsTrId("patience-me-about")
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
 
             MenuItem {
-                text: qsTr("Select game")
+                //% "Select game"
+                text: qsTrId("patience-me-select_game")
                 onClicked: pageStack.push(Qt.resolvedUrl("SelectGame.qml"))
             }
 
             MenuItem {
-                text: qsTr("Game options")
+                //% "Game options"
+                text: qsTrId("patience-me-game_options")
                 onClicked: pageStack.push(Qt.resolvedUrl("GameOptions.qml"))
             }
         }

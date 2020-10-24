@@ -2,8 +2,9 @@
 *.pro.user
 Makefile
 moc_*.cpp
-translations/
 *.list
-RPMS/
+*.qm
+/translations/patience-deck.ts
+/RPMS/
 patience-deck
-installroot/
+/installroot/

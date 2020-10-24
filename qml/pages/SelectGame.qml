@@ -29,7 +29,8 @@ Page {
         model: GameList { }
         anchors.fill: parent
         header: PageHeader {
-            title: qsTr("Games")
+            //% "Games"
+            title: qsTrId("patience-he-games")
         }
         delegate: BackgroundItem {
             id: delegate

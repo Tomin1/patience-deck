@@ -38,13 +38,17 @@ Page {
             width: page.width
 
             PageHeader {
-                title: qsTr("Options")
+                // Page title for options page
+                //% "Options"
+                title: qsTrId("patience-he-options")
             }
 
             Label {
                 text: gameOptions.count > 0
-                    ? qsTr("Starting a new game or changing game options will resuffle the cards.")
-                    : qsTr("Starting a new game will resuffle the cards.")
+                    //% "Starting a new game or changing game options will resuffle the cards."
+                    ? qsTrId("patience-la-starting_new_or_changing_resuffle")
+                    //% "Starting a new game will resuffle the cards."
+                    : qsTrId("patience-la-starting_new_resuffle")
                 color: Theme.highlightColor
                 anchors {
                     left: parent.left
@@ -56,7 +60,9 @@ Page {
             }
 
             Button {
-                text: qsTr("New game")
+                //: Starts a new game
+                //% "New game"
+                text: qsTrId("patience-bt-new_game")
                 onClicked: {
                     Patience.startNewGame()
                     pageStack.pop()
@@ -65,7 +71,9 @@ Page {
             }
 
             SectionHeader {
-                text: qsTr("%1 options").arg(Patience.gameName)
+                //: Options section title for game named %1
+                //% "%1 options"
+                text: qsTrId("patience-se-game_options").arg(Patience.gameName)
                 visible: gameOptions.count > 0
             }
 

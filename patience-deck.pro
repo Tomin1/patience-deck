@@ -1,7 +1,7 @@
 include(common.pri)
 
 TEMPLATE = subdirs
-SUBDIRS = src
+SUBDIRS = src translations
 
 CONFIG += sailfishapp
 
@@ -31,6 +31,3 @@ data.files = aisleriot/AUTHORS \
 data.path = /usr/share/$$TARGET/data/
 
 INSTALLS += games api data
-
-#CONFIG += sailfishapp_i18n
-#TRANSLATIONS += translations/$$NAME-de.ts
