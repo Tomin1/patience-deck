@@ -172,6 +172,19 @@ QString Patience::aisleriotAuthors() const
     return authors;
 }
 
+bool Patience::showAllGames() const
+{
+    return GameList::showAll();
+}
+
+void Patience::setShowAllGames(bool show)
+{
+    if (show != GameList::showAll()) {
+        GameList::setShowAll(show);
+        emit showAllGamesChanged();
+    }
+}
+
 void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
     abort();

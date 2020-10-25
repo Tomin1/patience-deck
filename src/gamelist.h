@@ -27,6 +27,9 @@ class GameList : public QAbstractListModel
 public:
     static QString displayable(const QString &fileName);
     static QString name(const QString &fileName);
+    static bool isSupported(const QString &fileName);
+    static bool showAll();
+    static void setShowAll(bool show);
 
     explicit GameList(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -37,10 +40,13 @@ public:
         DisplayRole = Qt::DisplayRole,
         FileNameRole = Qt::UserRole,
         NameRole = Qt::UserRole + 1,
+        SupportedRole = Qt::UserRole + 2,
     };
 
 private:
+    static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
+    static bool s_showAll;
 
     QStringList m_games;
 };

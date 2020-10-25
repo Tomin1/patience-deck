@@ -108,6 +108,23 @@ Page {
                 }
                 width: aboutPage.width - 2*Theme.horizontalPageMargin
             }
+
+            SectionHeader {
+                //% "Experimental"
+                text: qsTrId("patience-se-experimental")
+            }
+
+            TextSwitch {
+                //% "Show all games"
+                text: qsTrId("patience-la-show_all_games")
+                description: Patience.showAllGames
+                    //% "Select to hide unsupported games"
+                    ? qsTrId("patience-de-unsupported_games_shown")
+                    //% "Select to show unsupported games"
+                    : qsTrId("patience-de-unsupported_games_hidden")
+                checked: Patience.showAllGames
+                onClicked: Patience.showAllGames = !Patience.showAllGames
+            }
         }
 
         VerticalScrollDecorator {}

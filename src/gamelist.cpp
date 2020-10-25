@@ -16,21 +16,39 @@
  */
 
 #include <QDir>
+#include <QSet>
 #include "gamelist.h"
 #include "constants.h"
+
+/*
+ * List of supported patience games.
+ * These are tested and any bugs found must be addressed.
+ */
+QSet<QString> GameList::s_allowlist = {
+    QStringLiteral("klondike"),
+    QStringLiteral("freecell"),
+    QStringLiteral("spider"),
+    QStringLiteral("clock")
+};
 
 QHash<int, QByteArray> GameList::s_roleNames = {
     { Qt::DisplayRole, "display" },
     { FileNameRole, "filename" },
-    { NameRole, "name" }
+    { NameRole, "name" },
+    { SupportedRole, "supported" }
 };
+
+bool GameList::s_showAll = false;
 
 GameList::GameList(QObject *parent)
     : QAbstractListModel(parent)
 {
     QDir gameDirectory(Constants::GameDirectory);
-    m_games = gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
-                                      QDir::Files | QDir::Readable, QDir::Name);
+    for (auto &entry : gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
+                                               QDir::Files | QDir::Readable, QDir::Name)) {
+        if (s_showAll || isSupported(entry))
+            m_games.append(entry);
+    }
 }
 
 int GameList::rowCount(const QModelIndex &parent) const
@@ -51,6 +69,8 @@ QVariant GameList::data(const QModelIndex &index, int role) const
         return m_games[index.row()];
     case NameRole:
         return name(m_games[index.row()]);
+    case SupportedRole:
+        return isSupported(m_games[index.row()]);
     default:
         return QVariant();
     }
@@ -80,4 +100,19 @@ QString GameList::name(const QString &fileName)
 QHash<int, QByteArray> GameList::roleNames() const
 {
     return s_roleNames;
+}
+
+bool GameList::isSupported(const QString &fileName)
+{
+    return s_allowlist.contains(name(fileName));
+}
+
+bool GameList::showAll()
+{
+    return s_showAll;
+}
+
+void GameList::setShowAll(bool show)
+{
+    s_showAll = show;
 }
