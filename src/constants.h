@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DATA_H
-#define DATA_H
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 #include <QString>
 
@@ -30,4 +30,4 @@ extern const QString GameDirectory;
 extern const QString DataDirectory;
 };
 
-#endif // DATA_H
+#endif // CONSTANTS_H

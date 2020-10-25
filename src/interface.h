@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef INTERFACE_H
+#define INTERFACE_H
+
 #include <libguile.h>
 #include <QString>
 #include "engine_p.h"
@@ -95,3 +98,5 @@ SCM loadGameFromFile(void *data);
 SCM callLambda(void *data);
 
 }; // Scheme
+
+#endif // INTERFACE_H
