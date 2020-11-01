@@ -79,25 +79,28 @@ void Slot::updateDimensions()
     updateLocations();
 }
 
-void Slot::updateLocations(Card *first)
+void Slot::updateLocations()
+{
+    updateLocations(begin());
+}
+
+void Slot::updateLocations(iterator first)
 {
     if (reevaluateDelta())
-        first = nullptr;
+        first = begin();
 
-    int index = (first) ? m_cards.indexOf(first) : 0;
-    for (auto it = find(first); it != end(); it++) {
+    for (auto it = first; it != end(); it++) {
         Card *card = *it;
         if (expandedRight()) {
-            card->setX(delta(index));
+            card->setX(delta(it));
             card->setY(0);
         } else if (expandedDown()) {
             card->setX(0);
-            card->setY(delta(index));
+            card->setY(delta(it));
         } else {
             card->setX(0);
             card->setY(0);
         }
-        index++;
     }
 }
 
@@ -127,7 +130,7 @@ void Slot::appendCard(const CardData &card)
     m_cards.append(newCard);
     if (!m_table->preparing()) {
         newCard->setSize(m_table->cardSize());
-        updateLocations(newCard);
+        updateLocations(expanded() ? firstExpanded() : end());
     }
 }
 
@@ -145,6 +148,8 @@ void Slot::removeCard(int index)
 {
     Card *card = m_cards.takeAt(index);
     card->deleteLater();
+    if (expanded())
+        updateLocations();
     // TODO: Store to card cache and take it from there to new slot
 }
 
@@ -174,6 +179,8 @@ QList<Card *> Slot::take(Card *first)
 {
     QList<Card *> tail = m_cards.mid(m_cards.indexOf(first));
     m_cards.erase(find(first), end());
+    if (expanded())
+       updateLocations();
     return tail;
 }
 
@@ -207,12 +214,12 @@ bool Slot::expandedDown() const
     return m_expansion & ExpandsInY;
 }
 
-qreal Slot::delta(int index)
+qreal Slot::delta(Slot::const_iterator iter)
 {
-    if (index == 0 || !expanded() || index < firstExpandedIndex())
+    if (iter == begin() || !expanded() || iter < firstExpanded())
         return 0.0;
 
-    return m_calculatedDelta*(index - firstExpandedIndex());
+    return m_calculatedDelta*(iter - firstExpanded());
 }
 
 void Slot::setDelta(double delta)
@@ -228,11 +235,11 @@ int Slot::expansionDepth() const
     return m_expansionDepth;
 }
 
-int Slot::firstExpandedIndex() const
+Slot::iterator Slot::firstExpanded()
 {
-    if (m_expansionDepth == Expansion::Full)
-        return 0;
-    return count() - m_expansionDepth;
+    if (m_expansionDepth == Expansion::Full || m_expansionDepth >= m_cards.count())
+        return begin();
+    return end() - m_expansionDepth;
 }
 
 Slot::const_iterator Slot::constBegin() const

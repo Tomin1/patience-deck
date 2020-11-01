@@ -41,12 +41,24 @@ public:
     Q_ENUM(ExpansionType)
     Q_DECLARE_FLAGS(ExpansionTypes, ExpansionType)
 
+    typedef QList<Card *>::const_iterator const_iterator;
+    const_iterator constBegin() const;
+    const_iterator constEnd() const;
+    const_iterator constFind(Card *card) const;
+
+    typedef QList<Card *>::iterator iterator;
+    iterator begin();
+    iterator end();
+    iterator find(Card *card);
+    iterator firstExpanded();
+
     Slot(int id, const CardList &cards, SlotType type, double x, double y,
          int expansionDepth, bool expandedDown, bool expandedRight, Table *table);
 
     void paint(QPainter *painter);
     void updateDimensions();
-    void updateLocations(Card *card = nullptr);
+    void updateLocations();
+    void updateLocations(iterator iter);
 
     int id() const;
     QPointF position() const;
@@ -66,20 +78,9 @@ public:
     bool expanded() const;
     bool expandedRight() const;
     bool expandedDown() const;
-    qreal delta(int index);
+    qreal delta(const_iterator iter);
     void setDelta(double delta);
     int expansionDepth() const;
-    int firstExpandedIndex() const;
-
-    typedef QList<Card *>::const_iterator const_iterator;
-    const_iterator constBegin() const;
-    const_iterator constEnd() const;
-    const_iterator constFind(Card *card) const;
-
-    typedef QList<Card *>::iterator iterator;
-    iterator begin();
-    iterator end();
-    iterator find(Card *card);
 
 signals:
     void doClick(quint32 id, int slotId);
