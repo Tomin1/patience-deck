@@ -1,4 +1,5 @@
-Name:       patience-deck
+%bcond_with harbour
+Name:       %{?with_harbour:harbour-}patience-deck
 Summary:    Collection of patience games
 Version:    0.3.0
 Release:    1
@@ -16,9 +17,15 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
+# TODO: Use headers from downloaded guile
 BuildRequires:  guile22-devel
 BuildRequires:  git-core
 BuildRequires:  python3-base
+
+%if %{with harbour}
+%define __provides_exclude_from ^%{_datadir}/.*$
+%define __requires_exclude ^libcrypt|libffi|libgc|libgmp|libguile|libltdl|libunistring.*$
+%endif
 
 %description
 %{summary} for Sailfish. Based on GNOME Aisleriot.
@@ -27,6 +34,11 @@ BuildRequires:  python3-base
 %autosetup -p1 -n %{name}-%{version}
 
 %build
+%if %{with harbour}
+export CACHE=%{_builddir}/libs/%{_arch}
+tools/build_deps.sh %{?_smp_mflags}
+%endif
+
 export NAME="%{name}"
 export VERSION="$(git describe --tags)"
 touch src/patience-deck.cpp
@@ -40,17 +52,52 @@ g++ -o tools/convert tools/convert.cpp -fPIC \
 %install
 rm -rf %{buildroot}
 
+export NAME="%{name}"
+
 %qmake5_install
 
 chmod -x %{buildroot}/%{_datadir}/%{name}/games/*.scm
 
-desktop-file-install --delete-original \
+desktop-file-install \
     --dir %{buildroot}%{_datadir}/applications \
-     %{buildroot}%{_datadir}/applications/*.desktop
+%if %{with harbour}
+    --set-key=Exec --set-value=harbour-patience-deck \
+    --set-key=Icon --set-value=harbour-patience-deck \
+%endif
+     patience-deck.desktop
 
 tools/convert data/patience-deck.svg \
-    %{buildroot}%{_datadir}/icons/hicolor/%1/apps/patience-deck.png \
+    %{buildroot}%{_datadir}/icons/hicolor/%1/apps/%{name}.png \
     86x86 108x108 128x128 172x172
+
+%if %{with harbour}
+mkdir -p %{buildroot}%{_datadir}/%{name}/lib/
+cp -P %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libgc.so* \
+      %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libunistring.so* \
+      %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libgmp.so* \
+      %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libltdl.so* \
+      %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libffi.so* \
+      %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libguile-2.2.so* \
+      %{buildroot}%{_datadir}/%{name}/lib/
+rm %{buildroot}/usr/share/harbour-patience-deck/lib/libguile-2.2.so.*-gdb.scm
+for dir in ice-9 language/scheme 'language/tree-il*' 'rnrs*' srfi system
+do
+    path=%{_datadir}/%{name}/share/guile/2.2/${dir}
+    mkdir -p %{buildroot}${path%/*}
+    cp -r %{_builddir}/libs/%{_arch}/built/${path} \
+          %{buildroot}${path%/*}
+    path=%{_datadir}/%{name}/lib/guile/2.2/ccache/${dir}
+    mkdir -p %{buildroot}${path%/*}
+    cp -r %{_builddir}/libs/%{_arch}/built${path} \
+          %{buildroot}${path%/*}
+done
+
+mv %{buildroot}%{_datadir}/applications/patience-deck.desktop \
+   %{buildroot}%{_datadir}/applications/harbour-patience-deck.desktop
+
+mv %{buildroot}%{_datadir}/%{name}/qml/patience-deck.qml \
+   %{buildroot}%{_datadir}/%{name}/qml/harbour-patience-deck.qml
+%endif
 
 python3 tools/generate_authors.py \
         --authors=aisleriot/AUTHORS \
