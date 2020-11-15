@@ -6,11 +6,13 @@ moc_*.h
 *.list
 *.qm
 /translations/patience-deck.ts
+/translations/harbour-patience-deck.ts
 /RPMS/
 patience-deck
+harbour-patience-deck
 /installroot/
 /tools/convert
 /tools/exerciser/games/
 /tools/exerciser/engine-exerciser
 .qmake.stash
-/common.pri
+/libs/
