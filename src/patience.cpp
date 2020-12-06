@@ -90,8 +90,10 @@ void Patience::restartGame()
 void Patience::loadGame(const QString &gameFile)
 {
     qCDebug(lcPatience) << "Loading" << gameFile;
-    if (gameFile.isEmpty())
-        catchFailure("gameFile can not be empty");
+    if (gameFile.isEmpty()) {
+        qCritical() << "gameFile can not be empty";
+        abort();
+    }
     if (m_gameFile != gameFile)
         emit doLoad(gameFile);
         // TODO: Load game options from dconf
@@ -187,7 +189,6 @@ void Patience::setShowAllGames(bool show)
 
 void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
-    abort();
 }
 
 void Patience::handleGameLoaded(const QString &gameFile)

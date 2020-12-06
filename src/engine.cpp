@@ -112,7 +112,7 @@ void Engine::load(const QString &gameFile)
                 Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while loading";
-        emit engineFailure("Loading new game failed");
+        d_ptr->die("Loading new game failed");
     } else {
         qCDebug(lcEngine) << "Loaded" << gameFile;
         d_ptr->m_state = EnginePrivate::LoadedState;
@@ -128,7 +128,7 @@ void Engine::startEngine(bool newSeed)
 {
     qCDebug(lcEngine) << "Starting engine";
     if (d_ptr->m_state == EnginePrivate::UninitializedState) {
-        emit engineFailure("Game must be initialized first");
+        d_ptr->die("Game must be initialized first");
         return;
     }
     d_ptr->resetGenerator(newSeed);
@@ -138,7 +138,7 @@ void Engine::startEngine(bool newSeed)
                 Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "A scheme error happened while starting new game";
-        emit engineFailure("Starting new game failed");
+        d_ptr->die("Starting new game failed");
     } else {
         d_ptr->m_state = EnginePrivate::RunningState;
         emit gameStarted();
@@ -148,7 +148,7 @@ void Engine::startEngine(bool newSeed)
 void Engine::restart()
 {
     if (d_ptr->m_state < EnginePrivate::BeginState) {
-        emit engineFailure("Game has not been started yet. Can not restart!");
+        d_ptr->die("Game has not been started yet. Can not restart!");
         return;
     }
     startEngine(false);
@@ -160,13 +160,15 @@ void Engine::undoMove()
         d_ptr->m_state = EnginePrivate::RunningState;
         emit gameStarted();
     }
-    d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr);
+    if (!d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr))
+        d_ptr->die("Can not undo move");
     d_ptr->updateDealable();
 }
 
 void Engine::redoMove()
 {
-    d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr);
+    if (!d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr))
+        d_ptr->die("Can not redo move");
     d_ptr->testGameOver();
 }
 
@@ -179,7 +181,8 @@ void Engine::drag(quint32 id, int slotId, const CardList &cards)
     args[1] = Scheme::slotToSCM(cards);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 2, &rv);
+    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 2, &rv))
+        d_ptr->die("Can not start drag");
 
     scm_remember_upto_here_2(args[0], args[1]);
 
@@ -212,7 +215,8 @@ void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
     args[2] = scm_from_int(endSlotId);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::DroppableLambda, args, 3, &rv);
+    if (!d_ptr->makeSCMCall(EnginePrivate::DroppableLambda, args, 3, &rv))
+        d_ptr->die("Can not check if dropping is allowed");
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
@@ -227,7 +231,8 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     args[2] = scm_from_int(endSlotId);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::ButtonReleasedLambda, args, 3, &rv);
+    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonReleasedLambda, args, 3, &rv))
+        d_ptr->die("Can not drop");
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
@@ -247,7 +252,8 @@ void Engine::click(quint32 id, int slotId)
     args[0] = scm_from_int(slotId);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv);
+    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv))
+        d_ptr->die("Can not click");
 
     scm_remember_upto_here_1(args[0]);
 
@@ -265,7 +271,8 @@ void Engine::doubleClick(quint32 id, int slotId)
     args[0] = scm_from_int(slotId);
 
     SCM rv;
-    d_ptr->makeSCMCall(EnginePrivate::ButtonDoubleClickedLambda, args, 1, &rv);
+    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonDoubleClickedLambda, args, 1, &rv))
+        d_ptr->die("Can not double click");
 
     scm_remember_upto_here_1(args[0]);
 
@@ -275,7 +282,8 @@ void Engine::doubleClick(quint32 id, int slotId)
 void Engine::requestGameOptions()
 {
     SCM optionsList;
-    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList))
+        d_ptr->die("Can not get game options");
 
     if (scm_is_false(scm_list_p(optionsList))) {
         emit gameOptions(GameOptionList());
@@ -314,23 +322,25 @@ void Engine::requestGameOptions()
 void Engine::setGameOption(const GameOption &option)
 {
     SCM optionsList;
-    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList))
+        d_ptr->die("Can not get game option");
 
     if (scm_is_false(scm_list_p(optionsList))) {
-        emit engineFailure("Game doesn't have options but Patience tried to set an option anyway");
+        d_ptr->die("Game doesn't have options but Patience tried to set an option anyway");
         return;
     }
 
     SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
 
     if (scm_is_false(scm_list_p(entry))) {
-        emit engineFailure("Option is an atom, can not set it");
+        d_ptr->die("Option is an atom, can not set it");
         return;
     }
 
     scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
 
-    d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL);
+    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
+        d_ptr->die("Can not apply game option");
 
     scm_remember_upto_here_1(optionsList);
 }
@@ -338,10 +348,11 @@ void Engine::setGameOption(const GameOption &option)
 void Engine::setGameOptions(const GameOptionList &options)
 {
     SCM optionsList;
-    d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList);
+    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList))
+        d_ptr->die("Can not get options");
 
     if (scm_is_false(scm_list_p(optionsList))) {
-        emit engineFailure("Game doesn't have options but Patience tried to set an option anyway");
+        d_ptr->die("Game doesn't have options but Patience tried to set an option anyway");
         return;
     }
 
@@ -351,14 +362,15 @@ void Engine::setGameOptions(const GameOptionList &options)
         SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
 
         if (scm_is_false(scm_list_p(entry))) {
-            emit engineFailure("Option is an atom, can not set it");
+            d_ptr->die("Option is an atom, can not set it");
             return;
         }
 
         scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
     }
 
-    d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL);
+    if (d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
+        d_ptr->die("Can not apply options");
 
     scm_dynwind_end();
 }
@@ -366,43 +378,57 @@ void Engine::setGameOptions(const GameOptionList &options)
 void EnginePrivate::updateDealable()
 {
     SCM rv;
-    if (hasFeature(FeatureDealable) && makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv)) {
+    if (hasFeature(FeatureDealable)) {
+        if (!makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv))
+            die("Can not check dealable");
         setCanDeal(scm_is_true(rv));
     }
 }
 
 void EnginePrivate::recordMove(int slotId)
 {
+    qCDebug(lcEngine) << "Start recording move for slot" << slotId
+                      << "with" << m_cardSlots[slotId].count() << "cards";
     SCM args[2];
     args[0] = scm_from_int(slotId);
     args[1] = Scheme::slotToSCM(m_cardSlots[slotId]);
 
-    if (!makeSCMCall(QStringLiteral("record-move"), args, 2, nullptr))
+    if (!makeSCMCall(QStringLiteral("record-move"), args, 2, nullptr)) {
+        die("Can not record move");
         return;
+    }
 
     scm_remember_upto_here_2(args[0], args[1]);
 }
 
 void EnginePrivate::endMove()
 {
-    makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr);
+    qCDebug(lcEngine) << "End recorded move";
+    if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
+        die("Can not end move");
 }
 
 void EnginePrivate::discardMove()
 {
-    makeSCMCall(QStringLiteral("discard-move"), nullptr, 0, nullptr);
+    qCDebug(lcEngine) << "Discard recorded move";
+    if (!makeSCMCall(QStringLiteral("discard-move"), nullptr, 0, nullptr))
+        die("Can not discard move");
 }
 
 bool EnginePrivate::isGameOver()
 {
     SCM rv;
-    return makeSCMCall(GameOverLambda, nullptr, 0, &rv) && scm_is_true(rv);
+    if (!makeSCMCall(GameOverLambda, nullptr, 0, &rv))
+        die("Can not check if game is over");
+    return scm_is_true(rv);
 }
 
 bool EnginePrivate::isWinningGame()
 {
     SCM rv;
-    return makeSCMCall(WinningGameLambda, nullptr, 0, &rv) && scm_is_true(rv);
+    if (!makeSCMCall(WinningGameLambda, nullptr, 0, &rv))
+        die("Can not check if game is won");
+    return scm_is_true(rv);
 }
 
 bool EnginePrivate::isInitialized()
@@ -588,6 +614,7 @@ void EnginePrivate::resetGenerator(bool generateNewSeed)
 void EnginePrivate::die(const char *message)
 {
     emit engine()->engineFailure(QString(message));
+    abort();
 }
 
 bool EnginePrivate::makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval)
@@ -604,7 +631,6 @@ bool EnginePrivate::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
                         Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
     if (error) {
         qCWarning(lcEngine) << "Scheme reported an error";
-        die("Making SCM call failed!");
         return false;
     }
 
