@@ -6,6 +6,7 @@ Release:    1
 License:    GPLv3+
 URL:        TBD
 Source0:    %{name}-%{version}.tar.bz2
+Patch0:     0001-Fix-errors-with-anglo.svg.patch
 Requires:   sailfishsilica-qt5 >= 0.10.9
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
@@ -18,7 +19,7 @@ BuildRequires:  guile22-devel
 %{summary} for Sailfish. Based on GNOME Aisleriot.
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -p1 -n %{name}-%{version}
 
 %build
 %qmake5
