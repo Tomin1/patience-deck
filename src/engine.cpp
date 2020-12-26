@@ -420,7 +420,8 @@ bool EnginePrivate::isGameOver()
     SCM rv;
     if (!makeSCMCall(GameOverLambda, nullptr, 0, &rv))
         die("Can not check if game is over");
-    return scm_is_true(rv);
+    // This is really more like the-game-is-still-going-on lambda
+    return !scm_is_true(rv);
 }
 
 bool EnginePrivate::isWinningGame()
