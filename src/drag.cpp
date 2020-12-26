@@ -80,8 +80,6 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
 
     m_startPoint = m_lastPoint = mapPos(event->screenPos());
     m_timer.start();
-
-    emit doDrag(m_id, slot->id(), slot->asCardData(card));
 }
 
 Drag::~Drag()
@@ -112,7 +110,12 @@ Slot *Drag::source() const
 
 void Drag::update(QMouseEvent *event)
 {
-    testClick(event);
+    if (!m_mayBeAClick)
+        ; // continue
+    else if (!testClick(event))
+        emit doDrag(m_id, m_source->id(), m_source->asCardData(m_card));
+    else
+        return;
 
     if (m_cards.isEmpty())
         return;
@@ -129,7 +132,6 @@ void Drag::finish(QMouseEvent *event)
 {
     if (testClick(event)) {
         qCDebug(lcPatience) << "Detected click on" << m_card;
-        cancel();
         emit doClick(m_id, m_source->id());
         deleteLater();
         return;
