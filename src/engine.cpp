@@ -369,7 +369,7 @@ void Engine::setGameOptions(const GameOptionList &options)
         scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
     }
 
-    if (d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
+    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
         d_ptr->die("Can not apply options");
 
     scm_dynwind_end();
