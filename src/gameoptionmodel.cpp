@@ -84,7 +84,7 @@ void GameOptionModel::select(int row)
             lastIndex--;
             for (int i = firstIndex; i <= lastIndex; i++)
                 m_options[i].set = (i == row);
-            emit doSetGameOptions(m_options.mid(firstIndex, lastIndex - firstIndex));
+            emit doSetGameOptions(m_options.mid(firstIndex, lastIndex - firstIndex + 1));
             emit dataChanged(index(firstIndex, 0), index(lastIndex, 0), QVector<int>() << SetRole);
         }
         // TODO: Save the values to dconf too
