@@ -4,7 +4,7 @@ Version:    0.1
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
 License:    GPLv3+
-URL:        TBD
+URL:        https://github.com/Tomin1/patience-deck/
 Source0:    %{name}-%{version}.tar.bz2
 Patch0:     0001-Fix-errors-with-anglo.svg.patch
 Requires:   sailfishsilica-qt5 >= 0.10.9

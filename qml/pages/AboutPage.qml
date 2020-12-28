@@ -53,6 +53,18 @@ Page {
                 width: aboutPage.width - 2*Theme.horizontalPageMargin
             }
 
+            Label {
+                color: Theme.highlightColor
+                linkColor: Theme.primaryColor
+                text: "Github: <a href=\"%1\">%1</a>".arg("https://github.com/Tomin1/patience-deck/")
+                wrapMode: Text.Wrap
+                anchors {
+                    left: parent.left
+                    leftMargin: Theme.horizontalPageMargin
+                }
+                width: aboutPage.width - 2*Theme.horizontalPageMargin
+            }
+
             SectionHeader {
                 //: Thank you section for developers of GNOME Aisleriot
                 //% "Thanks"

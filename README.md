@@ -5,6 +5,8 @@ This is a collection of patience games for Sailfish OS.
 It utilises [GNOME Aisleriot's](https://wiki.gnome.org/Apps/Aisleriot)
 implementations of patience games and artwork.
 
+[Github repository](https://github.com/Tomin1/patience-deck/).
+
 Building and installing
 -----------------------
 Use [Sailfish OS Platform SDK](https://sailfishos.org/wiki/Platform_SDK)
