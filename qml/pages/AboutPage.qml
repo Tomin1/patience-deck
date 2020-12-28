@@ -124,6 +124,7 @@ Page {
                     : qsTrId("patience-de-unsupported_games_hidden")
                 checked: Patience.showAllGames
                 onClicked: Patience.showAllGames = !Patience.showAllGames
+                height: implicitHeight + Theme.paddingLarge
             }
         }
 
