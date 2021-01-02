@@ -110,6 +110,7 @@ Page {
             }
 
             Table {
+                enabled: Patience.state < Patience.GameOverState
                 height: page.height - header.height - message.height
                 width: parent.width
                 minimumSideMargin: Theme.horizontalPageMargin
@@ -118,6 +119,62 @@ Page {
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
                 Component.onCompleted: Patience.loadGame("klondike.scm")
+
+                Loader {
+                    active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
+                    sourceComponent: Component {
+                        Rectangle {
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 1.0
+                                    color: Qt.rgba(1.0, 1.0, 1.0, 0.0)
+                                }
+                                GradientStop {
+                                    position: 0.0
+                                    color: Qt.rgba(1.0, 1.0, 1.0, 0.5)
+                                }
+                            }
+
+                            Rectangle {
+                                anchors {
+                                    horizontalCenter: parent.horizontalCenter
+                                    verticalCenter: parent.verticalCenter
+                                }
+                                height: gameOverText.implicitHeight + 2*Theme.paddingSmall
+                                width: Math.min(gameOverText.implicitWidth + 2*Theme.paddingMedium, parent.width - 2*Theme.horizontalPageMargin)
+                                color: Qt.rgba(0.2, 0.2, 0.2, 0.8)
+                                radius: 15
+                                border {
+                                    color: Theme.highlightColor
+                                    width: 1
+                                }
+
+                                Label {
+                                    id: gameOverText
+
+                                    text: Patience.state === Patience.WonState
+                                        //: Shown on top of the game when player has won the game
+                                        //% "Game won"
+                                        ? qsTrId("patience-la-game_won")
+                                        //: Shown on top of the game when player has lost the game
+                                        //% "Game over"
+                                        : qsTrId("patience-la-game_over")
+                                    color: Theme.highlightColor
+                                    font.pixelSize: Theme.fontSizeHuge
+                                    font.bold: true
+                                    wrapMode: Text.Wrap
+
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                    x: Theme.paddingMedium
+                                    width: parent.width - 2*x
+                                }
+                            }
+                        }
+                    }
+                    anchors.fill: parent
+                    z: 5
+                }
             }
 
             Label {
