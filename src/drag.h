@@ -67,7 +67,8 @@ private:
     Table *m_table;
     Card *m_card;
     Slot *m_source;
-    Slot *m_target;
+    QList<Slot *> m_targets;
+    Slot * m_target;
     QList<Card *> m_cards;
 };
 

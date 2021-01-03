@@ -186,26 +186,27 @@ QSvgRenderer *Table::cardRenderer()
     return &m_cardRenderer;
 }
 
-Slot *Table::getSlotFor(const QList<Card *> &cards, Slot *source)
+QList<Slot *> Table::getSlotsFor(const QList<Card *> &cards, Slot *source)
 {
     auto first = mapRectFromItem(cards.first(), cards.first()->boundingRect());
     auto last = mapRectFromItem(cards.last(), cards.last()->boundingRect());
     auto rect = first.united(last);
-    qreal bestOverlap = 0;
-    Slot *best = nullptr;
+    QMap<qreal, Slot *> results;
     for (Slot *slot : m_slots) {
         QRectF children = mapRectFromItem(slot, slot->childrenRect());
         auto box = mapRectFromItem(slot, slot->boundingRect()).united(children);
         auto overlapped = rect.intersected(box);
-        if (!overlapped.isEmpty()) {
-            qreal overlap = overlapped.height() * overlapped.width();
-            if (overlap > bestOverlap) {
-                bestOverlap = overlap;
-                best = slot;
-            }
-        }
+        if (!overlapped.isEmpty())
+            results.insert(overlapped.height() * overlapped.width(), slot);
     }
-    return best != source ? best : nullptr;
+    QList<Slot *> sorted;
+    auto values = results.values();
+    for (auto it = values.rbegin(); it != values.rend(); it++) {
+        if (*it == source)
+            break;
+        sorted.append(*it);
+    }
+    return sorted;
 }
 
 void Table::handleNewSlot(int id, const CardList &cards, int type,

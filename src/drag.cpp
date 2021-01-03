@@ -137,15 +137,9 @@ void Drag::finish(QMouseEvent *event)
     if (m_cards.isEmpty())
         return;
 
-    m_target = m_table->getSlotFor(m_cards, m_source);
+    m_targets = m_table->getSlotsFor(m_cards, m_source);
 
-    if (m_target) {
-        qCDebug(lcPatience) << "Moving from" << m_source->id() << "to" << m_target->id();
-        emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
-    } else {
-        cancel();
-        deleteLater();
-    }
+    handleCouldDrop(m_id, false);
 }
 
 void Drag::cancel()
@@ -181,7 +175,12 @@ void Drag::handleCouldDrop(quint32 id, bool could)
         return;
 
     if (could) {
+        qCDebug(lcPatience) << "Moving from" << m_source->id() << "to" << m_target->id();
         emit doDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
+    } else if (!m_targets.isEmpty()) {
+        m_target = m_targets.takeFirst();
+        qCDebug(lcPatience) << "Trying to moving from" << m_source->id() << "to" << m_target->id();
+        emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
         cancel();
         deleteLater();
