@@ -136,16 +136,17 @@ Page {
                             }
 
                             Rectangle {
+                                readonly property real gray: Theme.colorScheme === Theme.LightOnDark ? 0.3 : 0.8
                                 anchors {
                                     horizontalCenter: parent.horizontalCenter
                                     verticalCenter: parent.verticalCenter
                                 }
                                 height: gameOverText.implicitHeight + 2*Theme.paddingSmall
                                 width: Math.min(gameOverText.implicitWidth + 2*Theme.paddingMedium, parent.width - 2*Theme.horizontalPageMargin)
-                                color: Qt.rgba(0.2, 0.2, 0.2, 0.8)
+                                color: Qt.rgba(gray, gray, gray, 0.8)
                                 radius: 15
                                 border {
-                                    color: Theme.highlightColor
+                                    color: Theme.secondaryColor
                                     width: 1
                                 }
 
@@ -154,7 +155,7 @@ Page {
 
                                     text: Patience.state === Patience.WonState
                                         //: Shown on top of the game when player has won the game
-                                        //% "Game won"
+                                        //% "You win"
                                         ? qsTrId("patience-la-game_won")
                                         //: Shown on top of the game when player has lost the game
                                         //% "Game over"
