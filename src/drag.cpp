@@ -17,6 +17,7 @@
 
 #include <QGuiApplication>
 #include <QScreen>
+#include <QStyleHints>
 #include "drag.h"
 #include "table.h"
 #include "card.h"
@@ -52,9 +53,9 @@ CardList toCardData(const QList<Card *> &cards)
 
 }; // namespace
 
-const qint64 Constants::ClickTimeout = 200;
+const qint64 Constants::ClickTimeout = QGuiApplication::styleHints()->startDragTime();
 
-const qreal Constants::DragDistance = 5;
+const qreal Constants::DragDistance = QGuiApplication::styleHints()->startDragDistance();
 
 quint32 Drag::s_count = 0;
 
