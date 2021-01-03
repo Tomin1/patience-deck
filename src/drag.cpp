@@ -53,10 +53,6 @@ CardList toCardData(const QList<Card *> &cards)
 
 }; // namespace
 
-const qint64 Constants::ClickTimeout = QGuiApplication::styleHints()->startDragTime();
-
-const qreal Constants::DragDistance = QGuiApplication::styleHints()->startDragDistance();
-
 quint32 Drag::s_count = 0;
 
 Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
@@ -141,7 +137,7 @@ void Drag::finish(QMouseEvent *event)
     if (m_cards.isEmpty())
         return;
 
-    m_target = m_table->getSlotAt(m_table->mapFromScene(event->screenPos()), m_source);
+    m_target = m_table->getSlotFor(m_cards, m_source);
 
     if (m_target) {
         qCDebug(lcPatience) << "Moving from" << m_source->id() << "to" << m_target->id();
@@ -210,10 +206,12 @@ bool Drag::testClick(QMouseEvent *event)
     if (!m_mayBeAClick)
         return false;
 
-    if (m_timer.hasExpired(Constants::ClickTimeout))
+    auto styleHints = QGuiApplication::styleHints();
+    if (m_timer.hasExpired(styleHints->startDragTime()))
         m_mayBeAClick = false;
 
-    if ((m_startPoint - mapPos(event->screenPos())).manhattanLength() >= Constants::DragDistance)
+    qreal distance = (m_startPoint - mapPos(event->screenPos())).manhattanLength();
+    if (distance >= styleHints->startDragDistance())
         m_mayBeAClick = false;
 
     return m_mayBeAClick;

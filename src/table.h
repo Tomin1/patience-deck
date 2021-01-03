@@ -68,7 +68,7 @@ public:
     bool preparing() const;
 
     QSvgRenderer *cardRenderer();
-    Slot *getSlotAt(const QPointF &point, Slot *source);
+    Slot *getSlotFor(const QList<Card *> &cards, Slot *source);
 
 signals:
     void minimumSideMarginChanged();

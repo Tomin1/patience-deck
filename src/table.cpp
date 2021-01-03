@@ -186,24 +186,26 @@ QSvgRenderer *Table::cardRenderer()
     return &m_cardRenderer;
 }
 
-Slot *Table::getSlotAt(const QPointF &point, Slot *source)
+Slot *Table::getSlotFor(const QList<Card *> &cards, Slot *source)
 {
+    auto first = mapRectFromItem(cards.first(), cards.first()->boundingRect());
+    auto last = mapRectFromItem(cards.last(), cards.last()->boundingRect());
+    auto rect = first.united(last);
+    qreal bestOverlap = 0;
+    Slot *best = nullptr;
     for (Slot *slot : m_slots) {
-        if (slot == source)
-            continue;
-        QRectF children = slot->childrenRect();
-        if (children.isValid() && (children.x() != 0 || children.y() != 0)) {
-            qCCritical(lcPatience) << "Children rect" << children
-                                   << "for slot" << slot->id() << "looks wrong"
-                                   << "while source slot is" << source->id();
+        QRectF children = mapRectFromItem(slot, slot->childrenRect());
+        auto box = mapRectFromItem(slot, slot->boundingRect()).united(children);
+        auto overlapped = rect.intersected(box);
+        if (!overlapped.isEmpty()) {
+            qreal overlap = overlapped.height() * overlapped.width();
+            if (overlap > bestOverlap) {
+                bestOverlap = overlap;
+                best = slot;
+            }
         }
-        QRectF box(slot->x(), slot->y(),
-                   std::max(slot->width(), children.width()),
-                   std::max(slot->height(), children.height()));
-        if (box.contains(point))
-            return slot;
     }
-    return nullptr;
+    return best != source ? best : nullptr;
 }
 
 void Table::handleNewSlot(int id, const CardList &cards, int type,

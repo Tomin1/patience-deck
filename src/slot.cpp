@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QGuiApplication>
 #include <QPainter>
+#include <QStyleHints>
 #include "table.h"
 #include "card.h"
 #include "slot.h"
@@ -297,8 +299,9 @@ void Slot::mouseReleaseEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
 
-    if (!m_timer.hasExpired(Constants::ClickTimeout)
-            && (m_startPoint - event->pos()).manhattanLength() < Constants::DragDistance) {
+    auto styleHints = QGuiApplication::styleHints();
+    if (!m_timer.hasExpired(styleHints->startDragTime())
+            && (m_startPoint - event->pos()).manhattanLength() < styleHints->startDragDistance()) {
         qCDebug(lcPatience) << "Detected click on" << this;
         emit doClick(-1, id());
     }
