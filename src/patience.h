@@ -37,6 +37,7 @@ class Patience : public QObject
     Q_PROPERTY(QString message READ message NOTIFY messageChanged);
     Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT);
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
+    Q_PROPERTY(QStringList history READ history NOTIFY historyChanged);
 
 public:
     static Patience* instance();
@@ -70,6 +71,7 @@ public:
     QString aisleriotAuthors() const;
     bool showAllGames() const;
     void setShowAllGames(bool show);
+    QStringList history() const;
 
 signals:
     void canUndoChanged();
@@ -80,6 +82,7 @@ signals:
     void gameNameChanged();
     void messageChanged();
     void showAllGamesChanged();
+    void historyChanged();
 
     void doStart();
     void doRestart();

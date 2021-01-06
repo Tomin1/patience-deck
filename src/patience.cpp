@@ -15,14 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MGConfItem>
 #include <QDir>
-#include <QObject>
 #include <QJSEngine>
+#include <QObject>
 #include <QQmlEngine>
 #include "patience.h"
 #include "constants.h"
 #include "gamelist.h"
 #include "logging.h"
+
+const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
+const QString HistoryPath = Constants::ConfPath + QStringLiteral("/history");
 
 Patience* Patience::s_game = nullptr;
 
@@ -187,6 +191,14 @@ void Patience::setShowAllGames(bool show)
     }
 }
 
+QStringList Patience::history() const
+{
+    MGConfItem historyConf(HistoryPath);
+    auto list = historyConf.value().toString().split(';');
+    list.removeAll(QString());
+    return list;
+}
+
 void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
 }
@@ -199,6 +211,21 @@ void Patience::handleGameLoaded(const QString &gameFile)
         emit gameNameChanged();
     }
     setState(LoadedState);
+
+    MGConfItem historyConf(HistoryPath);
+    connect(&historyConf, &MGConfItem::valueChanged, [&]() {
+        qCDebug(lcPatience) << "Saved history:" << historyConf.value().toString();
+        emit historyChanged();
+    });
+    auto history = historyConf.value();
+    if (history.isValid()) {
+        auto list = history.toString().split(';').mid(0, 10);
+        list.prepend(gameFile);
+        list.removeDuplicates();
+        historyConf.set(list.join(';'));
+    } else {
+        historyConf.set(gameFile);
+    }
 }
 
 void Patience::handleGameStarted()

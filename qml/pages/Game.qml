@@ -118,7 +118,7 @@ Page {
                 maximumHorizontalMargin: Theme.paddingLarge
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
-                Component.onCompleted: Patience.loadGame("klondike.scm")
+                Component.onCompleted: Patience.loadGame(Patience.history.length === 0 ? "klondike.scm" : Patience.history[0])
 
                 Loader {
                     active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
