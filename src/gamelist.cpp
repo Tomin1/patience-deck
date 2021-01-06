@@ -25,10 +25,28 @@
  * These are tested and any bugs found must be addressed.
  */
 QSet<QString> GameList::s_allowlist = {
+    // Klondike and its variations
+    QStringLiteral("aunt-mary"),
+    QStringLiteral("athena"),
     QStringLiteral("klondike"),
+    QStringLiteral("saratoga"),
+    QStringLiteral("thumb-and-pouch"),
+    QStringLiteral("whitehead"),
+    // Freecell / Backers game
     QStringLiteral("freecell"),
+    QStringLiteral("backers-game"),
+    // Elevator and similar
+    QStringLiteral("elevator"),
+    QStringLiteral("escalator"),
+    QStringLiteral("thirteen"),
+    QStringLiteral("treize"),
+    QStringLiteral("yield"),
+    // Other
+    QStringLiteral("clock"),
+    QStringLiteral("forty-thieves"),
+    QStringLiteral("helsinki"),
     QStringLiteral("spider"),
-    QStringLiteral("clock")
+    QStringLiteral("yukon"),
 };
 
 QHash<int, QByteArray> GameList::s_roleNames = {
