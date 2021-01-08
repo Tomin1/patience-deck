@@ -62,6 +62,7 @@ public:
 
     enum GameState : int {
         UninitializedState,
+        RestoredState,
         LoadedState,
         BeginState,
         RunningState,
@@ -126,6 +127,7 @@ private:
     bool m_canUndo;
     bool m_canRedo;
     bool m_canDeal;
+    QString m_gameFile;
     uint_fast32_t m_seed;
     std::mt19937 m_generator;
 

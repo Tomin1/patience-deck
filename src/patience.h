@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE void loadGame(const QString &gameFile);
     Q_INVOKABLE void undoMove();
     Q_INVOKABLE void redoMove();
+    Q_INVOKABLE void restoreSavedOrLoad(const QString &fallback);
 
     // Properties
     bool canUndo() const;
@@ -89,6 +90,9 @@ signals:
     void doLoad(const QString &gameFile);
     void doUndoMove();
     void doRedoMove();
+    void doSaveEngineState();
+    void doResetSavedEngineState();
+    void doRestoreSavedEngineState();
 
 private slots:
     void catchFailure(QString message);
@@ -100,6 +104,7 @@ private slots:
     void handleCanDealChanged(bool canDeal);
     void handleScoreChanged(int score);
     void handleMessageChanged(const QString &message);
+    void handleRestoreCompleted(bool success);
 
 private:
     explicit Patience(QObject *parent = nullptr);

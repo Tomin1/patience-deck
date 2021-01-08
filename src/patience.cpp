@@ -20,13 +20,14 @@
 #include <QJSEngine>
 #include <QObject>
 #include <QQmlEngine>
+#include <memory>
 #include "patience.h"
 #include "constants.h"
 #include "gamelist.h"
 #include "logging.h"
 
 const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
-const QString HistoryPath = Constants::ConfPath + QStringLiteral("/history");
+const QString HistoryConf = QStringLiteral("/history");
 
 Patience* Patience::s_game = nullptr;
 
@@ -64,12 +65,16 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::canDealChanged, this, &Patience::handleCanDealChanged);
     connect(engine, &Engine::scoreChanged, this, &Patience::handleScoreChanged);
     connect(engine, &Engine::messageChanged, this, &Patience::handleMessageChanged);
+    connect(engine, &Engine::restoreCompleted, this, &Patience::handleRestoreCompleted);
     connect(engine, &Engine::engineFailure, this, &Patience::catchFailure);
     connect(this, &Patience::doStart, engine, &Engine::start);
     connect(this, &Patience::doRestart, engine, &Engine::restart);
     connect(this, &Patience::doLoad, engine, &Engine::load);
     connect(this, &Patience::doUndoMove, engine, &Engine::undoMove);
     connect(this, &Patience::doRedoMove, engine, &Engine::redoMove);
+    connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
+    connect(this, &Patience::doResetSavedEngineState, engine, &Engine::resetSavedState);
+    connect(this, &Patience::doRestoreSavedEngineState, engine, &Engine::restoreSavedState);
     m_engineThread.start();
 }
 
@@ -132,6 +137,8 @@ bool Patience::canDeal() const
 
 QString Patience::gameName() const
 {
+    if (m_gameFile.isEmpty() || m_gameFile.endsWith('-'))
+        return QString();
     return GameList::displayable(m_gameFile);
 }
 
@@ -193,10 +200,16 @@ void Patience::setShowAllGames(bool show)
 
 QStringList Patience::history() const
 {
-    MGConfItem historyConf(HistoryPath);
+    MGConfItem historyConf(Constants::ConfPath + HistoryConf);
     auto list = historyConf.value().toString().split(';');
     list.removeAll(QString());
     return list;
+}
+
+void Patience::restoreSavedOrLoad(const QString &fallback)
+{
+    m_gameFile = fallback + '-';
+    emit doRestoreSavedEngineState();
 }
 
 void Patience::catchFailure(QString message) {
@@ -212,7 +225,7 @@ void Patience::handleGameLoaded(const QString &gameFile)
     }
     setState(LoadedState);
 
-    MGConfItem historyConf(HistoryPath);
+    MGConfItem historyConf(Constants::ConfPath + HistoryConf);
     connect(&historyConf, &MGConfItem::valueChanged, [&]() {
         qCDebug(lcPatience) << "Saved history:" << historyConf.value().toString();
         emit historyChanged();
@@ -231,6 +244,8 @@ void Patience::handleGameLoaded(const QString &gameFile)
 void Patience::handleGameStarted()
 {
     qCDebug(lcPatience) << "Game started";
+    if (state() != GameOverState)
+        emit doSaveEngineState();
     setState(RunningState);
 }
 
@@ -238,6 +253,8 @@ void Patience::handleGameOver(bool won)
 {
     qCDebug(lcPatience) << "Game" << (won ? "won" : "over");
     setState(won ? WonState : GameOverState);
+    if (won)
+        emit doResetSavedEngineState();
 }
 
 void Patience::handleCanUndoChanged(bool canUndo)
@@ -276,5 +293,15 @@ void Patience::handleMessageChanged(const QString &message)
     if (m_message != message) {
         m_message = message;
         emit messageChanged();
+    }
+}
+
+void Patience::handleRestoreCompleted(bool success)
+{
+    if (!success && m_gameFile.endsWith('-')) {
+        auto fallback = m_gameFile.left(m_gameFile.length()-1);
+        qCDebug(lcPatience) << "Could not restore game, load instead"
+                            << fallback;
+        loadGame(fallback);
     }
 }

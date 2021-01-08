@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MGConfItem>
 #include <QDebug>
 #include "constants.h"
 #include "engine.h"
@@ -23,6 +24,7 @@
 #include "logging.h"
 
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
+const QString StateConf = QStringLiteral("/state");
 
 bool CardData::operator==(const CardData &other) const
 {
@@ -116,12 +118,13 @@ void Engine::load(const QString &gameFile)
     } else {
         qCDebug(lcEngine) << "Loaded" << gameFile;
         d_ptr->m_state = EnginePrivate::LoadedState;
+        d_ptr->m_gameFile = gameFile;
         emit gameLoaded(gameFile);
     }
 }
 
 void Engine::start() {
-    startEngine(true);
+    startEngine(d_ptr->m_state != EnginePrivate::RestoredState);
 }
 
 void Engine::startEngine(bool newSeed)
@@ -373,6 +376,49 @@ void Engine::setGameOptions(const GameOptionList &options)
         d_ptr->die("Can not apply options");
 
     scm_dynwind_end();
+}
+
+void Engine::saveState() const
+{
+    MGConfItem stateConf(Constants::ConfPath + StateConf);
+    connect(&stateConf, &MGConfItem::valueChanged, [&]() {
+        qCDebug(lcEngine) << "Saved engine state";
+    });
+    stateConf.set(QStringLiteral("%1;%2").arg(d_ptr->m_gameFile).arg(d_ptr->m_seed));
+}
+
+void Engine::resetSavedState() const
+{
+    MGConfItem stateConf(Constants::ConfPath + StateConf);
+    connect(&stateConf, &MGConfItem::valueChanged, [&]() {
+        qCDebug(lcEngine) << "Reset saved state";
+    });
+    stateConf.unset();
+}
+
+void Engine::restoreSavedState()
+{
+    if (d_ptr->m_state < EnginePrivate::GameOverState
+            && d_ptr->m_state > EnginePrivate::UninitializedState) {
+        qCWarning(lcEngine) << "Engine running, can not set seed";
+    } else {
+        MGConfItem stateConf(Constants::ConfPath + StateConf);
+        auto state = stateConf.value();
+        if (state.isValid()) {
+            bool ok;
+            auto parts = state.toString().split(';');
+            auto gameFile = parts.at(0);
+            d_ptr->m_seed = parts.at(1).toULongLong(&ok);
+            if (ok) {
+                load(gameFile);
+                d_ptr->m_state = EnginePrivate::RestoredState;
+            }
+            emit restoreCompleted(ok);
+        } else {
+            qCDebug(lcEngine) << "Engine state was not stored, not restored";
+            emit restoreCompleted(false);
+        }
+    }
 }
 
 void EnginePrivate::updateDealable()

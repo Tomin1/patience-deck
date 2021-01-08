@@ -47,6 +47,9 @@ public slots:
     void requestGameOptions();
     void setGameOption(const GameOption &option);
     void setGameOptions(const GameOptionList &options);
+    void saveState() const;
+    void resetSavedState() const;
+    void restoreSavedState();
 
 signals:
     void canUndoChanged(bool canUndo);
@@ -58,6 +61,7 @@ signals:
     void engineFailure(QString message);
     void gameLoaded(const QString &gameFile);
     void gameStarted();
+    void restoreCompleted(bool success);
     void gameOver(bool won);
     void gameOptions(GameOptionList options);
 
