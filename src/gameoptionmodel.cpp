@@ -15,8 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MGConfItem>
+#include <QSet>
+#include "constants.h"
+#include "gamelist.h"
 #include "gameoptionmodel.h"
 #include "engine.h"
+#include "patience.h"
+
+const QString OptionsConfTemplate = QStringLiteral("/options/%1");
 
 QHash<int, QByteArray> GameOptionModel::s_roleNames = {
     { Qt::DisplayRole, "display" },
@@ -87,8 +94,33 @@ void GameOptionModel::select(int row)
             emit doSetGameOptions(m_options.mid(firstIndex, lastIndex - firstIndex + 1));
             emit dataChanged(index(firstIndex, 0), index(lastIndex, 0), QVector<int>() << SetRole);
         }
-        // TODO: Save the values to dconf too
+        GameOptionModel::saveOptions(Patience::instance()->gameFile(), m_options);
     }
+}
+
+bool GameOptionModel::loadOptions(const QString &gameFile, GameOptionList &options)
+{
+    MGConfItem optionsConf(Constants::ConfPath + OptionsConfTemplate.arg(GameList::name(gameFile)));
+    auto stored = optionsConf.value();
+    if (stored.isValid()) {
+        auto values = stored.toString().split(';').toSet();
+        for (int i = 0; i < options.length(); i++) {
+            options[i].set = values.contains(QString::number(options.at(i).index));
+        }
+        return true;
+    }
+    return false;
+}
+
+void GameOptionModel::saveOptions(const QString &gameFile, const GameOptionList &options)
+{
+    MGConfItem optionsConf(Constants::ConfPath + OptionsConfTemplate.arg(GameList::name(gameFile)));
+    QStringList values;
+    for (const GameOption &option : options) {
+        if (option.set)
+            values.append(QString::number(option.index));
+    }
+    optionsConf.set(values.join(';'));
 }
 
 void GameOptionModel::handleGameOptions(GameOptionList options)

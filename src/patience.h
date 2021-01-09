@@ -66,6 +66,7 @@ public:
     bool canRedo() const;
     bool canDeal() const;
     QString gameName() const;
+    QString gameFile() const;
     int score() const;
     GameState state() const;
     QString message() const;

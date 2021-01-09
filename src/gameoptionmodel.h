@@ -32,6 +32,8 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QHash<int, QByteArray> roleNames() const;
     Q_INVOKABLE void select(int index);
+    static bool loadOptions(const QString &gameFile, GameOptionList &options);
+    static void saveOptions(const QString &gameFile, const GameOptionList &options);
 
     enum Roles {
         DisplayRole = Qt::DisplayRole,

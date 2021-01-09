@@ -20,6 +20,7 @@
 #include "constants.h"
 #include "engine.h"
 #include "engine_p.h"
+#include "gameoptionmodel.h"
 #include "interface.h"
 #include "logging.h"
 
@@ -119,6 +120,9 @@ void Engine::load(const QString &gameFile)
         qCDebug(lcEngine) << "Loaded" << gameFile;
         d_ptr->m_state = EnginePrivate::LoadedState;
         d_ptr->m_gameFile = gameFile;
+        GameOptionList options = d_ptr->getGameOptions();
+        if (!options.isEmpty() && GameOptionModel::loadOptions(gameFile, options))
+            setGameOptions(options);
         emit gameLoaded(gameFile);
     }
 }
@@ -284,13 +288,17 @@ void Engine::doubleClick(quint32 id, int slotId)
 
 void Engine::requestGameOptions()
 {
+    emit gameOptions(d_ptr->getGameOptions());
+}
+
+GameOptionList EnginePrivate::getGameOptions()
+{
     SCM optionsList;
-    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList))
-        d_ptr->die("Can not get game options");
+    if (!makeSCMCall(GetOptionsLambda, NULL, 0, &optionsList))
+        die("Can not get game options");
 
     if (scm_is_false(scm_list_p(optionsList))) {
-        emit gameOptions(GameOptionList());
-        return;
+        return GameOptionList();
     }
 
     scm_dynwind_begin((scm_t_dynwind_flags)0);
@@ -319,7 +327,7 @@ void Engine::requestGameOptions()
     scm_dynwind_end();
 
     qCDebug(lcEngine) << "Constructed a list of game options";
-    emit gameOptions(list);
+    return list;
 }
 
 void Engine::setGameOption(const GameOption &option)

@@ -74,6 +74,7 @@ public:
     ~EnginePrivate();
     static EnginePrivate *instance();
 
+    GameOptionList getGameOptions();
     void updateDealable();
     void recordMove(int slotId);
     void endMove();

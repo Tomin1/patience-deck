@@ -105,7 +105,6 @@ void Patience::loadGame(const QString &gameFile)
     }
     if (m_gameFile != gameFile)
         emit doLoad(gameFile);
-        // TODO: Load game options from dconf
 }
 
 void Patience::undoMove()
@@ -140,6 +139,13 @@ QString Patience::gameName() const
     if (m_gameFile.isEmpty() || m_gameFile.endsWith('-'))
         return QString();
     return GameList::displayable(m_gameFile);
+}
+
+QString Patience::gameFile() const
+{
+    if (m_gameFile.endsWith('-'))
+        return m_gameFile.left(m_gameFile.length()-1);
+    return m_gameFile;
 }
 
 int Patience::score() const
