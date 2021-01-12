@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MGConfItem>
 #include <QDir>
 #include <QSet>
 #include "gamelist.h"
 #include "constants.h"
+
+const QString ShowAllConf = QStringLiteral("/showAllGames");
 
 /*
  * List of supported patience games.
@@ -38,15 +41,14 @@ QHash<int, QByteArray> GameList::s_roleNames = {
     { SupportedRole, "supported" }
 };
 
-bool GameList::s_showAll = false;
-
 GameList::GameList(QObject *parent)
     : QAbstractListModel(parent)
 {
+    bool showAll = GameList::showAll();
     QDir gameDirectory(Constants::GameDirectory);
     for (auto &entry : gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
                                                QDir::Files | QDir::Readable, QDir::Name)) {
-        if (s_showAll || isSupported(entry))
+        if (showAll || isSupported(entry))
             m_games.append(entry);
     }
 }
@@ -109,10 +111,12 @@ bool GameList::isSupported(const QString &fileName)
 
 bool GameList::showAll()
 {
-    return s_showAll;
+    MGConfItem showAllConf(Constants::ConfPath + ShowAllConf);
+    return showAllConf.value().toBool();
 }
 
 void GameList::setShowAll(bool show)
 {
-    s_showAll = show;
+    MGConfItem showAllConf(Constants::ConfPath + ShowAllConf);
+    showAllConf.set(show);
 }

@@ -46,7 +46,6 @@ public:
 private:
     static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
-    static bool s_showAll;
 
     QStringList m_games;
 };
