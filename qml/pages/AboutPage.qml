@@ -42,21 +42,27 @@ Page {
 
             Label {
                 color: Theme.highlightColor
+                linkColor: Theme.primaryColor
                 //: About this application, %1 is the name of the author. Keep the line break.
-                //% "This is a collection of patience games for Sailfish OS written by %1.<br />It utilises GNOME Aisleriot's implementations of patience games and artwork."
-                text: qsTrId("patience-la-about_text").arg("Tomi Leppänen")
+                //% "This is a collection of patience games for Sailfish OS written by %1.<br />It utilises <a href=%2>GNOME Aisleriot</a>'s implementations of patience games and artwork."
+                text: qsTrId("patience-la-about_text")
+                    .arg("Tomi Leppänen")
+                    .arg("\"https://wiki.gnome.org/Apps/Aisleriot\"")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left
                     leftMargin: Theme.horizontalPageMargin
                 }
                 width: aboutPage.width - 2*Theme.horizontalPageMargin
+                onLinkActivated: Qt.openUrlExternally(link)
             }
 
             Label {
                 color: Theme.highlightColor
                 linkColor: Theme.primaryColor
-                text: "Github: <a href=\"%1\">%1</a>".arg("https://github.com/Tomin1/patience-deck/")
+                text: "Github: <a href=%2>%1</a>"
+                    .arg("github.com/Tomin1/patience-deck")
+                    .arg("\"https://github.com/Tomin1/patience-deck/\"")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left
