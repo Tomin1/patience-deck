@@ -22,6 +22,8 @@ import Patience 1.0
 Page {
     id: page
 
+    allowedOrientations: Orientation.All
+
     GameOptions {
         id: gameOptions
     }

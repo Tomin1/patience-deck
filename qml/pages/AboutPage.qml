@@ -22,6 +22,8 @@ import Patience 1.0
 Page {
     id: aboutPage
 
+    allowedOrientations: Orientation.All
+
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: content.height
