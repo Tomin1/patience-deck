@@ -63,6 +63,7 @@ Page {
                     leftMargin: Theme.horizontalPageMargin
                 }
                 width: aboutPage.width - 2*Theme.horizontalPageMargin
+                onLinkActivated: Qt.openUrlExternally(link)
             }
 
             SectionHeader {
