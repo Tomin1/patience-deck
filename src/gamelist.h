@@ -18,6 +18,7 @@
 #ifndef GAMELIST_H
 #define GAMELIST_H
 
+#include <MGConfItem>
 #include <QAbstractListModel>
 
 class GameList : public QAbstractListModel
@@ -44,6 +45,8 @@ public:
     };
 
 private:
+    static MGConfItem *showAllConf();
+
     static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
 

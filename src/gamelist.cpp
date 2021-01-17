@@ -15,13 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <MGConfItem>
 #include <QDir>
 #include <QSet>
 #include "gamelist.h"
 #include "constants.h"
-
-const QString ShowAllConf = QStringLiteral("/showAllGames");
 
 /*
  * List of supported patience games.
@@ -111,13 +108,18 @@ bool GameList::isSupported(const QString &fileName)
 
 bool GameList::showAll()
 {
-    MGConfItem showAllConf(Constants::ConfPath + ShowAllConf);
-    return showAllConf.value().toBool();
+    return showAllConf()->value().toBool();
 }
 
 void GameList::setShowAll(bool show)
 {
-    MGConfItem showAllConf(Constants::ConfPath + ShowAllConf);
-    showAllConf.set(show);
-    showAllConf.sync();
+    showAllConf()->set(show);
+}
+
+MGConfItem *GameList::showAllConf()
+{
+    static MGConfItem *confItem = nullptr;
+    if (!confItem)
+        confItem = new MGConfItem(Constants::ConfPath + QStringLiteral("/showAllGames"));
+    return confItem;
 }
