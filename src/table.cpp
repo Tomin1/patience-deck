@@ -19,8 +19,8 @@
 #include <math.h>
 #include <QBrush>
 #include <QColor>
-#include <QPainter>
 #include <QGuiApplication>
+#include <QSGSimpleRectNode>
 #include <QStyleHints>
 #include "table.h"
 #include "constants.h"
@@ -32,28 +32,22 @@ namespace {
 
 const qreal CardRatio = 79.0 / 123.0;
 const QMarginsF SlotMargins(3, 3, 3, 3);
-const qreal SlotRounding = 10.0;
-const int SlotOutlineWidth = 3;
+const QMarginsF SlotOutlineWidth(3, 3, 3, 3);
 
 } // namespace
 
 const QString Constants::DataDirectory = QStringLiteral(QUOTE(DATADIR) "/data");
 
 Table::Table(QQuickItem *parent)
-    : QQuickPaintedItem(parent)
+    : QQuickItem(parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
     , m_preparing(true)
-    , m_pen(Qt::gray)
+    , m_dirty(true)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
-
-    // Fill the scene with suitable color, nothing behind this is displayed
-    setOpaquePainting(true);
-    QColor backgroundColor(Qt::darkGreen);
-    setFillColor(backgroundColor);
-    m_pen.setWidth(SlotOutlineWidth);
+    setFlag(QQuickItem::ItemHasContents);
 
     auto engine = Engine::instance();
     connect(engine, &Engine::newSlot, this, &Table::handleNewSlot);
@@ -72,13 +66,36 @@ Table::Table(QQuickItem *parent)
     connect(this, &Table::doClick, engine, &Engine::click);
 }
 
-void Table::paint(QPainter *painter)
+QSGNode *Table::getPaintNodeForSlot(Slot *slot)
 {
-    painter->setPen(m_pen);
-    for (Slot *slot : m_slots) {
-        QRectF target = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
-        painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
+    auto target = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
+    QColor outlineColor(Qt::gray);
+    auto *node = new QSGSimpleRectNode(target, outlineColor);
+    QColor backgroundColor(Qt::darkGreen);
+    target -= SlotOutlineWidth;
+    auto *innerNode = new QSGSimpleRectNode(target, backgroundColor);
+    node->appendChildNode(innerNode);
+    return node;
+}
+
+QSGNode *Table::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
+{
+    auto *node = static_cast<QSGSimpleRectNode *>(oldNode);
+    if (!node || m_dirty) {
+        if (!node) {
+            QColor backgroundColor(Qt::darkGreen);
+            node = new QSGSimpleRectNode(boundingRect(), backgroundColor);
+        }
+        if (m_dirty) {
+            node->setRect(boundingRect());
+            node->removeAllChildNodes();
+        }
+        for (Slot *slot : m_slots) {
+            auto slotNode = getPaintNodeForSlot(slot);
+            node->appendChildNode(slotNode);
+        }
     }
+    return node;
 }
 
 qreal Table::minimumSideMargin() const
@@ -220,7 +237,8 @@ void Table::handleNewSlot(int id, const CardList &cards, int type,
 {
     m_slots.insert(id, new Slot(id, cards, SlotType(type), x, y, expansionDepth,
                                 expandedDown, expandedRight, this));
-    update();
+    m_dirty = true;
+    updateIfNotPreparing();
 }
 
 void Table::handleSetExpansionToDown(int id, double expansion)
@@ -230,7 +248,7 @@ void Table::handleSetExpansionToDown(int id, double expansion)
         qCWarning(lcPatience) << "Can not set delta for expansion to down when expansion to right is set";
     } else if (slot->expandedDown()) {
         slot->setDelta(expansion);
-        update();
+        updateIfNotPreparing();
     } else {
         qCWarning(lcPatience) << "Can not set delta when expansion is not set";
     }
@@ -238,13 +256,12 @@ void Table::handleSetExpansionToDown(int id, double expansion)
 
 void Table::handleSetExpansionToRight(int id, double expansion)
 {
-    update();
     Slot *slot = m_slots[id];
     if (slot->expandedDown()) {
         qCWarning(lcPatience) << "Can not set delta for expansion to right when expansion to down is set";
     } else if (slot->expandedRight()) {
         slot->setDelta(expansion);
-        update();
+        updateIfNotPreparing();
     } else {
         qCWarning(lcPatience) << "Can not set delta when expansion is not set";
     }
@@ -253,25 +270,28 @@ void Table::handleSetExpansionToRight(int id, double expansion)
 void Table::handleInsertCard(int slotId, int index, const CardData &card)
 {
     m_slots[slotId]->insertCard(index, card);
-    update();
+    updateIfNotPreparing();
 }
 
 void Table::handleAppendCard(int slotId, const CardData &card)
 {
     m_slots[slotId]->appendCard(card);
-    update();
+    updateIfNotPreparing();
 }
 
 void Table::handleRemoveCard(int slotId, int index)
 {
     m_slots[slotId]->removeCard(index);
-    update();
+    if (m_slots[slotId]->empty())
+        m_dirty = true;
+    updateIfNotPreparing();
 }
 
 void Table::handleClearSlot(int slotId)
 {
     m_slots[slotId]->clear();
-    update();
+    m_dirty = true;
+    updateIfNotPreparing();
 }
 
 
@@ -284,12 +304,13 @@ void Table::handleClearData()
     m_slots.clear();
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();
-    update();
 }
 
 void Table::handleGameStarted()
 {
     m_preparing = false;
+    m_dirty = true;
+    update();
 }
 
 void Table::handleWidthChanged(double width)
@@ -351,6 +372,14 @@ void Table::updateCardSize()
         Slot *slot = it.value();
         slot->updateDimensions();
     }
+
+    m_dirty = true;
+}
+
+void Table::updateIfNotPreparing()
+{
+    if (!m_preparing)
+        update();
 }
 
 void Table::mousePressEvent(QMouseEvent *event)

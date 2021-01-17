@@ -21,13 +21,12 @@
 #include <QMap>
 #include <QPointF>
 #include <QSizeF>
-#include <QtQuick/QQuickPaintedItem>
+#include <QtQuick/QQuickItem>
 #include "engine.h"
 #include "enginedata.h"
 #include "slot.h"
 
-class QPainter;
-class Table : public QQuickPaintedItem
+class Table : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(qreal minimumSideMargin READ minimumSideMargin
@@ -44,7 +43,8 @@ class Table : public QQuickPaintedItem
 public:
     explicit Table(QQuickItem *parent = nullptr);
 
-    void paint(QPainter *painter);
+    static QSGNode *getPaintNodeForSlot(Slot *slot);
+    QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
 
     qreal minimumSideMargin() const;
     void setMinimumSideMargin(qreal minimumSideMargin);
@@ -94,6 +94,7 @@ private slots:
     void updateCardSize();
 
 private:
+    void updateIfNotPreparing();
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
@@ -108,6 +109,7 @@ private:
     QSizeF m_cardMargin;
     bool m_preparing;
     QPen m_pen;
+    bool m_dirty;
 
     QElapsedTimer m_timer;
     QPointF m_startPoint;
