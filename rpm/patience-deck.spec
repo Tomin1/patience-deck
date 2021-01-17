@@ -1,6 +1,6 @@
 Name:       patience-deck
 Summary:    Collection of patience games
-Version:    0.1.1
+Version:    0.1.2
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
 License:    GPLv3+
