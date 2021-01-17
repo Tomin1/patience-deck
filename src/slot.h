@@ -20,14 +20,13 @@
 
 #include <QElapsedTimer>
 #include <QPointF>
-#include <QtQuick/QQuickPaintedItem>
+#include <QtQuick/QQuickItem>
 #include "card.h"
 #include "enginedata.h"
 #include "engine.h"
 
 class Table;
-class QPainter;
-class Slot : public QQuickPaintedItem
+class Slot : public QQuickItem
 {
     Q_OBJECT
 
@@ -55,7 +54,6 @@ public:
     Slot(int id, const CardList &cards, SlotType type, double x, double y,
          int expansionDepth, bool expandedDown, bool expandedRight, Table *table);
 
-    void paint(QPainter *painter);
     void updateDimensions();
     void updateLocations();
     void updateLocations(iterator iter);
@@ -100,7 +98,6 @@ private:
     qreal m_calculatedDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
-    QPen m_pen;
 
     QElapsedTimer m_timer;
     QPointF m_startPoint;

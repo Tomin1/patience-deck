@@ -51,7 +51,7 @@ CardList toCardData(const QList<Card *> &cards)
     return list;
 }
 
-}; // namespace
+} // namespace
 
 quint32 Drag::s_count = 0;
 

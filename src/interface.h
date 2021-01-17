@@ -77,7 +77,7 @@ const char LambdaNames[] = {
   "dealable\0"
 };
 
-}; // Interface
+} // Interface
 
 namespace Scheme {
 
@@ -97,6 +97,6 @@ SCM startNewGame(void *data);
 SCM loadGameFromFile(void *data);
 SCM callLambda(void *data);
 
-}; // Scheme
+} // Scheme
 
 #endif // INTERFACE_H

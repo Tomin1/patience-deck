@@ -16,7 +16,6 @@
  */
 
 #include <QGuiApplication>
-#include <QPainter>
 #include <QStyleHints>
 #include "table.h"
 #include "card.h"
@@ -28,15 +27,12 @@ namespace {
 
 const qreal CardStep = 0.2;
 const qreal MinCardStep = 0.05;
-const qreal SlotRounding = 10.0;
-const int SlotOutlineWidth = 3;
-const QMarginsF SlotMargins(3, 3, 3, 3);
 
-}; // namespace
+} // namespace
 
 Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
            int expansionDepth, bool expandedDown, bool expandedRight, Table *table)
-    : QQuickPaintedItem(table)
+    : QQuickItem(table)
     , m_table(table)
     , m_id(id)
     , m_type(type)
@@ -47,21 +43,12 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
-    , m_pen(Qt::gray)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     for (const CardData &card : cards)
         m_cards.append(new Card(card, table, this));
-    m_pen.setWidth(SlotOutlineWidth);
     auto engine = Engine::instance();
     connect(this, &Slot::doClick, engine, &Engine::click);
-}
-
-void Slot::paint(QPainter *painter)
-{
-    painter->setPen(m_pen);
-    QRectF target = QRectF(0, 0, width(), height()) - SlotMargins;
-    painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
 }
 
 void Slot::updateDimensions()

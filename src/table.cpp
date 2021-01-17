@@ -28,8 +28,11 @@
 namespace {
 
 const qreal CardRatio = 79.0 / 123.0;
+const QMarginsF SlotMargins(3, 3, 3, 3);
+const qreal SlotRounding = 10.0;
+const int SlotOutlineWidth = 3;
 
-}; // namespace
+} // namespace
 
 const QString Constants::DataDirectory = QStringLiteral(QUOTE(DATADIR) "/data");
 
@@ -39,6 +42,7 @@ Table::Table(QQuickItem *parent)
     , m_sideMargin(0)
     , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
     , m_preparing(true)
+    , m_pen(Qt::gray)
 {
     setFlag(QQuickItem::ItemClipsChildrenToShape);
 
@@ -46,6 +50,7 @@ Table::Table(QQuickItem *parent)
     setOpaquePainting(true);
     QColor backgroundColor(Qt::darkGreen);
     setFillColor(backgroundColor);
+    m_pen.setWidth(SlotOutlineWidth);
 
     auto engine = Engine::instance();
     connect(engine, &Engine::newSlot, this, &Table::handleNewSlot);
@@ -68,7 +73,11 @@ Table::Table(QQuickItem *parent)
 
 void Table::paint(QPainter *painter)
 {
-    Q_UNUSED(painter) // Nothing to paint here
+    painter->setPen(m_pen);
+    for (Slot *slot : m_slots) {
+        QRectF target = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
+        painter->drawRoundedRect(target, SlotRounding, SlotRounding, Qt::RelativeSize);
+    }
 }
 
 qreal Table::minimumSideMargin() const

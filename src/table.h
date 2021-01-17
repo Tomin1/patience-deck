@@ -105,6 +105,7 @@ private:
     QSizeF m_cardMargin;
     QSvgRenderer m_cardRenderer;
     bool m_preparing;
+    QPen m_pen;
 };
 
 #endif // TABLE_H
