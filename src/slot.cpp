@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
 #include "table.h"
 #include "card.h"
 #include "slot.h"
@@ -51,8 +52,8 @@ void Slot::updateDimensions()
     QSizeF margin = m_table->margin();
     QSizeF cardSpace = m_table->cardSpace();
     QSizeF cardMargin = m_table->cardMargin();
-    setX(m_table->sideMargin() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width());
-    setY(margin.height() + (cardSpace.height() + margin.height()) * m_position.y() + cardMargin.height());
+    setX(round(m_table->sideMargin() + (cardSpace.width() + margin.width()) * m_position.x() + cardMargin.width()));
+    setY(round(margin.height() + (cardSpace.height() + margin.height()) * m_position.y() + cardMargin.height()));
 
     QSizeF cardSize = m_table->cardSize();
     setWidth(cardSize.width());
@@ -76,11 +77,11 @@ void Slot::updateLocations(iterator first)
     for (auto it = first; it != end(); it++) {
         Card *card = *it;
         if (expandedRight()) {
-            card->setX(delta(it));
+            card->setX(round(delta(it)));
             card->setY(0);
         } else if (expandedDown()) {
             card->setX(0);
-            card->setY(delta(it));
+            card->setY(round(delta(it)));
         } else {
             card->setX(0);
             card->setY(0);

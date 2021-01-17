@@ -21,7 +21,6 @@
 #include <QMap>
 #include <QPointF>
 #include <QSizeF>
-#include <QSvgRenderer>
 #include <QtQuick/QQuickPaintedItem>
 #include "engine.h"
 #include "enginedata.h"
@@ -67,7 +66,6 @@ public:
     QSizeF cardMargin() const;
     bool preparing() const;
 
-    QSvgRenderer *cardRenderer();
     QList<Slot *> getSlotsFor(const QList<Card *> &cards, Slot *source);
 
 signals:
@@ -108,7 +106,6 @@ private:
     QSizeF m_cardSize;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
-    QSvgRenderer m_cardRenderer;
     bool m_preparing;
     QPen m_pen;
 

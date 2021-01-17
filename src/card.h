@@ -18,28 +18,32 @@
 #ifndef CARD_H
 #define CARD_H
 
-#include <QtQuick/QQuickPaintedItem>
+#include <QtQuick/QQuickItem>
 #include <QPen>
 #include "enginedata.h"
 #include "drag.h"
 
-class QPainter;
+class QQuickWindow;
+class QSvgRenderer;
+class QSGTexture;
 class Table;
 class Slot;
-class Card : public QQuickPaintedItem
+class Card : public QQuickItem
 {
     Q_OBJECT
 
 public:
     Card(const CardData &card, Table *table, Slot *slot);
 
-    void paint(QPainter *painter);
+    QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
+
+    QSizeF size() const;
+    void setSize(const QSizeF &size);
 
     Suit suit() const;
     Rank rank() const;
     bool show() const;
     bool isBlack() const;
-    const QString elementName() const;
     bool dragged() const;
 
     CardData data() const;
@@ -51,10 +55,14 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
+    static QSvgRenderer *cardRenderer();
+    static QSGTexture *cardTexture(const QSizeF &size, QQuickWindow *window);
+
     Table *m_table;
     Slot *m_slot;
     CardData m_data;
     Drag *m_drag;
+    bool m_dirty;
 };
 
 QDebug operator<<(QDebug debug, const Card &card);

@@ -38,15 +38,11 @@ enum Rank : int {
     RankQueen = 12,
     RankKing = 13,
     RankAceHigh = 14,
-
+    BlackJoker = 52,
+    RedJoker = 53,
     CardBack = 54,
     CardSlot = 55,
     CardsTotal = 56,
-};
-
-enum Joker {
-    BlackJoker = 52,
-    RedJoker = 53,
 };
 
 enum Suit : int {

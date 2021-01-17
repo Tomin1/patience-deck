@@ -16,57 +16,93 @@
  */
 
 #include <QPainter>
+#include <QQuickWindow>
+#include <QSGSimpleTextureNode>
+#include <QSGTexture>
+#include <QSvgRenderer>
 #include "table.h"
 #include "card.h"
+#include "constants.h"
 #include "logging.h"
 #include "slot.h"
 
-namespace Id {
+namespace {
 
-const auto Back = QStringLiteral("back");
-const auto JokerBlack = QStringLiteral("joker_black");
-const auto JokerRed = QStringLiteral("joker_red");
-const auto Club = QStringLiteral("club_%1");
-const auto Diamond = QStringLiteral("diamond_%1");
-const auto Heart = QStringLiteral("heart_%1");
-const auto Spade = QStringLiteral("spade_%1");
-const auto Jack = QStringLiteral("jack");
-const auto Queen = QStringLiteral("queen");
-const auto King = QStringLiteral("king");
-
-const QString &getSuitTemplate(Suit suit)
-{
-    switch (suit) {
-    case SuitClubs:
-        return Club;
-    case SuitDiamonds:
-        return Diamond;
-    case SuitHeart:
-        return Heart;
-    case SuitSpade:
-        return Spade;
+int getColumn(Rank rank) {
+    switch (rank) {
+    case RankAceHigh:
+    case RankJoker:
+    case BlackJoker:
+        return 0;
+    case RedJoker:
+        return 1;
+    case CardBack:
+        return 2;
     default:
-        Q_UNREACHABLE();
-        break;
+        return rank-1;
     }
 }
 
-}; // Id
+int getRow(Rank rank, Suit suit)
+{
+    switch (rank) {
+    case CardBack:
+    case RankJoker:
+    case BlackJoker:
+    case RedJoker:
+        return 4;
+    default:
+        return suit;
+    }
+}
+
+} // namespace
 
 Card::Card(const CardData &card, Table *table, Slot *slot)
-    : QQuickPaintedItem(slot)
+    : QQuickItem(slot)
     , m_table(table)
     , m_slot(slot)
     , m_data(card)
     , m_drag(nullptr)
+    , m_dirty(true)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setZ(1);
+    setFlag(QQuickItem::ItemHasContents);
+    setSmooth(true);
 }
 
-void Card::paint(QPainter *painter)
+QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    m_table->cardRenderer()->render(painter, elementName());
+    auto texture = cardTexture(size(), window());
+    if (!texture)
+        return oldNode;
+
+    auto *node = static_cast<QSGSimpleTextureNode *>(oldNode);
+    if (!node || m_dirty) {
+        if (!node)
+            node = new QSGSimpleTextureNode();
+        node->setTexture(texture);
+        int column = getColumn(show() ? rank() : CardBack);
+        int row = getRow(show() ? rank() : CardBack, suit());
+        QRect rect(column * width(), row * height(), width(), height());
+        node->setSourceRect(rect);
+        m_dirty = false;
+    }
+    node->setRect(boundingRect());
+    return node;
+}
+
+QSizeF Card::size() const
+{
+    return QSizeF(width(), height());
+}
+
+void Card::setSize(const QSizeF &size)
+{
+    m_dirty = true;
+    setWidth(size.width());
+    setHeight(size.height());
 }
 
 Suit Card::suit() const
@@ -87,30 +123,6 @@ bool Card::show() const
 bool Card::isBlack() const
 {
     return m_data.suit == SuitClubs || m_data.suit == SuitSpade;
-}
-
-const QString Card::elementName() const
-{
-    if (!m_data.show) {
-        return Id::Back;
-    } else {
-        int rank = m_data.rank;
-        switch (m_data.rank) {
-        case RankJoker:
-            return isBlack() ? Id::JokerBlack : Id::JokerRed;
-        case RankJack:
-            return Id::getSuitTemplate(m_data.suit).arg(Id::Jack);
-        case RankQueen:
-            return Id::getSuitTemplate(m_data.suit).arg(Id::Queen);
-        case RankKing:
-            return Id::getSuitTemplate(m_data.suit).arg(Id::King);
-        case RankAceHigh:
-            rank = 1;
-            // fallthrough
-        default:
-            return Id::getSuitTemplate(m_data.suit).arg(rank);
-        }
-    }
 }
 
 bool Card::dragged() const
@@ -169,6 +181,41 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     }
 
     m_drag->update(event);
+}
+
+QSvgRenderer *Card::cardRenderer()
+{
+    static QSvgRenderer *cardRenderer = nullptr;
+    if (!cardRenderer)
+        cardRenderer = new QSvgRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"));
+    return cardRenderer;
+}
+
+QSGTexture *Card::cardTexture(const QSizeF &cardSize, QQuickWindow *window)
+{
+    if (cardSize.isEmpty())
+        return nullptr;
+
+    static QSizeF previousCardSize;
+    static QSGTexture *texture = nullptr;
+    if (!texture || previousCardSize != cardSize) {
+        auto renderer = cardRenderer();
+        QSize size(cardSize.width()*13, cardSize.height()*5);
+        QImage image(size, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&image);
+        painter.setRenderHint(QPainter::Antialiasing);
+        renderer->render(&painter);
+        if (texture)
+            texture->deleteLater();
+        texture = window->createTextureFromImage(image);
+        connect(window, &QQuickWindow::sceneGraphInvalidated, texture, [&] {
+            texture->deleteLater();
+            texture = nullptr;
+        });
+        qCDebug(lcPatience) << "Drew new card texture for card size of" << cardSize;
+    }
+    previousCardSize = cardSize;
+    return texture;
 }
 
 QDebug operator<<(QDebug debug, const Card &card)

@@ -16,6 +16,7 @@
  */
 
 #include <algorithm>
+#include <math.h>
 #include <QBrush>
 #include <QColor>
 #include <QPainter>
@@ -42,7 +43,6 @@ Table::Table(QQuickItem *parent)
     : QQuickPaintedItem(parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
-    , m_cardRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"))
     , m_preparing(true)
     , m_pen(Qt::gray)
 {
@@ -70,9 +70,6 @@ Table::Table(QQuickItem *parent)
     connect(this, &Table::heightChanged, this, &Table::updateCardSize);
     connect(this, &Table::widthChanged, this, &Table::updateCardSize);
     connect(this, &Table::doClick, engine, &Engine::click);
-
-    if (!m_cardRenderer.isValid())
-        qCCritical(lcPatience) << "SVG file is not valid! Can not render cards!";
 }
 
 void Table::paint(QPainter *painter)
@@ -192,11 +189,6 @@ QSizeF Table::cardMargin() const
 bool Table::preparing() const
 {
     return m_preparing;
-}
-
-QSvgRenderer *Table::cardRenderer()
-{
-    return &m_cardRenderer;
 }
 
 QList<Slot *> Table::getSlotsFor(const QList<Card *> &cards, Slot *source)
@@ -329,10 +321,10 @@ void Table::updateCardSize()
     qreal maximumWidth = (verticalSpace + m_margin.width()) / m_tableSize.width() - m_margin.width();
     qreal maximumHeight = (horizontalSpace + m_margin.height()) / m_tableSize.height() - m_margin.height();
     if ((maximumHeight * CardRatio) < maximumWidth) {
-        m_cardSize = QSizeF(maximumHeight * CardRatio, maximumHeight);
+        m_cardSize = QSizeF(round(maximumHeight * CardRatio), round(maximumHeight));
         m_cardMargin = QSizeF((maximumWidth - m_cardSize.width()) / 2.0, 0.0);
     } else {
-        m_cardSize = QSizeF(maximumWidth, maximumWidth / CardRatio);
+        m_cardSize = QSizeF(round(maximumWidth), round(maximumWidth / CardRatio));
         m_cardMargin = QSizeF(0.0, (maximumHeight - m_cardSize.height()) / 2.0);
     }
 
