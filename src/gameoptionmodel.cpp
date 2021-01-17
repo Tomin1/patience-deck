@@ -121,6 +121,7 @@ void GameOptionModel::saveOptions(const QString &gameFile, const GameOptionList 
             values.append(QString::number(option.index));
     }
     optionsConf.set(values.join(';'));
+    optionsConf.sync();
 }
 
 void GameOptionModel::handleGameOptions(GameOptionList options)

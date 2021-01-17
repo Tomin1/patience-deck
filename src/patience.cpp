@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <MGConfItem>
 #include <QDir>
 #include <QJSEngine>
 #include <QObject>
@@ -52,6 +51,7 @@ Patience::Patience(QObject *parent)
     , m_canDeal(false)
     , m_score(0)
     , m_state(UninitializedState)
+    , m_historyConf(Constants::ConfPath + HistoryConf)
 {
     auto engine = Engine::instance();
     engine->moveToThread(&m_engineThread);
@@ -75,6 +75,10 @@ Patience::Patience(QObject *parent)
     connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
     connect(this, &Patience::doResetSavedEngineState, engine, &Engine::resetSavedState);
     connect(this, &Patience::doRestoreSavedEngineState, engine, &Engine::restoreSavedState);
+    connect(&m_historyConf, &MGConfItem::valueChanged, this, [&] {
+        qCDebug(lcPatience) << "Saved history:" << m_historyConf.value().toString();
+    });
+    connect(&m_historyConf, &MGConfItem::valueChanged, this, &Patience::historyChanged);
     m_engineThread.start();
 }
 
@@ -206,8 +210,7 @@ void Patience::setShowAllGames(bool show)
 
 QStringList Patience::history() const
 {
-    MGConfItem historyConf(Constants::ConfPath + HistoryConf);
-    auto list = historyConf.value().toString().split(';');
+    auto list = m_historyConf.value().toString().split(';');
     list.removeAll(QString());
     return list;
 }
@@ -231,19 +234,14 @@ void Patience::handleGameLoaded(const QString &gameFile)
     }
     setState(LoadedState);
 
-    MGConfItem historyConf(Constants::ConfPath + HistoryConf);
-    connect(&historyConf, &MGConfItem::valueChanged, [&]() {
-        qCDebug(lcPatience) << "Saved history:" << historyConf.value().toString();
-        emit historyChanged();
-    });
-    auto history = historyConf.value();
+    auto history = m_historyConf.value();
     if (history.isValid()) {
         auto list = history.toString().split(';').mid(0, 10);
         list.prepend(gameFile);
         list.removeDuplicates();
-        historyConf.set(list.join(';'));
+        m_historyConf.set(list.join(';'));
     } else {
-        historyConf.set(gameFile);
+        m_historyConf.set(gameFile);
     }
 }
 

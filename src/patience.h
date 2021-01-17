@@ -18,6 +18,7 @@
 #ifndef PATIENCE_H
 #define PATIENCE_H
 
+#include <MGConfItem>
 #include <QObject>
 #include <QThread>
 #include "engine.h"
@@ -119,6 +120,7 @@ private:
     GameState m_state;
     QString m_gameFile;
     QString m_message;
+    MGConfItem m_historyConf;
 
     static Patience *s_game;
 };

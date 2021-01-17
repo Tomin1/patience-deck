@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <MGConfItem>
 #include <QDebug>
 #include "constants.h"
 #include "engine.h"
@@ -87,11 +86,16 @@ Engine *Engine::instance()
 Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
+    , m_stateConf(Constants::ConfPath + StateConf)
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
+    connect(&m_stateConf, &MGConfItem::valueChanged, this, [&]() {
+        qCDebug(lcEngine) << (m_stateConf.value().isValid()
+                              ? "Saved engine state" : "Reset saved state");
+    });
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
@@ -386,22 +390,14 @@ void Engine::setGameOptions(const GameOptionList &options)
     scm_dynwind_end();
 }
 
-void Engine::saveState() const
+void Engine::saveState()
 {
-    MGConfItem stateConf(Constants::ConfPath + StateConf);
-    connect(&stateConf, &MGConfItem::valueChanged, [&]() {
-        qCDebug(lcEngine) << "Saved engine state";
-    });
-    stateConf.set(QStringLiteral("%1;%2").arg(d_ptr->m_gameFile).arg(d_ptr->m_seed));
+    m_stateConf.set(QStringLiteral("%1;%2").arg(d_ptr->m_gameFile).arg(d_ptr->m_seed));
 }
 
-void Engine::resetSavedState() const
+void Engine::resetSavedState()
 {
-    MGConfItem stateConf(Constants::ConfPath + StateConf);
-    connect(&stateConf, &MGConfItem::valueChanged, [&]() {
-        qCDebug(lcEngine) << "Reset saved state";
-    });
-    stateConf.unset();
+    m_stateConf.unset();
 }
 
 void Engine::restoreSavedState()
@@ -410,8 +406,7 @@ void Engine::restoreSavedState()
             && d_ptr->m_state > EnginePrivate::UninitializedState) {
         qCWarning(lcEngine) << "Engine running, can not set seed";
     } else {
-        MGConfItem stateConf(Constants::ConfPath + StateConf);
-        auto state = stateConf.value();
+        auto state = m_stateConf.value();
         if (state.isValid()) {
             bool ok;
             auto parts = state.toString().split(';');

@@ -18,6 +18,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <MGConfItem>
 #include <QObject>
 #include <QString>
 #include "enginedata.h"
@@ -47,8 +48,8 @@ public slots:
     void requestGameOptions();
     void setGameOption(const GameOption &option);
     void setGameOptions(const GameOptionList &options);
-    void saveState() const;
-    void resetSavedState() const;
+    void saveState();
+    void resetSavedState();
     void restoreSavedState();
 
 signals:
@@ -91,6 +92,7 @@ private:
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
     EnginePrivate *d_ptr;
+    MGConfItem m_stateConf;
 };
 
 #endif // ENGINE_H

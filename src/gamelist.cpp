@@ -119,4 +119,5 @@ void GameList::setShowAll(bool show)
 {
     MGConfItem showAllConf(Constants::ConfPath + ShowAllConf);
     showAllConf.set(show);
+    showAllConf.sync();
 }
