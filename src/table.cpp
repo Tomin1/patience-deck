@@ -211,9 +211,9 @@ QList<Slot *> Table::getSlotsFor(const QList<Card *> &cards, Slot *source)
     QList<Slot *> sorted;
     auto values = results.values();
     for (auto it = values.rbegin(); it != values.rend(); it++) {
+        sorted.append(*it);
         if (*it == source)
             break;
-        sorted.append(*it);
     }
     return sorted;
 }
