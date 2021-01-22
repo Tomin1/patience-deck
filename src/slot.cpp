@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QGuiApplication>
-#include <QStyleHints>
 #include "table.h"
 #include "card.h"
 #include "slot.h"
@@ -44,11 +42,8 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
 {
-    setAcceptedMouseButtons(Qt::LeftButton);
     for (const CardData &card : cards)
         m_cards.append(new Card(card, table, this));
-    auto engine = Engine::instance();
-    connect(this, &Slot::doClick, engine, &Engine::click);
 }
 
 void Slot::updateDimensions()
@@ -273,25 +268,6 @@ Slot::iterator Slot::find(Card *card)
             return it;
     }
     return end();
-}
-
-void Slot::mousePressEvent(QMouseEvent *event)
-{
-    qCDebug(lcMouse) << event << "for" << *this;
-    m_timer.start();
-    m_startPoint = event->pos();
-}
-
-void Slot::mouseReleaseEvent(QMouseEvent *event)
-{
-    qCDebug(lcMouse) << event << "for" << *this;
-
-    auto styleHints = QGuiApplication::styleHints();
-    if (!m_timer.hasExpired(styleHints->startDragTime())
-            && (m_startPoint - event->pos()).manhattanLength() < styleHints->startDragDistance()) {
-        qCDebug(lcPatience) << "Detected click on" << this;
-        emit doClick(-1, id());
-    }
 }
 
 bool Slot::reevaluateDelta()

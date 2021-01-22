@@ -72,6 +72,7 @@ public:
     QList<Card *> take(Card *first);
     void put(const QList<Card *> &cards);
     bool contains(Card *card) const;
+    using QQuickItem::contains;
 
     bool expanded() const;
     bool expandedRight() const;
@@ -80,13 +81,8 @@ public:
     void setDelta(double delta);
     int expansionDepth() const;
 
-signals:
-    void doClick(quint32 id, int slotId);
-
 private:
     bool reevaluateDelta();
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
 
     Table *m_table;
     int m_id;
@@ -98,9 +94,6 @@ private:
     qreal m_calculatedDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
-
-    QElapsedTimer m_timer;
-    QPointF m_startPoint;
 };
 
 QDebug operator<<(QDebug debug, const Slot &slot);

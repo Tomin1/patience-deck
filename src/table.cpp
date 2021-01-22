@@ -19,6 +19,8 @@
 #include <QBrush>
 #include <QColor>
 #include <QPainter>
+#include <QGuiApplication>
+#include <QStyleHints>
 #include "table.h"
 #include "constants.h"
 #include "engine.h"
@@ -44,6 +46,7 @@ Table::Table(QQuickItem *parent)
     , m_preparing(true)
     , m_pen(Qt::gray)
 {
+    setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
 
     // Fill the scene with suitable color, nothing behind this is displayed
@@ -66,6 +69,7 @@ Table::Table(QQuickItem *parent)
     connect(engine, &Engine::heightChanged, this, &Table::handleHeightChanged);
     connect(this, &Table::heightChanged, this, &Table::updateCardSize);
     connect(this, &Table::widthChanged, this, &Table::updateCardSize);
+    connect(this, &Table::doClick, engine, &Engine::click);
 
     if (!m_cardRenderer.isValid())
         qCCritical(lcPatience) << "SVG file is not valid! Can not render cards!";
@@ -355,4 +359,41 @@ void Table::updateCardSize()
         Slot *slot = it.value();
         slot->updateDimensions();
     }
+}
+
+void Table::mousePressEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+
+    for (Slot *slot : m_slots) {
+        QPointF point = mapToItem(slot, event->pos());
+        if (slot->contains(point)) {
+            qCDebug(lcMouse) << "Found slot" << slot << "on click position";
+            m_timer.start();
+            m_startPoint = event->pos();
+        }
+    }
+}
+
+void Table::mouseReleaseEvent(QMouseEvent *event)
+{
+    qCDebug(lcMouse) << event << "for" << *this;
+
+    auto styleHints = QGuiApplication::styleHints();
+    if (!m_timer.hasExpired(styleHints->startDragTime())
+            && (m_startPoint - event->pos()).manhattanLength() < styleHints->startDragDistance()) {
+        for (Slot *slot : m_slots) {
+            QPointF point = mapToItem(slot, event->pos());
+            if (slot->contains(point)) {
+                qCDebug(lcPatience) << "Detected click on" << slot;
+                emit doClick(-1, slot->id());
+            }
+        }
+    }
+}
+
+QDebug operator<<(QDebug debug, const Table &)
+{
+    debug.nospace() << "Table()";
+    return debug.maybeSpace();
 }

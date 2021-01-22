@@ -77,6 +77,8 @@ signals:
     void verticalMarginChanged();
     void maximumVerticalMarginChanged();
 
+    void doClick(quint32 id, int slotId);
+
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type,
                        double x, double y, int expansionDepth,
@@ -94,6 +96,9 @@ private slots:
     void updateCardSize();
 
 private:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
     qreal m_sideMargin;
@@ -106,6 +111,11 @@ private:
     QSvgRenderer m_cardRenderer;
     bool m_preparing;
     QPen m_pen;
+
+    QElapsedTimer m_timer;
+    QPointF m_startPoint;
 };
+
+QDebug operator<<(QDebug debug, const Table &);
 
 #endif // TABLE_H
