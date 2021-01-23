@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021  Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,6 +110,8 @@ Page {
             }
 
             Table {
+                id: table
+
                 enabled: Patience.state < Patience.GameOverState
                 height: page.height - header.height - message.height
                 width: parent.width
@@ -119,63 +121,6 @@ Page {
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
-
-                Loader {
-                    active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
-                    sourceComponent: Component {
-                        Rectangle {
-                            gradient: Gradient {
-                                GradientStop {
-                                    position: 1.0
-                                    color: Qt.rgba(1.0, 1.0, 1.0, 0.0)
-                                }
-                                GradientStop {
-                                    position: 0.0
-                                    color: Qt.rgba(1.0, 1.0, 1.0, 0.5)
-                                }
-                            }
-
-                            Rectangle {
-                                readonly property real gray: Theme.colorScheme === Theme.LightOnDark ? 0.3 : 0.8
-                                anchors {
-                                    horizontalCenter: parent.horizontalCenter
-                                    verticalCenter: parent.verticalCenter
-                                }
-                                height: gameOverText.implicitHeight + 2*Theme.paddingSmall
-                                width: Math.min(gameOverText.implicitWidth + 2*Theme.paddingMedium, parent.width - 2*Theme.horizontalPageMargin)
-                                color: Qt.rgba(gray, gray, gray, 0.8)
-                                radius: 15
-                                border {
-                                    color: Theme.secondaryColor
-                                    width: 1
-                                }
-
-                                Label {
-                                    id: gameOverText
-
-                                    text: Patience.state === Patience.WonState
-                                        //: Shown on top of the game when player has won the game
-                                        //% "You win"
-                                        ? qsTrId("patience-la-game_won")
-                                        //: Shown on top of the game when player has lost the game
-                                        //% "Game over"
-                                        : qsTrId("patience-la-game_over")
-                                    color: Theme.highlightColor
-                                    font.pixelSize: Theme.fontSizeHuge
-                                    font.bold: true
-                                    wrapMode: Text.Wrap
-
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    horizontalAlignment: Text.AlignHCenter
-                                    x: Theme.paddingMedium
-                                    width: parent.width - 2*x
-                                }
-                            }
-                        }
-                    }
-                    anchors.fill: parent
-                    z: 5
-                }
             }
 
             Label {
@@ -186,6 +131,16 @@ Page {
                 }
                 text: Patience.message
             }
+        }
+
+        Loader {
+            active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
+            source: "GameOverOverlay.qml"
+            x: table.x
+            y: table.y
+            height: table.height
+            width: table.width
+            z: 5
         }
     }
 
