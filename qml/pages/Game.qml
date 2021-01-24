@@ -48,73 +48,29 @@ Page {
             }
         }
 
-        contentHeight: column.height
+        contentHeight: parent.height
 
-        Column {
-            id: column
+        Toolbar {
+            id: toolbar
+            vertical: page.isLandscape
+            z: 10
+        }
 
-            width: page.width
+        Item {
+            id: tableContainer
 
-            PageHeader {
-                id: header
-                title: Patience.gameName
-
-                Row {
-                    anchors {
-                        left: parent.left
-                        leftMargin: Theme.horizontalPageMargin
-                        verticalCenter: parent.verticalCenter
-                    }
-                    spacing: Theme.paddingSmall
-
-                    IconButton {
-                        icon.source: "../images/icon-m-undo.svg"
-                        icon.height: Theme.itemSizeSmall
-                        icon.width: Theme.itemSizeSmall
-                        enabled: Patience.canUndo
-                        onClicked: Patience.undoMove()
-                    }
-
-                    IconButton {
-                        icon.source: "../images/icon-m-redo.svg"
-                        icon.height: Theme.itemSizeSmall
-                        icon.width: Theme.itemSizeSmall
-                        enabled: Patience.canRedo
-                        onClicked: Patience.redoMove()
-                    }
-
-                    IconButton {
-                        icon.source: "../images/icon-m-deal.svg"
-                        icon.height: Theme.itemSizeSmall
-                        icon.width: Theme.itemSizeSmall
-                        enabled: Patience.canDeal
-                        onClicked: Patience.dealCard()
-                        visible: false // TODO
-                    }
-
-                    IconButton {
-                        icon.source: "../images/icon-m-hint.svg"
-                        icon.height: Theme.itemSizeSmall
-                        icon.width: Theme.itemSizeSmall
-                        onClicked: Patience.hint()
-                        visible: false // TODO
-                    }
-
-                    IconButton {
-                        icon.source: "../images/icon-m-restart.svg"
-                        icon.height: Theme.itemSizeSmall
-                        icon.width: Theme.itemSizeSmall
-                        onClicked: Patience.restartGame()
-                    }
-                }
-            }
+            clip: page.isPortrait && (toolbar.expanded || toolbar.animating)
+            x: page.isLandscape ? toolbar.width : 0
+            y: page.isLandscape ? 0 : toolbar.height
+            height: page.height - message.height - (page.isLandcape ? 0 : toolbar.height)
+            width: page.width - (page.isLandscape ? toolbar.width : 0)
 
             Table {
                 id: table
 
                 enabled: Patience.state < Patience.GameOverState
-                height: page.height - header.height - message.height
-                width: parent.width
+                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - message.height
+                width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
                 minimumSideMargin: Theme.horizontalPageMargin
                 horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
                 maximumHorizontalMargin: Theme.paddingLarge
@@ -122,25 +78,30 @@ Page {
                 maximumVerticalMargin: Theme.paddingLarge
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }
+        }
 
-            Label {
-                id: message
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                }
-                text: Patience.message
+        Label {
+            id: message
+            anchors {
+                left: page.isLandscape ? toolbar.right : parent.left
+                right: parent.right
+                bottom: parent.bottom
             }
+            text: Patience.message
         }
 
         Loader {
+            id: overlayLoader
+
             active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
             source: "GameOverOverlay.qml"
-            x: table.x
-            y: table.y
+            x: tableContainer.x
+            y: tableContainer.y
             height: table.height
             width: table.width
             z: 5
+
+            onActiveChanged: if (active) toolbar.expanded = false
         }
     }
 

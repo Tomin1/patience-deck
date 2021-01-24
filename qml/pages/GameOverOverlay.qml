@@ -70,7 +70,6 @@ Rectangle {
                     : qsTrId("patience-la-game_over")
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeHuge
-                wrapMode: contentWidth < (overlay.maximumWidth) ? Text.NoWrap : Text.Wrap
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width - 2*parent.padding
             }
