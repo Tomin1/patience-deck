@@ -109,6 +109,15 @@ inline QString Scheme::getMessage(SCM message)
     return QString::fromUtf8(string);
 }
 
+QString Scheme::getUtf8String(SCM string)
+{
+    if (!scm_is_string(string))
+        return QString();
+    char *utf8 = scm_to_utf8_string(string);
+    scm_dynwind_free(utf8);
+    return utf8 ? QString(utf8) : QString();
+}
+
 const CardData Scheme::createCard(SCM data)
 {
     return {

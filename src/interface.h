@@ -87,6 +87,7 @@ SCM catchHandler(void *data, SCM tag, SCM throwArgs);
 
 // Helpers
 inline QString getMessage(SCM message);
+QString getUtf8String(SCM string);
 const CardData createCard(SCM data);
 CardList cardsFromSlot(SCM cards);
 SCM cardToSCM(const CardData &card);

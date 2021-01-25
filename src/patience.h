@@ -60,6 +60,8 @@ public:
     Q_INVOKABLE void loadGame(const QString &gameFile);
     Q_INVOKABLE void undoMove();
     Q_INVOKABLE void redoMove();
+    Q_INVOKABLE void dealCard();
+    Q_INVOKABLE void getHint();
     Q_INVOKABLE void restoreSavedOrLoad(const QString &fallback);
 
     // Properties
@@ -84,6 +86,7 @@ signals:
     void stateChanged();
     void gameNameChanged();
     void messageChanged();
+    void hint(const QString &hint);
     void showAllGamesChanged();
     void historyChanged();
 
@@ -92,6 +95,8 @@ signals:
     void doLoad(const QString &gameFile);
     void doUndoMove();
     void doRedoMove();
+    void doDealCard();
+    void doGetHint();
     void doSaveEngineState();
     void doResetSavedEngineState();
     void doRestoreSavedEngineState();

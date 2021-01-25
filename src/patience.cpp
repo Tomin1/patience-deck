@@ -65,6 +65,7 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::canDealChanged, this, &Patience::handleCanDealChanged);
     connect(engine, &Engine::scoreChanged, this, &Patience::handleScoreChanged);
     connect(engine, &Engine::messageChanged, this, &Patience::handleMessageChanged);
+    connect(engine, &Engine::hint, this, &Patience::hint);
     connect(engine, &Engine::restoreCompleted, this, &Patience::handleRestoreCompleted);
     connect(engine, &Engine::engineFailure, this, &Patience::catchFailure);
     connect(this, &Patience::doStart, engine, &Engine::start);
@@ -72,6 +73,8 @@ Patience::Patience(QObject *parent)
     connect(this, &Patience::doLoad, engine, &Engine::load);
     connect(this, &Patience::doUndoMove, engine, &Engine::undoMove);
     connect(this, &Patience::doRedoMove, engine, &Engine::redoMove);
+    connect(this, &Patience::doDealCard, engine, &Engine::dealCard);
+    connect(this, &Patience::doGetHint, engine, &Engine::getHint);
     connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
     connect(this, &Patience::doResetSavedEngineState, engine, &Engine::resetSavedState);
     connect(this, &Patience::doRestoreSavedEngineState, engine, &Engine::restoreSavedState);
@@ -123,6 +126,12 @@ void Patience::redoMove()
         emit doRedoMove();
 }
 
+void Patience::dealCard()
+{
+    if (m_canDeal)
+        emit doDealCard();
+}
+
 bool Patience::canUndo() const
 {
     return m_canUndo;
@@ -150,6 +159,11 @@ QString Patience::gameFile() const
     if (m_gameFile.endsWith('-'))
         return m_gameFile.left(m_gameFile.length()-1);
     return m_gameFile;
+}
+
+void Patience::getHint()
+{
+    emit doGetHint();
 }
 
 int Patience::score() const

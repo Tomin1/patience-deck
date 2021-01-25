@@ -183,6 +183,43 @@ void Engine::redoMove()
     d_ptr->testGameOver();
 }
 
+void Engine::dealCard()
+{
+    d_ptr->recordMove(-1);
+    if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
+        d_ptr->die("Can not deal card");
+    d_ptr->endMove();
+    d_ptr->testGameOver();
+}
+
+void Engine::getHint()
+{
+    SCM data;
+    QString message = QStringLiteral("Hints are not supported");
+    if (!d_ptr->makeSCMCall(EnginePrivate::HintLambda, nullptr, 0, &data))
+        d_ptr->die("Can not get hint");
+
+    scm_dynwind_begin((scm_t_dynwind_flags)0);
+    if (!scm_is_false(data)) {
+        int type = scm_to_int(SCM_CAR(data));
+        if (type == 0) {
+            SCM string = SCM_CADR(data);
+            auto msg = Scheme::getUtf8String(string);
+            if (!msg.isEmpty())
+                message = msg;
+        } else if (type == 1 || type == 2) {
+            SCM string1 = SCM_CADR(data);
+            SCM string2 = SCM_CADDR(data);
+            auto msg1 = Scheme::getUtf8String(string1);
+            auto msg2 = Scheme::getUtf8String(string2);
+            if (!msg1.isEmpty() && !msg2.isEmpty())
+                message = QStringLiteral("Move %1 onto %2.").arg(msg1).arg(msg2);
+        }
+    }
+    scm_dynwind_end();
+    emit hint(message);
+}
+
 void Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
     d_ptr->recordMove(slotId);

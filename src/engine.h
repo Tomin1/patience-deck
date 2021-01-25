@@ -39,6 +39,8 @@ public slots:
     void restart();
     void undoMove();
     void redoMove();
+    void dealCard();
+    void getHint();
     void drag(quint32 id, int slotId, const CardList &cards);
     void cancelDrag(quint32 id, int slotId, const CardList &cards);
     void checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
@@ -58,6 +60,7 @@ signals:
     void canDealChanged(bool canDeal);
     void scoreChanged(int score);
     void messageChanged(const QString &message);
+    void hint(const QString &hint);
 
     void engineFailure(QString message);
     void gameLoaded(const QString &gameFile);
