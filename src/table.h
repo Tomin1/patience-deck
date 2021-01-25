@@ -66,7 +66,7 @@ public:
     QSizeF cardMargin() const;
     bool preparing() const;
 
-    QList<Slot *> getSlotsFor(const QList<Card *> &cards, Slot *source);
+    QList<Slot *> getSlotsFor(const Card *card, Slot *source);
 
 signals:
     void minimumSideMarginChanged();

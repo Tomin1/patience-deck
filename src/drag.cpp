@@ -27,18 +27,6 @@
 
 namespace {
 
-QPointF mapPos(const QPointF &pos)
-{
-    switch (QGuiApplication::primaryScreen()->orientation()) {
-    case Qt::LandscapeOrientation:
-        return QPointF(pos.y(), -pos.x());
-    case Qt::InvertedLandscapeOrientation:
-        return QPointF(-pos.y(), pos.x());
-    default:
-        return QPointF(pos.x(), pos.y());
-    };
-}
-
 CardList toCardData(const QList<Card *> &cards)
 {
     CardList list;
@@ -75,7 +63,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
 
-    m_startPoint = m_lastPoint = mapPos(event->screenPos());
+    m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 }
 
@@ -117,12 +105,13 @@ void Drag::update(QMouseEvent *event)
     if (m_cards.isEmpty())
         return;
 
-    QPointF move = mapPos(event->screenPos()) - m_lastPoint;
+    QPointF point = m_card->mapToItem(m_table, event->pos());
+    QPointF move = point - m_lastPoint;
     for (Card *card : m_cards) {
         card->setX(card->x() + move.x());
         card->setY(card->y() + move.y());
     }
-    m_lastPoint = mapPos(event->screenPos());
+    m_lastPoint = point;
 }
 
 void Drag::finish(QMouseEvent *event)
@@ -137,7 +126,7 @@ void Drag::finish(QMouseEvent *event)
     if (m_cards.isEmpty())
         return;
 
-    m_targets = m_table->getSlotsFor(m_cards, m_source);
+    m_targets = m_table->getSlotsFor(m_card, m_source);
 
     handleCouldDrop(m_id, false);
 }
@@ -209,7 +198,7 @@ bool Drag::testClick(QMouseEvent *event)
     if (m_timer.hasExpired(styleHints->startDragTime()))
         m_mayBeAClick = false;
 
-    qreal distance = (m_startPoint - mapPos(event->screenPos())).manhattanLength();
+    qreal distance = (m_startPoint - m_card->mapToItem(m_table, event->pos())).manhattanLength();
     if (distance >= styleHints->startDragDistance())
         m_mayBeAClick = false;
 

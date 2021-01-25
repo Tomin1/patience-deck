@@ -208,11 +208,9 @@ bool Table::preparing() const
     return m_preparing;
 }
 
-QList<Slot *> Table::getSlotsFor(const QList<Card *> &cards, Slot *source)
+QList<Slot *> Table::getSlotsFor(const Card *card, Slot *source)
 {
-    auto first = mapRectFromItem(cards.first(), cards.first()->boundingRect());
-    auto last = mapRectFromItem(cards.last(), cards.last()->boundingRect());
-    auto rect = first.united(last);
+    auto rect = mapRectFromItem(card, card->boundingRect());
     QMap<qreal, Slot *> results;
     for (Slot *slot : m_slots) {
         QRectF children = mapRectFromItem(slot, slot->childrenRect());
