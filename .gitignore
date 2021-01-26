@@ -7,4 +7,5 @@ moc_*.cpp
 /translations/patience-deck.ts
 /RPMS/
 patience-deck
+/icons/convert
 /installroot/

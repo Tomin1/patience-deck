@@ -26,6 +26,9 @@ BuildRequires:  guile22-devel
 %qmake5
 make %{?_smp_mflags}
 
+g++ -o icons/convert icons/convert.cpp -fPIC \
+    $(pkg-config --cflags --libs Qt5Core Qt5Gui Qt5Svg)
+
 %install
 rm -rf %{buildroot}
 
@@ -33,9 +36,13 @@ rm -rf %{buildroot}
 
 chmod -x %{buildroot}/%{_datadir}/%{name}/games/*.scm
 
-desktop-file-install --delete-original       \
-  --dir %{buildroot}%{_datadir}/applications             \
-   %{buildroot}%{_datadir}/applications/*.desktop
+desktop-file-install --delete-original \
+    --dir %{buildroot}%{_datadir}/applications \
+     %{buildroot}%{_datadir}/applications/*.desktop
+
+icons/convert icons/svg/patience-deck.svg \
+    %{buildroot}%{_datadir}/icons/hicolor/%1/apps/patience-deck.png \
+    86x86 108x108 128x128 172x172
 
 %files
 %defattr(-,root,root,-)
