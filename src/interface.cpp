@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -340,7 +340,7 @@ SCM Interface::setSlotXExpansion(SCM slotId, SCM value)
 }
 
 SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLambda,
-                         SCM clickedLambda, SCM doubleClickedLambda, SCM gameOverLambda,
+                         SCM clickedLambda, SCM doubleClickedLambda, SCM movesLeftLambda,
                          SCM winningGameLambda, SCM hintLambda, SCM rest)
 {
     auto *engine = EnginePrivate::instance();
@@ -350,7 +350,7 @@ SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLam
     engine->setLambda(EnginePrivate::ButtonReleasedLambda, releasedLambda);
     engine->setLambda(EnginePrivate::ButtonClickedLambda, clickedLambda);
     engine->setLambda(EnginePrivate::ButtonDoubleClickedLambda, doubleClickedLambda);
-    engine->setLambda(EnginePrivate::GameOverLambda, gameOverLambda);
+    engine->setLambda(EnginePrivate::MovesLeftLambda, movesLeftLambda);
     engine->setLambda(EnginePrivate::WinningGameLambda, winningGameLambda);
     engine->setLambda(EnginePrivate::HintLambda, hintLambda);
 

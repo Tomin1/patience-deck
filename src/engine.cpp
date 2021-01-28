@@ -506,9 +506,10 @@ void EnginePrivate::discardMove()
 bool EnginePrivate::isGameOver()
 {
     SCM rv;
-    if (!makeSCMCall(GameOverLambda, nullptr, 0, &rv))
+    // This is called GAME_OVER_LAMBDA in GNOME Aisleriot
+    // but that doesn't really reflect its meaning
+    if (!makeSCMCall(MovesLeftLambda, nullptr, 0, &rv))
         die("Can not check if game is over");
-    // This is really more like the-game-is-still-going-on lambda
     return !scm_is_true(rv);
 }
 
