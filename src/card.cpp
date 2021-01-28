@@ -67,7 +67,6 @@ Card::Card(const CardData &card, Table *table, Slot *slot)
     , m_dirty(true)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
-    setZ(1);
     setFlag(QQuickItem::ItemHasContents);
     setSmooth(true);
 }

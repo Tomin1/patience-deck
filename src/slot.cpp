@@ -43,8 +43,11 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
 {
-    for (const CardData &card : cards)
-        m_cards.append(new Card(card, table, this));
+    for (const CardData &card : cards) {
+        auto newCard = new Card(card, table, this);
+        newCard->setZ(m_cards.count());
+        m_cards.append(newCard);
+    }
 }
 
 void Slot::updateDimensions()
@@ -112,6 +115,7 @@ bool Slot::empty() const
 void Slot::appendCard(const CardData &card)
 {
     Card *newCard = new Card(card, m_table, this);
+    newCard->setZ(m_cards.count());
     m_cards.append(newCard);
     if (!m_table->preparing()) {
         newCard->setSize(m_table->cardSize());
@@ -122,7 +126,10 @@ void Slot::appendCard(const CardData &card)
 void Slot::insertCard(int index, const CardData &card)
 {
     Card *newCard = new Card(card, m_table, this);
-    m_cards.insert(index, newCard);
+    auto it = m_cards.begin() + index;
+    it = m_cards.insert(it, newCard);
+    for (; it != m_cards.end(); it++)
+        (*it)->setZ(it - m_cards.begin());
     if (!m_table->preparing()) {
         newCard->setSize(m_table->cardSize());
         updateLocations();
@@ -131,8 +138,10 @@ void Slot::insertCard(int index, const CardData &card)
 
 void Slot::removeCard(int index)
 {
-    Card *card = m_cards.takeAt(index);
-    card->deleteLater();
+    auto it = m_cards.begin() + index;
+    (*it)->deleteLater();
+    for (it = m_cards.erase(it); it != m_cards.end(); it++)
+        (*it)->setZ(it - m_cards.begin());
     if (expanded())
         updateLocations();
     // TODO: Store to card cache and take it from there to new slot
