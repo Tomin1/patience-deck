@@ -32,9 +32,9 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("saratoga"),
     QStringLiteral("thumb-and-pouch"),
     QStringLiteral("whitehead"),
-    // Freecell / Backers game
+    // Freecell / Bakers game
     QStringLiteral("freecell"),
-    QStringLiteral("backers-game"),
+    QStringLiteral("bakers-game"),
     // Elevator and similar
     QStringLiteral("elevator"),
     QStringLiteral("escalator"),
