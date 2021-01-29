@@ -47,9 +47,9 @@ Page {
 
             Label {
                 text: gameOptions.count > 0
-                    //% "Starting a new game or changing game options will resuffle the cards."
+                    //% "Starting a new game or changing game options will resuffle the cards"
                     ? qsTrId("patience-la-starting_new_or_changing_resuffle")
-                    //% "Starting a new game will resuffle the cards."
+                    //% "Starting a new game will resuffle the cards"
                     : qsTrId("patience-la-starting_new_resuffle")
                 color: Theme.highlightColor
                 anchors {
