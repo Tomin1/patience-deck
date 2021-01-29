@@ -24,8 +24,8 @@ MouseArea {
     property alias showText: label.visible
     property bool down: pressed && containsPress
 
-    height: image.height
-    width: image.width + (showText ? _buttonSpacing + label.width : 0)
+    height: Theme.itemSizeLarge
+    width: Theme.itemSizeLarge + (showText ? label.width : 0)
 
     SilicaControl {
         anchors.fill: parent
@@ -35,15 +35,17 @@ MouseArea {
         HighlightImage {
             id: image
             highlighted: parent.highlighted
-            height: Theme.itemSizeSmall
-            width: Theme.itemSizeSmall
+            x: (parent.height - width) / 2
+            y: (parent.height - height) / 2
+            sourceSize.height: Theme.iconSizeLarge
+            sourceSize.width: Theme.iconSizeLarge
         }
 
         Label {
             id: label
             anchors {
                 left: image.right
-                leftMargin: _buttonSpacing
+                leftMargin: (parent.height - image.width) / 2
             }
             color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
             verticalAlignment: Text.AlignVCenter

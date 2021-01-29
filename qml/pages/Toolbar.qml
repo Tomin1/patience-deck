@@ -26,16 +26,13 @@ Item {
     property bool vertical
     property bool expanded
     readonly property bool animating: heightAnimation.running || widthAnimation.running
-    readonly property int _labeledButtonWidth: Theme.itemSizeLarge + Theme.itemSizeSmall + _buttonSpacing
-    readonly property int _buttonSpacing: vertical
-        ? (Theme.itemSizeLarge - Theme.itemSizeSmall) / 2
-        : Theme.paddingSmall
+    readonly property int _labeledButtonWidth: Theme.itemSizeLarge * 2
 
     height: {
         if (vertical) {
             return parent.height
         } else if (expanded) {
-            return _labeledButtonWidth
+            return extraButtons.y + extraButtons.height + Theme.paddingSmall
         } else {
             return Theme.itemSizeLarge
         }
@@ -67,15 +64,19 @@ Item {
     }
     clip: animating
 
-    GridLayout {
+    Flow {
         id: mainButtons
 
-        flow: vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-        x: vertical ? (Theme.itemSizeLarge - Theme.itemSizeSmall) / 2 : Theme.horizontalPageMargin
-        y: vertical ? title.height : (Theme.itemSizeLarge - Theme.itemSizeSmall) / 2
-        height: vertical ? Theme.itemSizeLarge * 2 + Theme.paddingSmall : Theme.itemSizeSmall
-        width: vertical ? _labeledButtonWidth : expandButton.x - x - Theme.paddingSmall
-        columnSpacing: Theme.paddingSmall
+        x: vertical ? 0 : Theme.horizontalPageMargin
+        y: vertical ? title.height : 0
+        height: vertical ? Theme.itemSizeLarge * 2 + Theme.paddingSmall : Theme.itemSizeLarge
+        width: {
+            if (vertical) {
+                return expanded ? _labeledButtonWidth : Theme.itemSizeLarge
+            } else {
+                return Theme.itemSizeLarge * 3
+            }
+        }
 
         ToolbarButton {
             //% "Undo"
@@ -94,38 +95,72 @@ Item {
             enabled: Patience.canRedo
             onClicked: Patience.redoMove()
         }
-    }
 
-    GridLayout {
-        id: extraButtons
+        IconButton {
+            id: expandButton
 
-        flow: vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-        x: vertical ? mainButtons.x + mainButtons.width : Theme.horizontalPageMargin
-        y: vertical ? mainButtons.y : Theme.itemSizeLarge
-        width: vertical ? _labeledButtonWidth : (parent.width - 2 * Theme.horizontalPageMargin)
-        rowSpacing: Theme.paddingLarge
-        visible: (expanded || animating)
-
-        ToolbarButton {
-            //% "Hint"
-            text: qsTrId("patience-bt-hint")
-            imageSource: "../images/icon-m-hint.svg"
-            onClicked: Patience.hint()
+            enabled: !overlayLoader.active
+            icon.source: "../images/icon-m-expand.svg"
+            icon.sourceSize.height: Theme.iconSizeLarge
+            icon.sourceSize.width: Theme.iconSizeLarge
+            parent: vertical ? toolbar : mainButtons
+            x: vertical ? 0 : 0
+            y: vertical ? toolbar.height - height - Theme.paddingSmall : 0
+            height: Theme.itemSizeLarge
+            width: Theme.itemSizeLarge
+            transformOrigin: Item.Center
+            rotation: {
+                if (vertical) {
+                    return expanded ? 90 : 270
+                } else {
+                    return expanded ? 180 : 0
+                }
+            }
+            Behavior on rotation {
+                enabled: !orientationTransitionRunning
+                NumberAnimation { duration: 100 }
+            }
+            onClicked: expanded = !expanded
         }
 
         ToolbarButton {
+            id: hintButton
+            //% "Hint"
+            text: qsTrId("patience-bt-hint")
+            imageSource: "../images/icon-m-hint.svg"
+            parent: vertical ? mainButtons : extraButtons
+            showText: !vertical || expanded || animating
+            onClicked: Patience.getHint()
+        }
+    }
+
+    Flow {
+        id: extraButtons
+
+        x: vertical ? _labeledButtonWidth : Theme.horizontalPageMargin
+        y: mainButtons.y + (vertical ? 0 : mainButtons.height)
+        width: vertical ? _labeledButtonWidth : (parent.width - 2 * Theme.horizontalPageMargin)
+        spacing: vertical? 0 : (width - hintButton.width - dealButton.width - restartButton.width) / 2
+        visible: expanded || animating
+
+        ToolbarButton {
+            id: restartButton
+            //% "Restart"
+            text: qsTrId("patience-bt-restart")
+            imageSource: "../images/icon-m-restart.svg"
+            onClicked: {
+                expanded = false
+                Patience.restartGame()
+            }
+        }
+
+        ToolbarButton {
+            id: dealButton
             //% "Deal"
             text: qsTrId("patience-bt-deal")
             imageSource: "../images/icon-m-deal.svg"
             enabled: Patience.canDeal
             onClicked: Patience.dealCard()
-        }
-
-        ToolbarButton {
-            //% "Restart"
-            text: qsTrId("patience-bt-restart")
-            imageSource: "../images/icon-m-restart.svg"
-            onClicked: Patience.restartGame()
         }
     }
 
@@ -133,8 +168,8 @@ Item {
         id: title
 
         // These apply to !vertical
-        readonly property int maximumWidth: minimumX - Theme.paddingSmall - Theme.horizontalPageMargin
-        readonly property int minimumX: parent.width / 2
+        readonly property int maximumWidth: minimumX - Theme.horizontalPageMargin
+        readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
 
         text: Patience.gameName
         color: Theme.highlightColor
@@ -144,30 +179,5 @@ Item {
         height: vertical ? Theme.itemSizeMedium : Theme.itemSizeLarge
         width: Math.min(contentWidth, vertical ? parent.width : maximumWidth)
         x: vertical ? Theme.paddingSmall : parent.width - width - Theme.horizontalPageMargin
-        y: 0
-    }
-
-    IconButton {
-        id: expandButton
-
-        enabled: !overlayLoader.active
-        icon.source: "../images/icon-m-expand.svg"
-        icon.height: Theme.itemSizeSmall
-        icon.width: Theme.itemSizeSmall
-        x: vertical ? mainButtons.x : title.minimumX - width
-        y: vertical ? parent.height - height - Theme.paddingSmall : (Theme.itemSizeLarge - height) / 2
-        transformOrigin: Item.Center
-        rotation: {
-            if (vertical) {
-                return expanded ? 90 : 270
-            } else {
-                return expanded ? 180 : 0
-            }
-        }
-        Behavior on rotation {
-            enabled: !orientationTransitionRunning
-            NumberAnimation { duration: 100 }
-        }
-        onClicked: expanded = !expanded
     }
 }
