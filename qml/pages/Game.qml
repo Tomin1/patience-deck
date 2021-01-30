@@ -57,6 +57,18 @@ Page {
             id: toolbar
             vertical: page.isLandscape
             z: 10
+
+            Connections {
+                /*
+                 * This is a "looks good enough" workaround for another issue.
+                 * I would prefer to set tableContainer.clip = true while
+                 * transitioning pages but for some reason Table doesn't behave
+                 * well that is set. I would like to fix that for other reasons
+                 * as well.
+                 */
+                target: pageStack
+                onBusyChanged: if (pageStack.busy) toolbar.expanded = false
+            }
         }
 
         Item {
