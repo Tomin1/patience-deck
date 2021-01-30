@@ -68,7 +68,7 @@ Item {
 
         x: vertical ? 0 : Theme.horizontalPageMargin
         y: vertical ? title.height : 0
-        height: vertical ? Theme.itemSizeLarge * 2 + Theme.paddingSmall : Theme.itemSizeLarge
+        height: vertical ? Theme.itemSizeLarge * 3 + 2 * Theme.paddingSmall : Theme.itemSizeLarge
         width: {
             if (vertical) {
                 return expanded ? _labeledButtonWidth : Theme.itemSizeLarge
@@ -167,7 +167,7 @@ Item {
         id: title
 
         // These apply to !vertical
-        readonly property int maximumWidth: minimumX - Theme.horizontalPageMargin
+        readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
         readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
 
         text: Patience.gameName
@@ -177,6 +177,6 @@ Item {
         verticalAlignment: Text.AlignVCenter
         height: vertical ? Theme.itemSizeMedium : Theme.itemSizeLarge
         width: Math.min(contentWidth, vertical ? parent.width : maximumWidth)
-        x: vertical ? Theme.paddingSmall : parent.width - width - Theme.horizontalPageMargin
+        x: vertical ? Theme.paddingSmall : Math.max(minimumX, parent.width - width - Theme.horizontalPageMargin)
     }
 }
