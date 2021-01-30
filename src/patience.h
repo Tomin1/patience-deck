@@ -87,6 +87,7 @@ signals:
     void gameNameChanged();
     void messageChanged();
     void hint(const QString &hint);
+    void cardMoved();
     void showAllGamesChanged();
     void historyChanged();
 

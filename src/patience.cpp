@@ -66,6 +66,9 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::scoreChanged, this, &Patience::handleScoreChanged);
     connect(engine, &Engine::messageChanged, this, &Patience::handleMessageChanged);
     connect(engine, &Engine::hint, this, &Patience::hint);
+    connect(engine, &Engine::appendCard, this, &Patience::cardMoved);
+    connect(engine, &Engine::insertCard, this, &Patience::cardMoved);
+    connect(engine, &Engine::removeCard, this, &Patience::cardMoved);
     connect(engine, &Engine::restoreCompleted, this, &Patience::handleRestoreCompleted);
     connect(engine, &Engine::engineFailure, this, &Patience::catchFailure);
     connect(this, &Patience::doStart, engine, &Engine::start);
