@@ -22,8 +22,11 @@ import Patience 1.0
 Page {
     id: page
 
-    allowedOrientations: Orientation.All
     property bool isPortrait: orientation & Orientation.PortraitMask
+
+    allowedOrientations: Orientation.All
+
+    onOrientationChanged: message.x = 0
 
     SilicaFlickable {
         anchors.fill: parent
@@ -80,14 +83,33 @@ Page {
             }
         }
 
-        Label {
-            id: message
+        MouseArea {
             anchors {
                 left: page.isLandscape ? toolbar.right : parent.left
                 right: parent.right
                 bottom: parent.bottom
             }
-            text: Patience.message
+            height: Theme.itemSizeSmall
+
+            drag {
+                target: message
+                axis: Drag.XAxis
+                minimumX: Math.min(width - message.contentWidth, 0)
+                maximumX: 0
+            }
+
+            Label {
+                id: message
+                property string hint
+                text: hint !== "" && hintTimer.running ? hint : Patience.message
+                anchors.bottom: parent.bottom
+                onTextChanged: x = 0
+
+                Timer {
+                    id: hintTimer
+                    interval: 60*1000
+                }
+            }
         }
 
         Loader {
@@ -112,5 +134,10 @@ Page {
                 Patience.startNewGame()
             }
         }
+        onHint: {
+            message.hint = hint
+            hintTimer.running = true
+        }
+        onCardMoved: message.hint = ""
     }
 }
