@@ -77,14 +77,14 @@ Page {
             clip: page.isPortrait && (toolbar.expanded || toolbar.animating)
             x: page.isLandscape ? toolbar.width : 0
             y: page.isLandscape ? 0 : toolbar.height
-            height: page.height - message.height - (page.isLandcape ? 0 : toolbar.height)
+            height: page.height - messageBar.height - (page.isLandcape ? 0 : toolbar.height)
             width: page.width - (page.isLandscape ? toolbar.width : 0)
 
             Table {
                 id: table
 
                 enabled: Patience.state < Patience.GameOverState
-                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - message.height
+                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - messageBar.height
                 width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
                 minimumSideMargin: Theme.horizontalPageMargin
                 horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
@@ -96,12 +96,14 @@ Page {
         }
 
         MouseArea {
+            id: messageBar
+
             anchors {
                 left: page.isLandscape ? toolbar.right : parent.left
                 right: parent.right
                 bottom: parent.bottom
             }
-            height: Theme.itemSizeSmall
+            height: message.height
 
             drag {
                 target: message
@@ -114,6 +116,7 @@ Page {
                 id: message
                 property string hint
                 text: hint !== "" && hintTimer.running ? hint : Patience.message
+                color: Theme.highlightColor
                 anchors.bottom: parent.bottom
                 onTextChanged: x = 0
 
