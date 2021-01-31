@@ -315,6 +315,8 @@ void Engine::click(quint32 id, int slotId)
 
 void Engine::doubleClick(quint32 id, int slotId)
 {
+    d_ptr->recordMove(-1);
+
     SCM args[1];
     args[0] = scm_from_int(slotId);
 
@@ -323,6 +325,12 @@ void Engine::doubleClick(quint32 id, int slotId)
         d_ptr->die("Can not double click");
 
     scm_remember_upto_here_1(args[0]);
+
+    if (scm_is_true(rv))
+        d_ptr->testGameOver();
+    else
+        d_ptr->discardMove();
+
 
     emit doubleClicked(id, scm_is_true(rv));
 }
