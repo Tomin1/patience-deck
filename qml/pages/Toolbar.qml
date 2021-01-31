@@ -163,20 +163,61 @@ Item {
         }
     }
 
-    Label {
+    Item {
         id: title
 
         // These apply to !vertical
         readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
         readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
 
-        text: Patience.gameName
-        color: Theme.highlightColor
-        font.pixelSize: Theme.fontSizeLarge
-        truncationMode: TruncationMode.Fade
-        verticalAlignment: Text.AlignVCenter
         height: vertical ? Theme.itemSizeMedium : Theme.itemSizeLarge
-        width: Math.min(contentWidth, vertical ? parent.width : maximumWidth)
-        x: vertical ? Theme.paddingSmall : Math.max(minimumX, parent.width - width - Theme.horizontalPageMargin)
+        width: vertical ? parent.width - Theme.paddingSmall * 2 : maximumWidth
+        x: vertical ? Theme.paddingSmall : minimumX
+
+        Label {
+            text: Patience.gameName
+            color: Theme.highlightColor
+            font.pixelSize: Theme.fontSizeLarge
+            truncationMode: TruncationMode.Fade
+            verticalAlignment: Text.AlignBottom
+            horizontalAlignment: vertical ? Text.AlignLeft : Text.AlignRight
+            width: parent.width
+            x: vertical ? 0 : parent.width - width
+            anchors.bottom: scoreRow.top
+        }
+
+        Row {
+            id: scoreRow
+            anchors {
+                bottom: parent.bottom
+                right: vertical ? undefined : parent.right
+                left: vertical ? parent.left : undefined
+            }
+
+            Label {
+                id: scoreText
+                //: Keep the space at the end
+                //% "Score: "
+                text: qsTrId("patience-la-score")
+                color: Theme.highlightColor
+                clip: scoreAnimation.running
+                horizontalAlignment: Text.AlignRight
+                visible: !vertical || expanded || scoreAnimation.running
+                width: !vertical || expanded ? contentWidth : 0
+                Behavior on width {
+                    enabled: !orientationTransitionRunning
+                    NumberAnimation {
+                        id: scoreAnimation
+                        duration: 100
+                    }
+                }
+            }
+
+            Label {
+                id: score
+                text: Patience.score
+                color: Theme.highlightColor
+            }
+        }
     }
 }
