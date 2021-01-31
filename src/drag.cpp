@@ -43,10 +43,11 @@ CardList toCardData(const QList<Card *> &cards)
 
 quint32 Drag::s_count = 0;
 
-Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
+Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card, qint64 sinceLast)
     : QObject(card)
     , m_id(s_count++)
     , m_mayBeAClick(true)
+    , m_mayBeADoubleClick(false)
     , m_completed(false)
     , m_table(table)
     , m_card(card)
@@ -59,10 +60,12 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     connect(this, &Drag::doCheckDrop, engine, &Engine::checkDrop);
     connect(this, &Drag::doDrop, engine, &Engine::drop);
     connect(this, &Drag::doClick, engine, &Engine::click);
+    connect(this, &Drag::doDoubleClick, engine, &Engine::doubleClick);
     connect(engine, &Engine::couldDrag, this, &Drag::handleCouldDrag);
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
 
+    m_mayBeADoubleClick = sinceLast <= QGuiApplication::styleHints()->mouseDoubleClickInterval();
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 }
@@ -117,8 +120,13 @@ void Drag::update(QMouseEvent *event)
 void Drag::finish(QMouseEvent *event)
 {
     if (testClick(event)) {
-        qCDebug(lcPatience) << "Detected click on" << m_card;
-        emit doClick(m_id, m_source->id());
+        if (m_mayBeADoubleClick) {
+            qCDebug(lcPatience) << "Detected double click on" << m_card;
+            emit doDoubleClick(m_id, m_source->id());
+        } else {
+            qCDebug(lcPatience) << "Detected click on" << m_card;
+            emit doClick(m_id, m_source->id());
+        }
         deleteLater();
         return;
     }

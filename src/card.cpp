@@ -148,7 +148,7 @@ void Card::mousePressEvent(QMouseEvent *event)
 
     setKeepMouseGrab(true);
 
-    m_drag = new Drag(event, m_table, m_slot, this);
+    m_drag = new Drag(event, m_table, m_slot, this, sinceLastDrag());
     Drag *drag = m_drag;
     connect(m_drag, &Drag::destroyed, this, [this, drag] {
         if (m_drag == drag)
@@ -180,6 +180,14 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     }
 
     m_drag->update(event);
+}
+
+qint64 Card::sinceLastDrag()
+{
+    if (m_doubleClickTimer.isValid())
+        return m_doubleClickTimer.restart();
+    m_doubleClickTimer.start();
+    return std::numeric_limits<qint64>::max();
 }
 
 QSvgRenderer *Card::cardRenderer()
