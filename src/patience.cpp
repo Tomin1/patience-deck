@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QJSEngine>
 #include <QObject>
@@ -236,6 +237,12 @@ void Patience::restoreSavedOrLoad(const QString &fallback)
 {
     m_gameFile = fallback + '-';
     emit doRestoreSavedEngineState();
+}
+
+QString Patience::getIconPath(int size) const
+{
+    QString name = QCoreApplication::instance()->applicationName();
+    return QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png").arg(size).arg(name);
 }
 
 void Patience::catchFailure(QString message) {

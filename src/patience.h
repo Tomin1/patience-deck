@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ public:
     Q_INVOKABLE void dealCard();
     Q_INVOKABLE void getHint();
     Q_INVOKABLE void restoreSavedOrLoad(const QString &fallback);
+    Q_INVOKABLE QString getIconPath(int size) const;
 
     // Properties
     bool canUndo() const;
