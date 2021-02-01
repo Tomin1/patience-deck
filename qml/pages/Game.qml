@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Patience 1.0
@@ -27,6 +28,24 @@ Page {
     allowedOrientations: Orientation.All
 
     onOrientationChanged: message.x = 0
+
+    onStatusChanged: {
+        switch (status) {
+            case PageStatus.Inactive:
+            case PageStatus.Deactivating:
+                Patience.paused = true
+                break
+            case PageStatus.Activating:
+            case PageStatus.Active:
+                Patience.paused = false
+                break
+        }
+    }
+
+    Connections {
+        target: Qt.application
+        onStateChanged: Patience.paused = Qt.application.state !== Qt.ApplicationActive
+    }
 
     SilicaFlickable {
         anchors.fill: parent

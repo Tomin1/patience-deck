@@ -20,11 +20,32 @@ import Sailfish.Silica 1.0
 import Patience 1.0
 
 CoverBackground {
-    Label {
+    Column {
         anchors.centerIn: parent
-        text: Patience.gameName
-        horizontalAlignment: Text.AlignHCenter
-        width: parent.width - 2*Theme.paddingSmall
-        wrapMode: Text.Wrap
+        width: parent.width
+
+        Image {
+            anchors.horizontalCenter: parent.horizontalCenter
+            source: Patience.getIconPath(Theme.iconSizeLauncher)
+        }
+
+        Item {
+            height: Theme.paddingMedium
+            width: parent.width
+        }
+
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Patience.gameName
+            horizontalAlignment: Text.AlignHCenter
+            width: parent.width - 2*Theme.paddingSmall
+            wrapMode: Text.Wrap
+        }
+
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Patience.elapsedTime
+            color: Theme.secondaryColor
+        }
     }
 }
