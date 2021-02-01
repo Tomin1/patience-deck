@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QThread>
 #include "engine.h"
+#include "timer.h"
 
 class QQmlEngine;
 class QJSEngine;
@@ -33,12 +34,14 @@ class Patience : public QObject
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY canRedoChanged)
     Q_PROPERTY(bool canDeal READ canDeal NOTIFY canDealChanged)
     Q_PROPERTY(int score READ score NOTIFY scoreChanged)
-    Q_PROPERTY(int state READ state NOTIFY stateChanged);
+    Q_PROPERTY(QString elapsedTime READ elapsedTime NOTIFY elapsedTimeChanged)
+    Q_PROPERTY(int state READ state NOTIFY stateChanged)
+    Q_PROPERTY(bool paused READ paused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(QString gameName READ gameName NOTIFY gameNameChanged)
-    Q_PROPERTY(QString message READ message NOTIFY messageChanged);
-    Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT);
+    Q_PROPERTY(QString message READ message NOTIFY messageChanged)
+    Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
-    Q_PROPERTY(QStringList history READ history NOTIFY historyChanged);
+    Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
 
 public:
     static Patience* instance();
@@ -48,6 +51,7 @@ public:
     enum GameState {
         UninitializedState,
         LoadedState,
+        RestartingState,
         RunningState,
         GameOverState,
         WonState,
@@ -72,7 +76,10 @@ public:
     QString gameName() const;
     QString gameFile() const;
     int score() const;
+    QString elapsedTime() const;
     GameState state() const;
+    bool paused() const;
+    void setPaused(bool paused);
     QString message() const;
     QString aisleriotAuthors() const;
     bool showAllGames() const;
@@ -84,7 +91,9 @@ signals:
     void canRedoChanged();
     void canDealChanged();
     void scoreChanged();
+    void elapsedTimeChanged();
     void stateChanged();
+    void pausedChanged();
     void gameNameChanged();
     void messageChanged();
     void hint(const QString &hint);
@@ -128,6 +137,7 @@ private:
     QString m_gameFile;
     QString m_message;
     MGConfItem m_historyConf;
+    Timer m_timer;
 
     static Patience *s_game;
 };

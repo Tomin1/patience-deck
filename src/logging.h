@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(lcPatience);
+Q_DECLARE_LOGGING_CATEGORY(lcTimer);
 Q_DECLARE_LOGGING_CATEGORY(lcMouse);
 Q_DECLARE_LOGGING_CATEGORY(lcEngine);
 Q_DECLARE_LOGGING_CATEGORY(lcScheme);

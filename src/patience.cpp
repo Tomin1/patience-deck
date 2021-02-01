@@ -86,6 +86,8 @@ Patience::Patience(QObject *parent)
         qCDebug(lcPatience) << "Saved history:" << m_historyConf.value().toString();
     });
     connect(&m_historyConf, &MGConfItem::valueChanged, this, &Patience::historyChanged);
+    connect(&m_timer, &Timer::tick, this, &Patience::elapsedTimeChanged);
+    connect(&m_timer, &Timer::statusChanged, this, &Patience::pausedChanged);
     m_engineThread.start();
 }
 
@@ -104,6 +106,7 @@ void Patience::startNewGame()
 void Patience::restartGame()
 {
     qCDebug(lcPatience) << "Restarting game";
+    setState(RestartingState);
     emit doRestart();
 }
 
@@ -114,8 +117,10 @@ void Patience::loadGame(const QString &gameFile)
         qCritical() << "gameFile can not be empty";
         abort();
     }
-    if (m_gameFile != gameFile)
+    if (m_gameFile != gameFile) {
+        m_state = UninitializedState;
         emit doLoad(gameFile);
+    }
 }
 
 void Patience::undoMove()
@@ -175,6 +180,11 @@ int Patience::score() const
     return m_score;
 }
 
+QString Patience::elapsedTime() const
+{
+    return m_timer.elapsed();
+}
+
 Patience::GameState Patience::state() const
 {
     return m_state;
@@ -183,9 +193,42 @@ Patience::GameState Patience::state() const
 void Patience::setState(GameState state)
 {
     if (m_state != state) {
+        switch (state) {
+        case UninitializedState:
+        case LoadedState:
+        case RestartingState:
+            m_timer.reset();
+            break;
+        case RunningState: {
+            if (m_state < RunningState)
+                m_timer.start();
+            else
+                m_timer.unpause();
+            break;
+        }
+        case GameOverState:
+        case WonState:
+            m_timer.pause();
+            break;
+        }
         m_state = state;
-        // TODO: Stop timer, record time
         emit stateChanged();
+    }
+}
+
+bool Patience::paused() const
+{
+    return m_timer.status() == Timer::TimerPaused;
+}
+
+void Patience::setPaused(bool paused)
+{
+    if (paused) {
+        if (m_timer.status() == Timer::TimerRunning)
+            m_timer.pause();
+    } else {
+        if (m_timer.status() == Timer::TimerPaused)
+            m_timer.unpause();
     }
 }
 
