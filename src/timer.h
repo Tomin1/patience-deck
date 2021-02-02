@@ -40,6 +40,7 @@ public:
     void pause();
     void unpause();
     void stop();
+    void extend();
     TimerStatus status() const;
     QString elapsed() const;
 

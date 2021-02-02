@@ -94,6 +94,20 @@ void Timer::stop()
     }
 }
 
+void Timer::extend()
+{
+    if (m_status == TimerStopped) {
+        m_lastStarted = QDateTime::currentMSecsSinceEpoch();
+        m_status = TimerRunning;
+        m_tick.start();
+        emit statusChanged();
+        qCDebug(lcTimer) << "Timer extended at" << m_lastStarted << "msecs since epoch";
+    } else {
+        qCWarning(lcTimer) << "Can not extend"
+                           << (m_status == TimerRunning ? "running" : "paused") << "timer";
+    }
+}
+
 Timer::TimerStatus Timer::status() const
 {
     return m_status;
