@@ -213,7 +213,7 @@ void Engine::getHint()
             auto msg1 = Scheme::getUtf8String(string1);
             auto msg2 = Scheme::getUtf8String(string2);
             if (!msg1.isEmpty() && !msg2.isEmpty())
-                message = QStringLiteral("Move %1 onto %2.").arg(msg1).arg(msg2);
+                message = QStringLiteral("Move %1 onto %2").arg(msg1).arg(msg2);
         }
     }
     scm_dynwind_end();
