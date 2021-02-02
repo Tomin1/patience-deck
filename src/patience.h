@@ -51,7 +51,7 @@ public:
     enum GameState {
         UninitializedState,
         LoadedState,
-        RestartingState,
+        StartingState,
         RunningState,
         GameOverState,
         WonState,
@@ -116,6 +116,7 @@ private slots:
     void catchFailure(QString message);
     void handleGameLoaded(const QString &gameFile);
     void handleGameStarted();
+    void handleCardMoved();
     void handleGameOver(bool won);
     void handleCanUndoChanged(bool canUndo);
     void handleCanRedoChanged(bool canRedo);

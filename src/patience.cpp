@@ -72,6 +72,7 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::removeCard, this, &Patience::cardMoved);
     connect(engine, &Engine::restoreCompleted, this, &Patience::handleRestoreCompleted);
     connect(engine, &Engine::engineFailure, this, &Patience::catchFailure);
+    connect(this, &Patience::cardMoved, this, &Patience::handleCardMoved);
     connect(this, &Patience::doStart, engine, &Engine::start);
     connect(this, &Patience::doRestart, engine, &Engine::restart);
     connect(this, &Patience::doLoad, engine, &Engine::load);
@@ -106,7 +107,6 @@ void Patience::startNewGame()
 void Patience::restartGame()
 {
     qCDebug(lcPatience) << "Restarting game";
-    setState(RestartingState);
     emit doRestart();
 }
 
@@ -117,10 +117,8 @@ void Patience::loadGame(const QString &gameFile)
         qCritical() << "gameFile can not be empty";
         abort();
     }
-    if (m_gameFile != gameFile) {
-        m_state = UninitializedState;
+    if (m_gameFile != gameFile)
         emit doLoad(gameFile);
-    }
 }
 
 void Patience::undoMove()
@@ -196,19 +194,20 @@ void Patience::setState(GameState state)
         switch (state) {
         case UninitializedState:
         case LoadedState:
-        case RestartingState:
+            break;
+        case StartingState:
             m_timer.reset();
             break;
         case RunningState: {
-            if (m_state < RunningState)
+            if (m_state <= StartingState)
                 m_timer.start();
             else
-                m_timer.unpause();
+                m_timer.extend();
             break;
         }
         case GameOverState:
         case WonState:
-            m_timer.pause();
+            m_timer.stop();
             break;
         }
         m_state = state;
@@ -223,12 +222,14 @@ bool Patience::paused() const
 
 void Patience::setPaused(bool paused)
 {
-    if (paused) {
-        if (m_timer.status() == Timer::TimerRunning)
-            m_timer.pause();
-    } else {
-        if (m_timer.status() == Timer::TimerPaused)
-            m_timer.unpause();
+    if (state() == RunningState) {
+        if (paused) {
+            if (m_timer.status() == Timer::TimerRunning)
+                m_timer.pause();
+        } else {
+            if (m_timer.status() == Timer::TimerPaused)
+                m_timer.unpause();
+        }
     }
 }
 
@@ -317,6 +318,11 @@ void Patience::handleGameStarted()
     qCDebug(lcPatience) << "Game started";
     if (state() != GameOverState)
         emit doSaveEngineState();
+    setState(state() >= GameOverState ? RunningState : StartingState);
+}
+
+void Patience::handleCardMoved()
+{
     setState(RunningState);
 }
 

@@ -24,27 +24,23 @@ Page {
     id: page
 
     property bool isPortrait: orientation & Orientation.PortraitMask
+    property bool active: page.status === PageStatus.Active
 
     allowedOrientations: Orientation.All
 
     onOrientationChanged: message.x = 0
 
-    onStatusChanged: {
-        switch (status) {
-            case PageStatus.Inactive:
-            case PageStatus.Deactivating:
-                Patience.paused = true
-                break
-            case PageStatus.Activating:
-            case PageStatus.Active:
-                Patience.paused = false
-                break
-        }
-    }
+    onActiveChanged: Patience.paused = !active
 
     Connections {
         target: Qt.application
-        onStateChanged: Patience.paused = Qt.application.state !== Qt.ApplicationActive
+        onStateChanged: {
+            if (Qt.application.state === Qt.ApplicationActive) {
+                Patience.paused = !page.active
+            } else {
+                Patience.paused = true
+            }
+        }
     }
 
     SilicaFlickable {
