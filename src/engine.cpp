@@ -205,8 +205,11 @@ void Engine::getHint()
         if (type == 0) {
             SCM string = SCM_CADR(data);
             auto msg = Scheme::getUtf8String(string);
-            if (!msg.isEmpty())
+            if (!msg.isEmpty()) {
                 message = msg;
+                if (message.endsWith(QChar('.')))
+                    message.truncate(message.length()-1);
+            }
         } else if (type == 1 || type == 2) {
             SCM string1 = SCM_CADR(data);
             SCM string2 = SCM_CADDR(data);
