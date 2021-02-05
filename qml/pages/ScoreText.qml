@@ -34,12 +34,13 @@ Row {
     Label {
         id: nameLabel
         color: Theme.highlightColor
+        visible: nameVisible && (expanded || animating)
     }
 
     Label {
         id: valueLabel
         color: Theme.highlightColor
         truncationMode: TruncationMode.Fade
-        width: Math.min(maximumWidth, contentWidth)
+        width: Math.min(maximumWidth, Math.ceil(contentWidth))
     }
 }

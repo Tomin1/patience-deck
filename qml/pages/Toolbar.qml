@@ -129,6 +129,7 @@ Item {
             imageSource: "../images/icon-m-hint.svg"
             parent: vertical ? mainButtons : extraButtons
             showText: !vertical || expanded || animating
+            enabled: Patience.state === Patience.StartingState || Patience.state === Patience.RunningState
             onClicked: Patience.getHint()
         }
     }
@@ -181,7 +182,18 @@ Item {
         x: vertical ? Theme.paddingSmall : minimumX
         anchors {
             top: parent.top
-            topMargin: vertical ? Theme.paddingSmall : 0
+            topMargin: {
+                if (vertical) {
+                    var remainingSpace = parent.height - (height + 4 * Theme.itemSizeLarge)
+                    if (remainingSpace > Theme.paddingMedium) {
+                        return Theme.paddingMedium
+                    } else {
+                        return remainingSpace
+                    }
+                } else {
+                    return 0
+                }
+            }
         }
 
         Label {
