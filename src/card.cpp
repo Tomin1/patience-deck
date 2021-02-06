@@ -184,10 +184,15 @@ void Card::mouseMoveEvent(QMouseEvent *event)
 
 qint64 Card::sinceLastDrag()
 {
-    if (m_doubleClickTimer.isValid())
-        return m_doubleClickTimer.restart();
-    m_doubleClickTimer.start();
-    return std::numeric_limits<qint64>::max();
+    qint64 time;
+    if (m_doubleClickTimer.isValid()) {
+        time = m_doubleClickTimer.elapsed();
+        m_doubleClickTimer.invalidate();
+    } else {
+        time = std::numeric_limits<qint64>::max();
+        m_doubleClickTimer.start();
+    }
+    return time;
 }
 
 QSvgRenderer *Card::cardRenderer()
