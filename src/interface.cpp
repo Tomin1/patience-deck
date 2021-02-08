@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QRegularExpression>
 #include "enginedata.h"
 #include "engine_p.h"
 #include "interface.h"
@@ -416,13 +417,13 @@ SCM Interface::updateScore(SCM newScore)
     auto *engine = EnginePrivate::instance();
     char *score = scm_to_utf8_string(newScore);
     bool ok;
-    int value = QString::fromUtf8(score).toInt(&ok);
-    if (!ok) {
-        engine->die("expected an integer value");
-        return 0;
+    int value = QString::fromUtf8(score).remove(QRegularExpression("[^0-9]")).toInt(&ok);
+    if (ok) {
+        engine->setScore(value);
+        qCDebug(lcScheme) << "Set score to" << value;
+    } else {
+        qCWarning(lcScheme) << "Game sent invalid score:" << score;
     }
-    engine->setScore(value);
-    qCDebug(lcScheme) << "Set score to" << value;
     free(score);
     return newScore;
 }
