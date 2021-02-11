@@ -32,7 +32,7 @@ class Drag : public QObject
     Q_OBJECT
 
 public:
-    Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card, qint64 sinceLast);
+    Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card);
     ~Drag();
 
     Card *card() const;
@@ -57,8 +57,12 @@ private slots:
 
 private:
     bool testClick(QMouseEvent *event);
+    static bool couldBeDoubleClick(const Card *card);
 
     static quint32 s_count;
+    static QElapsedTimer s_doubleClickTimer;
+    static const Card *s_lastCard;
+
     quint32 m_id;
     QElapsedTimer m_timer;
     QPointF m_startPoint;

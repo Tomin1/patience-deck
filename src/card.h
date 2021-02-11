@@ -54,7 +54,6 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    qint64 sinceLastDrag();
 
     static QSvgRenderer *cardRenderer();
     static QSGTexture *cardTexture(const QSizeF &size, QQuickWindow *window);
@@ -64,7 +63,6 @@ private:
     CardData m_data;
     Drag *m_drag;
     bool m_dirty;
-    QElapsedTimer m_doubleClickTimer;
 };
 
 QDebug operator<<(QDebug debug, const Card &card);

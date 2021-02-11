@@ -43,7 +43,11 @@ CardList toCardData(const QList<Card *> &cards)
 
 quint32 Drag::s_count = 0;
 
-Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card, qint64 sinceLast)
+QElapsedTimer Drag::s_doubleClickTimer;
+
+const Card *Drag::s_lastCard = nullptr;
+
+Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     : QObject(card)
     , m_id(s_count++)
     , m_mayBeAClick(true)
@@ -65,7 +69,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card, qint64 sinc
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
 
-    m_mayBeADoubleClick = sinceLast <= QGuiApplication::styleHints()->mouseDoubleClickInterval();
+    m_mayBeADoubleClick = couldBeDoubleClick(card);
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 }
@@ -211,4 +215,19 @@ bool Drag::testClick(QMouseEvent *event)
         m_mayBeAClick = false;
 
     return m_mayBeAClick;
+}
+
+bool Drag::couldBeDoubleClick(const Card *card)
+{
+    qint64 time = (card == s_lastCard && s_doubleClickTimer.isValid()) ?
+        s_doubleClickTimer.elapsed() : std::numeric_limits<qint64>::max();
+    s_lastCard = card;
+
+    if (time <= QGuiApplication::styleHints()->mouseDoubleClickInterval()) {
+        s_doubleClickTimer.invalidate();
+        return true;
+    } else {
+        s_doubleClickTimer.start();
+        return false;
+    }
 }
