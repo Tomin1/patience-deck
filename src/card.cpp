@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ void Card::mouseReleaseEvent(QMouseEvent *event)
     qCDebug(lcMouse) << event << "for" << *this;
 
     if (!m_drag) {
-        qCCritical(lcPatience) << "Can not handle mouse release! There is no drag ongoing!";
+        qCCritical(lcDrag) << "Can not handle mouse release! There is no drag ongoing!";
         return;
     }
 
@@ -175,7 +175,7 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     qCDebug(lcMouse) << event << "for" << *this;
 
     if (!m_drag) {
-        qCCritical(lcPatience) << "Can not handle mouse move! There is no drag ongoing!";
+        qCCritical(lcDrag) << "Can not handle mouse move! There is no drag ongoing!";
         return;
     }
 

@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ CardList toCardData(const QList<Card *> &cards)
     for (const Card *card : cards)
         list << card->data();
     if (list.isEmpty()) {
-        qCCritical(lcPatience) << "Returning an empty list of CardData";
+        qCCritical(lcDrag) << "Returning an empty list of CardData";
         abort();
     }
     return list;
@@ -125,10 +125,10 @@ void Drag::finish(QMouseEvent *event)
 {
     if (testClick(event)) {
         if (m_mayBeADoubleClick) {
-            qCDebug(lcPatience) << "Detected double click on" << m_card;
+            qCDebug(lcDrag) << "Detected double click on" << m_card;
             emit doDoubleClick(m_id, m_source->id());
         } else {
-            qCDebug(lcPatience) << "Detected click on" << m_card;
+            qCDebug(lcDrag) << "Detected click on" << m_card;
             emit doClick(m_id, m_source->id());
         }
         deleteLater();
@@ -176,11 +176,11 @@ void Drag::handleCouldDrop(quint32 id, bool could)
         return;
 
     if (could) {
-        qCDebug(lcPatience) << "Moving from" << m_source->id() << "to" << m_target->id();
+        qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << m_target->id();
         emit doDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else if (!m_targets.isEmpty()) {
         m_target = m_targets.takeFirst();
-        qCDebug(lcPatience) << "Trying to moving from" << m_source->id() << "to" << m_target->id();
+        qCDebug(lcDrag) << "Trying to moving from" << m_source->id() << "to" << m_target->id();
         emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
     } else {
         cancel();
