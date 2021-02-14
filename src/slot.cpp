@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
+    , m_highlighted(false)
 {
     for (const CardData &card : cards) {
         auto newCard = new Card(card, table, this);
@@ -112,6 +113,11 @@ bool Slot::empty() const
     return m_cards.empty();
 }
 
+bool Slot::highlighted() const
+{
+    return m_highlighted;
+}
+
 void Slot::appendCard(const CardData &card)
 {
     Card *newCard = new Card(card, m_table, this);
@@ -157,6 +163,20 @@ void Slot::clear()
     // TODO: Store to card cache and take from there to new slot
 }
 
+void Slot::highlight()
+{
+    m_highlighted = true;
+    if (!empty())
+        top()->update();
+}
+
+void Slot::removeHighlight()
+{
+    m_highlighted = false;
+    if (!empty())
+        top()->update();
+}
+
 CardList Slot::asCardData(Card *first) const
 {
     CardList list;
@@ -186,6 +206,11 @@ void Slot::put(const QList<Card *> &cards)
         card->setParentItem(this);
     }
     updateLocations();
+}
+
+Card *Slot::top() const
+{
+    return m_cards.last();
 }
 
 bool Slot::contains(Card *card) const

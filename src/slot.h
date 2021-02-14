@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,15 +62,19 @@ public:
     QPointF position() const;
     int count() const;
     bool empty() const;
+    bool highlighted() const;
 
     void appendCard(const CardData &card);
     void insertCard(int index, const CardData &card);
     void removeCard(int index);
     void clear();
+    void highlight();
+    void removeHighlight();
 
     CardList asCardData(Card *first) const;
     QList<Card *> take(Card *first);
     void put(const QList<Card *> &cards);
+    Card *top() const;
     bool contains(Card *card) const;
     using QQuickItem::contains;
 
@@ -94,6 +98,7 @@ private:
     qreal m_calculatedDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
+    bool m_highlighted;
 };
 
 QDebug operator<<(QDebug debug, const Slot &slot);

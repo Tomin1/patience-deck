@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ Table::Table(QQuickItem *parent)
     , m_sideMargin(0)
     , m_preparing(true)
     , m_dirty(true)
+    , m_highlightedSlot(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -72,9 +73,13 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     QColor outlineColor(Qt::gray);
     auto *node = new QSGSimpleRectNode(target, outlineColor);
     QColor backgroundColor(Qt::darkGreen);
-    target -= SlotOutlineWidth;
-    auto *innerNode = new QSGSimpleRectNode(target, backgroundColor);
+    auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
     node->appendChildNode(innerNode);
+    if (slot->highlighted() && slot->empty()) {
+        QColor highlightColor(Qt::blue);
+        highlightColor.setAlphaF(0.25);
+        node->appendChildNode(new QSGSimpleRectNode(target, highlightColor));
+    }
     return node;
 }
 
@@ -227,6 +232,18 @@ QList<Slot *> Table::getSlotsFor(const Card *card, Slot *source)
             break;
     }
     return sorted;
+}
+
+void Table::highlight(Slot *slot)
+{
+    if (m_highlightedSlot != slot) {
+        if (m_highlightedSlot)
+            m_highlightedSlot->removeHighlight();
+        if (slot)
+            slot->highlight();
+        m_highlightedSlot = slot;
+        update();
+    }
 }
 
 void Table::handleNewSlot(int id, const CardList &cards, int type,

@@ -48,16 +48,19 @@ QElapsedTimer Drag::s_doubleClickTimer;
 const Card *Drag::s_lastCard = nullptr;
 
 Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
-    : QObject(card)
+    : QQuickItem(card)
+    , m_state(NoDrag)
     , m_id(s_count++)
-    , m_mayBeAClick(true)
     , m_mayBeADoubleClick(false)
-    , m_completed(false)
     , m_table(table)
     , m_card(card)
     , m_source(slot)
-    , m_target(nullptr)
+    , m_target(-1)
 {
+    setParentItem(table);
+    setX(slot->x());
+    setY(slot->y());
+
     auto engine = Engine::instance();
     connect(this, &Drag::doDrag, engine, &Engine::drag);
     connect(this, &Drag::doCancelDrag, engine, &Engine::cancelDrag);
@@ -76,8 +79,8 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
 
 Drag::~Drag()
 {
-    if (!m_cards.isEmpty()) {
-        if (m_completed) {
+    if (m_state >= Dragging) {
+        if (m_state == Dropped) {
             for (Card *card : m_cards) {
                 card->setParentItem(nullptr);
                 card->deleteLater();
@@ -102,28 +105,24 @@ Slot *Drag::source() const
 
 void Drag::update(QMouseEvent *event)
 {
-    if (!m_mayBeAClick)
-        ; // continue
-    else if (!testClick(event))
+    if (mayBeAClick(event)) {
+        return;
+    } else if (m_state == AboutToDrag) {
+        m_state = StartingDrag;
         emit doDrag(m_id, m_source->id(), m_source->asCardData(m_card));
-    else
-        return;
-
-    if (m_cards.isEmpty())
-        return;
-
-    QPointF point = m_card->mapToItem(m_table, event->pos());
-    QPointF move = point - m_lastPoint;
-    for (Card *card : m_cards) {
-        card->setX(card->x() + move.x());
-        card->setY(card->y() + move.y());
+    } else if (m_state == Dragging) {
+        QPointF point = m_card->mapToItem(m_table, event->pos());
+        QPointF move = point - m_lastPoint;
+        setX(x() + move.x());
+        setY(y() + move.y());
+        m_lastPoint = point;
+        checkTargets();
     }
-    m_lastPoint = point;
 }
 
 void Drag::finish(QMouseEvent *event)
 {
-    if (testClick(event)) {
+    if (mayBeAClick(event)) {
         if (m_mayBeADoubleClick) {
             qCDebug(lcDrag) << "Detected double click on" << m_card;
             emit doDoubleClick(m_id, m_source->id());
@@ -132,25 +131,74 @@ void Drag::finish(QMouseEvent *event)
             emit doClick(m_id, m_source->id());
         }
         deleteLater();
-        return;
+    } else if (m_state == Dragging) {
+        m_state = Dropping;
+        checkTargets(true);
+    } else {
+        deleteLater();
     }
+}
 
-    if (m_cards.isEmpty())
-        return;
+void Drag::checkTargets(bool force)
+{
+    auto targets = m_table->getSlotsFor(m_card, m_source);
+    if (force || m_targets != targets) {
+        m_target = -1;
+        m_targets = targets;
+        highlightOrDrop();
+    }
+}
 
-    m_targets = m_table->getSlotsFor(m_card, m_source);
-
-    handleCouldDrop(m_id, false);
+void Drag::highlightOrDrop()
+{
+    m_target++;
+    if (m_target < m_targets.count()) {
+        Slot *target = m_targets.at(m_target);
+        switch (m_couldDrop.value(target->id(), Unknown)) {
+        case Unknown:
+            // Cache miss, check
+            m_couldDrop.insert(target->id(), Checking);
+            qCDebug(lcDrag) << "Testing move from" << m_source->id() << "to" << target->id();
+            emit doCheckDrop(target->id(), m_source->id(), target->id(), toCardData(m_cards));
+            [[fallthrough]];
+        case Checking: // Signal for the same slot received twice, the correct signal should still arrive
+            m_target--; // Check the slot again later
+            break;
+        case CanDrop:
+            // Found target to highlight or drop to
+            if (m_state < Dropping) {
+                qCDebug(lcDrag) << "Highlighting" << target->id();
+                m_table->highlight(target);
+            } else {
+                m_table->highlight(nullptr);
+                qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << target->id();
+                emit doDrop(m_id, m_source->id(), target->id(), toCardData(m_cards));
+            }
+            break;
+        case CantDrop:
+            // Recurse to next iteration
+            highlightOrDrop();
+            break;
+        }
+    } else {
+        // No suitable target, remove highlights or cancel
+        if (m_state < Dropping) {
+            m_table->highlight(nullptr);
+        } else {
+            cancel();
+        }
+    }
 }
 
 void Drag::cancel()
 {
-    if (!m_cards.isEmpty()) {
+    if (m_state == Dragging) {
         emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
         m_source->put(m_cards);
         m_cards.clear();
     }
 
+    m_state = Canceled;
     deleteLater();
 }
 
@@ -160,32 +208,19 @@ void Drag::handleCouldDrag(quint32 id, bool could)
         return;
 
     if (could) {
+        m_state = Dragging;
         m_cards = m_source->take(m_card);
-        for (Card *card : m_cards) {
-            card->setParentItem(m_table);
-            QPointF position = m_table->mapFromItem(m_source, QPointF(card->x(), card->y()));
-            card->setX(position.x());
-            card->setY(position.y());
-        }
+        for (Card *card : m_cards)
+            card->setParentItem(this);
+
+        checkTargets();
     }
 }
 
 void Drag::handleCouldDrop(quint32 id, bool could)
 {
-    if (id != m_id)
-        return;
-
-    if (could) {
-        qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << m_target->id();
-        emit doDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
-    } else if (!m_targets.isEmpty()) {
-        m_target = m_targets.takeFirst();
-        qCDebug(lcDrag) << "Trying to moving from" << m_source->id() << "to" << m_target->id();
-        emit doCheckDrop(m_id, m_source->id(), m_target->id(), toCardData(m_cards));
-    } else {
-        cancel();
-        deleteLater();
-    }
+    m_couldDrop.insert((int)id, could ? CanDrop : CantDrop);
+    highlightOrDrop();
 }
 
 void Drag::handleDropped(quint32 id, bool could)
@@ -194,27 +229,27 @@ void Drag::handleDropped(quint32 id, bool could)
         return;
 
     if (could)
-        m_completed = true;
+        m_state = Dropped;
     else
         cancel();
 
     deleteLater();
 }
 
-bool Drag::testClick(QMouseEvent *event)
+bool Drag::mayBeAClick(QMouseEvent *event)
 {
-    if (!m_mayBeAClick)
+    if (m_state > NoDrag)
         return false;
 
     auto styleHints = QGuiApplication::styleHints();
     if (m_timer.hasExpired(styleHints->startDragTime()))
-        m_mayBeAClick = false;
+        m_state = AboutToDrag;
 
     qreal distance = (m_startPoint - m_card->mapToItem(m_table, event->pos())).manhattanLength();
     if (distance >= styleHints->startDragDistance())
-        m_mayBeAClick = false;
+        m_state = AboutToDrag;
 
-    return m_mayBeAClick;
+    return m_state == NoDrag;
 }
 
 bool Drag::couldBeDoubleClick(const Card *card)

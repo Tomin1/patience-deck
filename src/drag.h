@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,15 @@
 #define DRAG_H
 
 #include <QElapsedTimer>
-#include <QObject>
 #include <QPointF>
+#include <QQuickItem>
 #include "enginedata.h"
 
 class QMouseEvent;
 class Table;
 class Card;
 class Slot;
-class Drag : public QObject
+class Drag : public QQuickItem
 {
     Q_OBJECT
 
@@ -56,26 +56,45 @@ private slots:
     void handleDropped(quint32 id, bool could);
 
 private:
-    bool testClick(QMouseEvent *event);
+    enum DragState {
+        NoDrag,
+        AboutToDrag,
+        StartingDrag,
+        Dragging,
+        Dropping,
+        Dropped,
+        Canceled,
+    };
+
+    enum Droppability {
+        Unknown = 0,
+        Checking,
+        CanDrop,
+        CantDrop,
+    };
+
+    bool mayBeAClick(QMouseEvent *event);
+    void checkTargets(bool force = false);
+    void highlightOrDrop();
     static bool couldBeDoubleClick(const Card *card);
 
     static quint32 s_count;
     static QElapsedTimer s_doubleClickTimer;
     static const Card *s_lastCard;
 
+    DragState m_state;
     quint32 m_id;
     QElapsedTimer m_timer;
     QPointF m_startPoint;
     QPointF m_lastPoint;
-    bool m_mayBeAClick;
     bool m_mayBeADoubleClick;
-    bool m_completed;
     Table *m_table;
     Card *m_card;
     Slot *m_source;
+    int m_target;
     QList<Slot *> m_targets;
-    Slot * m_target;
     QList<Card *> m_cards;
+    QHash<int, Droppability> m_couldDrop;
 };
 
 #endif // DRAG_H

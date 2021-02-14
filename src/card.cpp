@@ -17,6 +17,7 @@
 
 #include <QPainter>
 #include <QQuickWindow>
+#include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
 #include <QSvgRenderer>
@@ -87,6 +88,16 @@ QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         QRect rect(column * width(), row * height(), width(), height());
         node->setSourceRect(rect);
         m_dirty = false;
+    }
+    if (m_slot->highlighted() && top()) {
+        if (node->childCount() < 1) {
+            QColor highlightColor(Qt::blue);
+            highlightColor.setAlphaF(0.25);
+            node->appendChildNode(new QSGSimpleRectNode(boundingRect(), highlightColor));
+        }
+    } else { // !m_slot->highlighted() || !top()
+        if (node->childCount() > 0)
+            node->removeAllChildNodes();
     }
     node->setRect(boundingRect());
     return node;
@@ -180,6 +191,11 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     }
 
     m_drag->update(event);
+}
+
+bool Card::top() const
+{
+    return m_slot->top() == this;
 }
 
 QSvgRenderer *Card::cardRenderer()

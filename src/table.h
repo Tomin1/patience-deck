@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,7 @@ public:
     bool preparing() const;
 
     QList<Slot *> getSlotsFor(const Card *card, Slot *source);
+    void highlight(Slot *slot);
 
 signals:
     void minimumSideMarginChanged();
@@ -108,8 +109,9 @@ private:
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
     bool m_preparing;
-    QPen m_pen;
     bool m_dirty;
+
+    Slot *m_highlightedSlot;
 
     QElapsedTimer m_timer;
     QPointF m_startPoint;
