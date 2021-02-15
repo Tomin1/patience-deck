@@ -18,6 +18,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <QColor>
 #include <QMap>
 #include <QPointF>
 #include <QSizeF>
@@ -39,11 +40,13 @@ class Table : public QQuickItem
                WRITE setVerticalMargin NOTIFY verticalMarginChanged);
     Q_PROPERTY(qreal maximumVerticalMargin READ maximumVerticalMargin
                WRITE setMaximumVerticalMargin NOTIFY maximumVerticalMarginChanged);
+    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor
+               RESET resetHighlightColor NOTIFY highlightColorChanged)
 
 public:
     explicit Table(QQuickItem *parent = nullptr);
 
-    static QSGNode *getPaintNodeForSlot(Slot *slot);
+    QSGNode *getPaintNodeForSlot(Slot *slot);
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
 
     qreal minimumSideMargin() const;
@@ -56,6 +59,9 @@ public:
     void setVerticalMargin(qreal verticalMargin);
     qreal maximumVerticalMargin() const;
     void setMaximumVerticalMargin(qreal maximumVerticalMargin);
+    QColor highlightColor() const;
+    void setHighlightColor(QColor color);
+    void resetHighlightColor();
 
     qreal sideMargin() const;
     QSizeF margin() const;
@@ -75,6 +81,8 @@ signals:
     void maximumHorizontalMarginChanged();
     void verticalMarginChanged();
     void maximumVerticalMarginChanged();
+    void highlightColorChanged();
+    void highlightOpacityChanged();
 
     void doClick(quint32 id, int slotId);
 
@@ -112,6 +120,7 @@ private:
     bool m_dirty;
 
     Slot *m_highlightedSlot;
+    QColor m_highlightColor;
 
     QElapsedTimer m_timer;
     QPointF m_startPoint;

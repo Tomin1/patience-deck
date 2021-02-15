@@ -33,6 +33,8 @@ namespace {
 const qreal CardRatio = 79.0 / 123.0;
 const QMarginsF SlotMargins(3, 3, 3, 3);
 const QMarginsF SlotOutlineWidth(3, 3, 3, 3);
+const QColor DefaultHighlightColor(Qt::blue);
+const qreal DefaultHighlightOpacity = 0.25;
 
 } // namespace
 
@@ -45,10 +47,12 @@ Table::Table(QQuickItem *parent)
     , m_preparing(true)
     , m_dirty(true)
     , m_highlightedSlot(nullptr)
+    , m_highlightColor(DefaultHighlightColor)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
     setFlag(QQuickItem::ItemHasContents);
+    m_highlightColor.setAlphaF(DefaultHighlightOpacity);
 
     auto engine = Engine::instance();
     connect(engine, &Engine::newSlot, this, &Table::handleNewSlot);
@@ -76,9 +80,7 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
     node->appendChildNode(innerNode);
     if (slot->highlighted() && slot->empty()) {
-        QColor highlightColor(Qt::blue);
-        highlightColor.setAlphaF(0.25);
-        node->appendChildNode(new QSGSimpleRectNode(target, highlightColor));
+        node->appendChildNode(new QSGSimpleRectNode(target, m_highlightColor));
     }
     return node;
 }
@@ -171,6 +173,26 @@ void Table::setMaximumVerticalMargin(qreal maximumVerticalMargin)
         emit maximumVerticalMarginChanged();
         updateCardSize();
     }
+}
+
+QColor Table::highlightColor() const
+{
+    return m_highlightColor;
+}
+
+void Table::setHighlightColor(QColor color)
+{
+    if (m_highlightColor != color) {
+        m_highlightColor = color;
+        emit highlightColorChanged();
+    }
+}
+
+void Table::resetHighlightColor()
+{
+    QColor color(DefaultHighlightColor);
+    color.setAlphaF(DefaultHighlightOpacity);
+    setHighlightColor(color);
 }
 
 qreal Table::sideMargin() const

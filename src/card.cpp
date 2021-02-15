@@ -91,9 +91,8 @@ QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     }
     if (m_slot->highlighted() && top()) {
         if (node->childCount() < 1) {
-            QColor highlightColor(Qt::blue);
-            highlightColor.setAlphaF(0.25);
-            node->appendChildNode(new QSGSimpleRectNode(boundingRect(), highlightColor));
+            auto color = m_table->highlightColor();
+            node->appendChildNode(new QSGSimpleRectNode(boundingRect(), color));
         }
     } else { // !m_slot->highlighted() || !top()
         if (node->childCount() > 0)
