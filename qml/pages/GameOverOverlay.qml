@@ -34,7 +34,6 @@ Rectangle {
     Rectangle {
         id: overlay
 
-        readonly property real gray: Theme.colorScheme === Theme.LightOnDark ? 0.3 : 0.8
         readonly property int maximumWidth: parent.width - 2*Theme.horizontalPageMargin
         readonly property int contentWidth: Math.max(gameOverText.width, newGameButton.width)
 
@@ -44,7 +43,7 @@ Rectangle {
         }
         height: column.height
         width: Math.min(maximumWidth, contentWidth + 2*column.padding)
-        color: Qt.rgba(gray, gray, gray, 0.8)
+        color: Theme.rgba(Theme.overlayBackgroundColor, Theme.opacityOverlay)
         radius: Theme.paddingMedium
         border {
             color: Theme.secondaryColor

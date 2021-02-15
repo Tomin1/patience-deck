@@ -106,6 +106,7 @@ Page {
                 maximumHorizontalMargin: Theme.paddingLarge
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
+                highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }
         }
