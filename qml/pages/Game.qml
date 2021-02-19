@@ -47,6 +47,8 @@ Page {
         anchors.fill: parent
 
         PullDownMenu {
+            id: pullDownMenu
+
             MenuItem {
                 //% "About"
                 text: qsTrId("patience-me-about")
@@ -107,6 +109,7 @@ Page {
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
+                layer.enabled: pullDownMenu.active
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }
         }
