@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,16 @@ public:
     enum Roles {
         DisplayRole = Qt::DisplayRole,
         FileNameRole = Qt::UserRole,
-        NameRole = Qt::UserRole + 1,
-        SupportedRole = Qt::UserRole + 2,
+        NameRole,
+        SupportedRole,
+        SectionRole,
     };
+
+    enum Section {
+        AllGames,
+        LastPlayed,
+    };
+    Q_ENUM(Section);
 
 private:
     static MGConfItem *showAllConf();
@@ -50,7 +57,11 @@ private:
     static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
 
-    QStringList m_games;
+    QString getFileName(int row) const;
+    Section getSection(int row) const;
+
+    QVector<QString> m_games;
+    QStringList m_lastPlayed;
 };
 
 #endif // GAMELIST_H

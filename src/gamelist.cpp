@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,15 @@
 
 #include <QDir>
 #include <QSet>
+#include "patience.h"
 #include "gamelist.h"
 #include "constants.h"
+
+namespace {
+
+int ShownLastPlayedGames = 5;
+
+} // namespace
 
 /*
  * List of supported patience games.
@@ -53,7 +60,8 @@ QHash<int, QByteArray> GameList::s_roleNames = {
     { Qt::DisplayRole, "display" },
     { FileNameRole, "filename" },
     { NameRole, "name" },
-    { SupportedRole, "supported" }
+    { SupportedRole, "supported" },
+    { SectionRole, "section" },
 };
 
 GameList::GameList(QObject *parent)
@@ -66,28 +74,32 @@ GameList::GameList(QObject *parent)
         if (showAll || isSupported(entry))
             m_games.append(entry);
     }
+
+    m_lastPlayed = Patience::instance()->history().mid(0, ShownLastPlayedGames);
 }
 
 int GameList::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_games.count();
+    return m_lastPlayed.count() + m_games.count();
 }
 
 QVariant GameList::data(const QModelIndex &index, int role) const
 {
-    if (index.row() > m_games.count())
+    if (index.row() > rowCount())
         return QVariant();
 
     switch (role) {
     case DisplayRole:
-        return displayable(m_games[index.row()]);
+        return displayable(getFileName(index.row()));
     case FileNameRole:
-        return m_games[index.row()];
+        return getFileName(index.row());
     case NameRole:
-        return name(m_games[index.row()]);
+        return name(getFileName(index.row()));
     case SupportedRole:
-        return isSupported(m_games[index.row()]);
+        return isSupported(getFileName(index.row()));
+    case SectionRole:
+        return getSection(index.row());
     default:
         return QVariant();
     }
@@ -140,4 +152,17 @@ MGConfItem *GameList::showAllConf()
     if (!confItem)
         confItem = new MGConfItem(Constants::ConfPath + QStringLiteral("/showAllGames"));
     return confItem;
+}
+
+QString GameList::getFileName(int row) const
+{
+    if (row < m_lastPlayed.count())
+        return m_lastPlayed[row];
+    else
+        return m_games[row - m_lastPlayed.count()];
+}
+
+GameList::Section GameList::getSection(int row) const
+{
+    return row < m_lastPlayed.count() ? LastPlayed : AllGames;
 }
