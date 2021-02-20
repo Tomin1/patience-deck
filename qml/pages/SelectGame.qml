@@ -26,7 +26,7 @@ Page {
 
     SilicaListView {
         id: listView
-        model: GameList { }
+        model: GameList { id: gameList }
         anchors.fill: parent
         header: PageHeader {
             //% "Games"
@@ -41,6 +41,17 @@ Page {
                 anchors.verticalCenter: parent.verticalCenter
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
+
+            IconButton {
+                icon.source: "image://theme/icon-m-favorite" + (favorite ? "-selected" : "")
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    right: parent.right
+                    rightMargin: Theme.horizontalPageMargin
+                }
+                onClicked: gameList.setFavorite(index, !favorite)
+            }
+
             onClicked: {
                 Patience.loadGame(filename)
                 pageStack.pop()
@@ -49,11 +60,18 @@ Page {
         section {
             property: "section"
             delegate: SectionHeader {
-                text: section == GameList.LastPlayed
-                    //% "Last played"
-                    ? qsTrId("patience-se-last_played")
-                    //% "All games"
-                    : qsTrId("patience-se-all_games")
+                text: {
+                    if (section == GameList.LastPlayed) {
+                        //% "Last played"
+                        return qsTrId("patience-se-last_played")
+                    } else if (section == GameList.Favorites) {
+                        //% "Favourites"
+                        return qsTrId("patience-se-favourites")
+                    } else {
+                        //% "All games"
+                        return qsTrId("patience-se-all_games")
+                    }
+                }
             }
         }
 

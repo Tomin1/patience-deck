@@ -32,6 +32,8 @@ public:
     static bool showAll();
     static void setShowAll(bool show);
 
+    Q_INVOKABLE void setFavorite(int row, bool favorite);
+
     explicit GameList(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
@@ -43,11 +45,13 @@ public:
         NameRole,
         SupportedRole,
         SectionRole,
+        FavoriteRole,
     };
 
     enum Section {
         AllGames,
         LastPlayed,
+        Favorites,
     };
     Q_ENUM(Section);
 
@@ -59,9 +63,13 @@ private:
 
     QString getFileName(int row) const;
     Section getSection(int row) const;
+    void emitFavoriteChanged(int row);
 
     QVector<QString> m_games;
     QStringList m_lastPlayed;
+    QStringList m_favorites;
+
+    MGConfItem m_favoriteConf;
 };
 
 #endif // GAMELIST_H
