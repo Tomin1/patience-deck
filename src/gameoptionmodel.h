@@ -38,13 +38,14 @@ public:
     enum Roles {
         DisplayRole = Qt::DisplayRole,
         SetRole = Qt::UserRole,
-        TypeRole = Qt::UserRole+1
+        TypeRole,
     };
 
-    enum Types {
+    enum Type {
         CheckType,
         RadioType
     };
+    Q_ENUM(Type);
 
 signals:
     void doRequestGameOptions();

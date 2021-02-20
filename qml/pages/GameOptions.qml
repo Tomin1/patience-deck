@@ -84,6 +84,8 @@ Page {
                 delegate: BackgroundItem {
                     id: delegate
 
+                    enabled: type !== GameOptions.RadioType || !set
+
                     Label {
                         x: Theme.horizontalPageMargin
                         text: display
@@ -95,7 +97,7 @@ Page {
                         x: page.width - Theme.horizontalPageMargin - width
                         anchors.verticalCenter: parent.verticalCenter
                         source: {
-                            if (type == GameOptions.CheckType) {
+                            if (type === GameOptions.CheckType) {
                                 return "image://theme/icon-s-" + (set ? "accept" : "decline")
                             } else {
                                 return "image://theme/icon-s-" + (set ? "installed" : "checkmark")
@@ -104,11 +106,9 @@ Page {
                     }
 
                     onClicked: {
-                        if (type != GameOptions.RadioType || !set) {
-                            gameOptions.select(index)
-                            Patience.startNewGame()
-                            pageStack.pop()
-                        }
+                        gameOptions.select(index)
+                        Patience.startNewGame()
+                        pageStack.pop()
                     }
                 }
             }
