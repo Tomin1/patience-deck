@@ -50,9 +50,6 @@ EnginePrivate::EnginePrivate(QObject *parent)
     , m_features(NoFeatures)
     , m_state(UninitializedState)
     , m_timeout(0)
-    , m_canUndo(false)
-    , m_canRedo(false)
-    , m_canDeal(false)
     , m_seed(std::mt19937::default_seed)
 {
 }
@@ -564,37 +561,28 @@ void EnginePrivate::testGameOver()
 
 void EnginePrivate::setCanUndo(bool canUndo)
 {
-    if (m_canUndo != canUndo) {
-        m_canUndo = canUndo;
-        emit engine()->canUndoChanged(canUndo);
-    }
+    emit engine()->canUndo(canUndo);
 }
 
 void EnginePrivate::setCanRedo(bool canRedo)
 {
-    if (m_canRedo != canRedo) {
-        m_canRedo = canRedo;
-        emit engine()->canRedoChanged(canRedo);
-    }
+    emit engine()->canRedo(canRedo);
 }
 
 void EnginePrivate::setCanDeal(bool canDeal)
 {
-    if (m_canDeal != canDeal) {
-        m_canDeal = canDeal;
-        emit engine()->canDealChanged(canDeal);
-    }
+    emit engine()->canDeal(canDeal);
 }
 
 void EnginePrivate::setScore(int score)
 {
-    emit engine()->scoreChanged(score);
+    emit engine()->score(score);
 }
 
 void EnginePrivate::setMessage(QString message)
 {
     qCDebug(lcEngine) << "Message changed to" << message;
-    emit engine()->messageChanged(message);
+    emit engine()->message(message);
 }
 
 void EnginePrivate::setWidth(double width)

@@ -63,11 +63,11 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::gameLoaded, this, &Patience::handleGameLoaded);
     connect(engine, &Engine::gameStarted, this, &Patience::handleGameStarted);
     connect(engine, &Engine::gameOver, this, &Patience::handleGameOver);
-    connect(engine, &Engine::canUndoChanged, this, &Patience::handleCanUndoChanged);
-    connect(engine, &Engine::canRedoChanged, this, &Patience::handleCanRedoChanged);
-    connect(engine, &Engine::canDealChanged, this, &Patience::handleCanDealChanged);
-    connect(engine, &Engine::scoreChanged, this, &Patience::handleScoreChanged);
-    connect(engine, &Engine::messageChanged, this, &Patience::handleMessageChanged);
+    connect(engine, &Engine::canUndo, this, &Patience::handleCanUndoChanged);
+    connect(engine, &Engine::canRedo, this, &Patience::handleCanRedoChanged);
+    connect(engine, &Engine::canDeal, this, &Patience::handleCanDealChanged);
+    connect(engine, &Engine::score, this, &Patience::handleScoreChanged);
+    connect(engine, &Engine::message, this, &Patience::handleMessageChanged);
     connect(engine, &Engine::hint, this, &Patience::hint);
     connect(engine, &Engine::showScore, this, &Patience::handleShowScore);
     connect(engine, &Engine::showDeal, this, &Patience::handleShowDeal);

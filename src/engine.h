@@ -55,11 +55,11 @@ public slots:
     void restoreSavedState();
 
 signals:
-    void canUndoChanged(bool canUndo);
-    void canRedoChanged(bool canRedo);
-    void canDealChanged(bool canDeal);
-    void scoreChanged(int score);
-    void messageChanged(const QString &message);
+    void canUndo(bool canUndo);
+    void canRedo(bool canRedo);
+    void canDeal(bool canDeal);
+    void score(int score);
+    void message(const QString &message);
     void hint(const QString &hint);
 
     void engineFailure(QString message);
