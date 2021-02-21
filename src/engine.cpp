@@ -679,6 +679,8 @@ void EnginePrivate::setFeatures(uint features)
 {
     qCDebug(lcEngine) << "Setting features to" << static_cast<EnginePrivate::GameFeatures>(features);
     m_features = static_cast<EnginePrivate::GameFeatures>(features);
+    emit engine()->showScore(!hasFeature(FeatureScoreHidden));
+    emit engine()->showDeal(hasFeature(FeatureDealable));
 }
 
 bool EnginePrivate::hasFeature(GameFeature feature)

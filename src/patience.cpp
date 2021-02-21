@@ -50,7 +50,9 @@ Patience::Patience(QObject *parent)
     , m_canUndo(false)
     , m_canRedo(false)
     , m_canDeal(false)
+    , m_showDeal(false)
     , m_score(0)
+    , m_showScore(false)
     , m_state(UninitializedState)
     , m_historyConf(Constants::ConfPath + HistoryConf)
 {
@@ -67,6 +69,8 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::scoreChanged, this, &Patience::handleScoreChanged);
     connect(engine, &Engine::messageChanged, this, &Patience::handleMessageChanged);
     connect(engine, &Engine::hint, this, &Patience::hint);
+    connect(engine, &Engine::showScore, this, &Patience::handleShowScore);
+    connect(engine, &Engine::showDeal, this, &Patience::handleShowDeal);
     connect(engine, &Engine::appendCard, this, &Patience::cardMoved);
     connect(engine, &Engine::insertCard, this, &Patience::cardMoved);
     connect(engine, &Engine::removeCard, this, &Patience::cardMoved);
@@ -154,6 +158,11 @@ bool Patience::canDeal() const
     return m_canDeal;
 }
 
+bool Patience::showDeal() const
+{
+    return m_showDeal;
+}
+
 QString Patience::gameName() const
 {
     if (m_gameFile.isEmpty() || m_gameFile.endsWith('-'))
@@ -176,6 +185,11 @@ void Patience::getHint()
 int Patience::score() const
 {
     return m_score;
+}
+
+bool Patience::showScore() const
+{
+    return m_showScore;
 }
 
 QString Patience::elapsedTime() const
@@ -370,6 +384,22 @@ void Patience::handleMessageChanged(const QString &message)
     if (m_message != message) {
         m_message = message;
         emit messageChanged();
+    }
+}
+
+void Patience::handleShowScore(bool show)
+{
+    if (m_showScore != show) {
+        m_showScore = show;
+        emit showScoreChanged();
+    }
+}
+
+void Patience::handleShowDeal(bool show)
+{
+    if (m_showDeal != show) {
+        m_showDeal = show;
+        emit showDealChanged();
     }
 }
 

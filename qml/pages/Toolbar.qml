@@ -160,6 +160,7 @@ Item {
             text: qsTrId("patience-bt-deal")
             imageSource: "../images/icon-m-deal.svg"
             enabled: Patience.canDeal
+            visible: Patience.showDeal
             onClicked: Patience.dealCard()
         }
     }
@@ -173,7 +174,7 @@ Item {
 
         height: {
             if (vertical) {
-                return gameTitle.height + scoreText.height + elapsedText.height
+                return gameTitle.height + (Patience.showScore ? scoreText.height : 0) + elapsedText.height
             } else {
                 return Theme.itemSizeLarge
             }
@@ -206,7 +207,7 @@ Item {
             verticalAlignment: Text.AlignBottom
             width: Math.min(parent.width, contentWidth)
             x: vertical ? 0 : parent.width - width
-            anchors.bottom: scoreText.top
+            y: vertical ? 0 : scoreText.y - height
         }
 
 
@@ -232,6 +233,7 @@ Item {
                     return title.maximumWidth - elapsedText.width - spacer.width - 3*Theme.paddingSmall
                 }
             }
+            visible: Patience.showScore
         }
 
         Label {
@@ -243,7 +245,7 @@ Item {
                 right: elapsedText.left
                 rightMargin: Theme.paddingSmall
             }
-            visible: !vertical
+            visible: !vertical && Patience.showScore
         }
 
         ScoreText {

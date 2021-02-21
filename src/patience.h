@@ -39,6 +39,8 @@ class Patience : public QObject
     Q_PROPERTY(bool paused READ paused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(QString gameName READ gameName NOTIFY gameNameChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
+    Q_PROPERTY(bool showScore READ showScore NOTIFY showScoreChanged);
+    Q_PROPERTY(bool showDeal READ showDeal NOTIFY showDealChanged);
     Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
@@ -73,9 +75,11 @@ public:
     bool canUndo() const;
     bool canRedo() const;
     bool canDeal() const;
+    bool showDeal() const;
     QString gameName() const;
     QString gameFile() const;
     int score() const;
+    bool showScore() const;
     QString elapsedTime() const;
     GameState state() const;
     bool paused() const;
@@ -96,6 +100,8 @@ signals:
     void pausedChanged();
     void gameNameChanged();
     void messageChanged();
+    void showScoreChanged();
+    void showDealChanged();
     void hint(const QString &hint);
     void cardMoved();
     void showAllGamesChanged();
@@ -123,6 +129,8 @@ private slots:
     void handleCanDealChanged(bool canDeal);
     void handleScoreChanged(int score);
     void handleMessageChanged(const QString &message);
+    void handleShowScore(bool show);
+    void handleShowDeal(bool show);
     void handleRestoreCompleted(bool success);
 
 private:
@@ -133,7 +141,9 @@ private:
     bool m_canUndo;
     bool m_canRedo;
     bool m_canDeal;
+    bool m_showDeal;
     int m_score;
+    bool m_showScore;
     GameState m_state;
     QString m_gameFile;
     QString m_message;
