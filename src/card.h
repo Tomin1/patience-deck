@@ -19,7 +19,6 @@
 #define CARD_H
 
 #include <QtQuick/QQuickItem>
-#include <QPen>
 #include "enginedata.h"
 #include "drag.h"
 

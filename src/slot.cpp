@@ -125,7 +125,7 @@ void Slot::appendCard(const CardData &card)
     m_cards.append(newCard);
     if (!m_table->preparing()) {
         newCard->setSize(m_table->cardSize());
-        updateLocations(expanded() ? firstExpanded() : end());
+        updateLocations(expanded() ? firstExpanded() : end()-1);
     }
 }
 
