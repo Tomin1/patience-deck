@@ -561,21 +561,25 @@ void EnginePrivate::testGameOver()
 
 void EnginePrivate::setCanUndo(bool canUndo)
 {
+    qCDebug(lcEngine) << (canUndo ? "Can" : "Can't") << "undo";
     emit engine()->canUndo(canUndo);
 }
 
 void EnginePrivate::setCanRedo(bool canRedo)
 {
+    qCDebug(lcEngine) << (canRedo ? "Can" : "Can't") << "redo";
     emit engine()->canRedo(canRedo);
 }
 
 void EnginePrivate::setCanDeal(bool canDeal)
 {
+    qCDebug(lcEngine) << (canDeal ? "Can" : "Can't") << "deal";
     emit engine()->canDeal(canDeal);
 }
 
 void EnginePrivate::setScore(int score)
 {
+    qCDebug(lcEngine) << "Score updated to" << score;
     emit engine()->score(score);
 }
 
@@ -587,12 +591,13 @@ void EnginePrivate::setMessage(QString message)
 
 void EnginePrivate::setWidth(double width)
 {
+    qCDebug(lcEngine) << "Width changed to" << width;
     emit engine()->widthChanged(width);
 }
 
-
 void EnginePrivate::setHeight(double height)
 {
+    qCDebug(lcEngine) << "Height changed to" << height;
     emit engine()->heightChanged(height);
 }
 
@@ -651,7 +656,6 @@ void EnginePrivate::setExpansionToRight(int id, double expansion)
 {
     emit Engine::instance()->setExpansionToRight(id, expansion);
 }
-
 
 void EnginePrivate::setLambda(EnginePrivate::Lambda lambda, SCM func)
 {
