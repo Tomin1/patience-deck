@@ -372,7 +372,7 @@ void Table::updateCardSize()
                                   << " area with margin of " << m_margin
                                   << ", maximum margin of " << m_maximumMargin
                                   << ", minimum side margin of " << m_minimumSideMargin
-                                  << " and table size of " << m_tableSize;
+                                  << "and table size of " << m_tableSize;
 
     qreal verticalSpace = width() - m_minimumSideMargin*2.0;
     qreal horizontalSpace = height() - m_margin.height()*2.0;
@@ -395,7 +395,7 @@ void Table::updateCardSize()
         m_cardMargin.setHeight(std::max(m_maximumMargin.height() - m_margin.height(), (qreal)0.0F));
 
     m_cardSpace = m_cardSize + m_cardMargin;
-    m_sideMargin = (width() - (m_cardSpace.width()+m_margin.width())*m_tableSize.width() + m_margin.width()) / 2.0;
+    m_sideMargin = ceil((width() - (m_cardSpace.width()+m_margin.width())*m_tableSize.width() + m_margin.width()) / 2.0);
     if (m_sideMargin < m_minimumSideMargin)
         qCWarning(lcPatience) << "Miscalculated side margin! Current is" << m_sideMargin
                               << "but it should be" << m_minimumSideMargin;
