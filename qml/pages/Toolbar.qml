@@ -26,6 +26,14 @@ Item {
     property bool expanded
     readonly property bool animating: heightAnimation.running || widthAnimation.running
     readonly property int _labeledButtonWidth: Theme.itemSizeLarge * 2
+    readonly property int buttonCount: {
+        if (vertical) {
+            var buttonSpace = height - title.height
+            return buttonSpace / Theme.itemSizeLarge
+        } else {
+            return 3
+        }
+    }
 
     height: {
         if (vertical) {
@@ -68,12 +76,12 @@ Item {
 
         x: vertical ? 0 : Theme.horizontalPageMargin
         y: vertical ? title.y + title.height : 0
-        height: vertical ? Theme.itemSizeLarge * 3 : Theme.itemSizeLarge
+        height: vertical ? Theme.itemSizeLarge * (buttonCount - 1) : Theme.itemSizeLarge
         width: {
             if (vertical) {
                 return expanded ? _labeledButtonWidth : Theme.itemSizeLarge
             } else {
-                return Theme.itemSizeLarge * 3
+                return Theme.itemSizeLarge * buttonCount
             }
         }
 
@@ -127,7 +135,7 @@ Item {
             //% "Hint"
             text: qsTrId("patience-bt-hint")
             imageSource: "../images/icon-m-hint.svg"
-            parent: vertical ? mainButtons : extraButtons
+            parent: vertical && buttonCount >= 4 ? mainButtons : extraButtons
             showText: !vertical || expanded || animating
             enabled: Patience.state === Patience.StartingState || Patience.state === Patience.RunningState
             onClicked: Patience.getHint()
@@ -185,7 +193,7 @@ Item {
             top: parent.top
             topMargin: {
                 if (vertical) {
-                    var remainingSpace = parent.height - (height + 4 * Theme.itemSizeLarge)
+                    var remainingSpace = parent.height - (height + buttonCount * Theme.itemSizeLarge)
                     if (remainingSpace > Theme.paddingMedium) {
                         return Theme.paddingMedium
                     } else {
@@ -223,14 +231,14 @@ Item {
                 if (vertical) {
                     return expanded ? 0 : -nameWidth
                 } else {
-                    return parent.width - width - elapsedText.width - spacer.width - 2*Theme.paddingSmall
+                    return parent.width - width - elapsedText.width - spacer.width - 2 * Theme.paddingSmall
                 }
             }
             maximumWidth: {
                 if (vertical) {
                     return parent.width
                 } else {
-                    return title.maximumWidth - elapsedText.width - spacer.width - 3*Theme.paddingSmall
+                    return title.maximumWidth - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
                 }
             }
             visible: Patience.showScore
