@@ -34,15 +34,15 @@ Rectangle {
     Rectangle {
         id: overlay
 
-        readonly property int maximumWidth: parent.width - 2*Theme.horizontalPageMargin
-        readonly property int contentWidth: Math.max(gameOverText.width, newGameButton.width)
+        readonly property int maximumWidth: parent.width - 2 * Theme.horizontalPageMargin
+        readonly property int contentWidth: Math.max(gameOverText.contentWidth, buttonFlow.width)
 
         anchors {
             horizontalCenter: parent.horizontalCenter
             verticalCenter: parent.verticalCenter
         }
         height: column.height
-        width: Math.min(maximumWidth, contentWidth + 2*column.padding)
+        width: Math.min(maximumWidth, contentWidth + 2 * column.padding)
         color: Theme.rgba(Theme.overlayBackgroundColor, Theme.opacityOverlay)
         radius: Theme.paddingMedium
         border {
@@ -70,27 +70,36 @@ Rectangle {
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeHuge
                 horizontalAlignment: Text.AlignHCenter
-                width: parent.width - 2*parent.padding
+                width: parent.width - 2 * parent.padding
             }
 
-            Button {
-                id: newGameButton
+            Flow {
+                id: buttonFlow
 
-                text: Patience.state === Patience.WonState
-                    //: Shown on top of the game when player has won the game
-                    //% "New game"
-                    ? qsTrId("patience-bt-new_game")
-                    //: Shown on top of the game when player has lost the game
-                    //% "Restart"
-                    : qsTrId("patience-bt-restart")
-                anchors.horizontalCenter: parent.horizontalCenter
-
-                onClicked: {
-                    if (Patience.state === Patience.WonState) {
-                        Patience.startNewGame()
+                width: {
+                    if (page.isLandscape) {
+                        return newGameButton.width + spacing + restartButton.width
                     } else {
-                        Patience.restartGame()
+                        return Math.max(newGameButton.width, restartButton.width)
                     }
+                }
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.paddingMedium
+
+                Button {
+                    id: newGameButton
+
+                    //% "New game"
+                    text: qsTrId("patience-bt-new_game")
+                    onClicked: Patience.startNewGame()
+                }
+
+                Button {
+                    id: restartButton
+
+                    //% "Restart"
+                    text: qsTrId("patience-bt-restart")
+                    onClicked: Patience.restartGame()
                 }
             }
         }
