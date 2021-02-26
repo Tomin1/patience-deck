@@ -28,7 +28,7 @@ Item {
     readonly property int _labeledButtonWidth: Theme.itemSizeLarge * 2
     readonly property int buttonCount: {
         if (vertical) {
-            var buttonSpace = height - title.height
+            var buttonSpace = parent.height - title.verticalHeight
             return buttonSpace / Theme.itemSizeLarge
         } else {
             return 3
@@ -179,14 +179,11 @@ Item {
         // These apply to !vertical
         readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
         readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
+        readonly property int verticalHeight: gameTitle.height
+                                            + (Patience.showScore ? scoreText.height : 0)
+                                            + elapsedText.height
 
-        height: {
-            if (vertical) {
-                return gameTitle.height + (Patience.showScore ? scoreText.height : 0) + elapsedText.height
-            } else {
-                return Theme.itemSizeLarge
-            }
-        }
+        height: vertical ? verticalHeight : Theme.itemSizeLarge
         width: vertical ? parent.width - Theme.paddingSmall * 2 : maximumWidth
         x: vertical ? Theme.paddingSmall : minimumX
         anchors {
