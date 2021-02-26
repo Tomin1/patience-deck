@@ -170,7 +170,7 @@ Page {
         }
         onHint: {
             message.hint = hint
-            hintTimer.running = true
+            hintTimer.restart()
         }
         onCardMoved: message.hint = ""
     }
