@@ -51,9 +51,9 @@ signals:
     void doDoubleClick(quint32 id, int slotId);
 
 private slots:
-    void handleCouldDrag(quint32 id, bool could);
-    void handleCouldDrop(quint32 id, bool could);
-    void handleDropped(quint32 id, bool could);
+    void handleCouldDrag(quint32 id, int slotId, bool could);
+    void handleCouldDrop(quint32 id, int slotId, bool could);
+    void handleDropped(quint32 id, int slotId, bool could);
 
 private:
     enum DragState {

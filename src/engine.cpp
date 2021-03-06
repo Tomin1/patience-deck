@@ -240,7 +240,7 @@ void Engine::drag(quint32 id, int slotId, const CardList &cards)
             d_ptr->m_cardSlots[slotId].removeLast();
     }
 
-    emit couldDrag(id, scm_is_true(rv));
+    emit couldDrag(id, slotId, scm_is_true(rv));
 }
 
 void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
@@ -253,7 +253,7 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
     if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
-        emit couldDrop(id, false);
+        emit couldDrop(id, endSlotId, false);
         return;
     }
 
@@ -268,7 +268,7 @@ void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
-    emit couldDrop(id, scm_is_true(rv));
+    emit couldDrop(id, endSlotId, scm_is_true(rv));
 }
 
 void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
@@ -289,7 +289,7 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     else
         d_ptr->discardMove();
 
-    emit dropped(id, scm_is_true(rv));
+    emit dropped(id, endSlotId, scm_is_true(rv));
 }
 
 void Engine::click(quint32 id, int slotId)
@@ -310,7 +310,7 @@ void Engine::click(quint32 id, int slotId)
     else
         d_ptr->discardMove();
 
-    emit clicked(id, scm_is_true(rv));
+    emit clicked(id, slotId, scm_is_true(rv));
 }
 
 void Engine::doubleClick(quint32 id, int slotId)
@@ -332,7 +332,7 @@ void Engine::doubleClick(quint32 id, int slotId)
         d_ptr->discardMove();
 
 
-    emit doubleClicked(id, scm_is_true(rv));
+    emit doubleClicked(id, slotId, scm_is_true(rv));
 }
 
 void Engine::requestGameOptions()

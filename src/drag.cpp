@@ -159,7 +159,7 @@ void Drag::highlightOrDrop()
             // Cache miss, check
             m_couldDrop.insert(target->id(), Checking);
             qCDebug(lcDrag) << "Testing move from" << m_source->id() << "to" << target->id();
-            emit doCheckDrop(target->id(), m_source->id(), target->id(), toCardData(m_cards));
+            emit doCheckDrop(m_id, m_source->id(), target->id(), toCardData(m_cards));
             [[fallthrough]];
         case Checking: // Signal for the same slot received twice, the correct signal should still arrive
             m_target--; // Check the slot again later
@@ -202,9 +202,9 @@ void Drag::cancel()
     deleteLater();
 }
 
-void Drag::handleCouldDrag(quint32 id, bool could)
+void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 {
-    if (id != m_id)
+    if (id != m_id && slotId != m_source->id())
         return;
 
     if (could) {
@@ -217,14 +217,19 @@ void Drag::handleCouldDrag(quint32 id, bool could)
     }
 }
 
-void Drag::handleCouldDrop(quint32 id, bool could)
+void Drag::handleCouldDrop(quint32 id, int slotId, bool could)
 {
-    m_couldDrop.insert((int)id, could ? CanDrop : CantDrop);
+    if (id != m_id)
+        return;
+
+    m_couldDrop.insert(slotId, could ? CanDrop : CantDrop);
     highlightOrDrop();
 }
 
-void Drag::handleDropped(quint32 id, bool could)
+void Drag::handleDropped(quint32 id, int slotId, bool could)
 {
+    Q_UNUSED(slotId)
+
     if (id != m_id)
         return;
 

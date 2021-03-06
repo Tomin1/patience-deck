@@ -84,11 +84,11 @@ signals:
     void widthChanged(double width);
     void heightChanged(double height);
 
-    void couldDrag(quint32 id, bool could);
-    void couldDrop(quint32 id, bool could);
-    void dropped(quint32 id, bool could);
-    void clicked(quint32 id, bool could);
-    void doubleClicked(quint32 id, bool could);
+    void couldDrag(quint32 id, int slotId, bool could);
+    void couldDrop(quint32 id, int slotId, bool could);
+    void dropped(quint32 id, int slotId, bool could);
+    void clicked(quint32 id, int slotId, bool could);
+    void doubleClicked(quint32 id, int slotId, bool could);
 
 private:
     friend EnginePrivate;
