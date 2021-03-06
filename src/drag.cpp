@@ -124,10 +124,10 @@ void Drag::finish(QMouseEvent *event)
 {
     if (mayBeAClick(event)) {
         if (m_mayBeADoubleClick) {
-            qCDebug(lcDrag) << "Detected double click on" << m_card;
+            qCDebug(lcDrag) << "Detected double click on" << *m_card;
             emit doDoubleClick(m_id, m_source->id());
         } else {
-            qCDebug(lcDrag) << "Detected click on" << m_card;
+            qCDebug(lcDrag) << "Detected click on" << *m_card;
             emit doClick(m_id, m_source->id());
         }
         deleteLater();

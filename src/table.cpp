@@ -426,7 +426,7 @@ void Table::mousePressEvent(QMouseEvent *event)
     for (Slot *slot : m_slots) {
         QPointF point = mapToItem(slot, event->pos());
         if (slot->contains(point)) {
-            qCDebug(lcMouse) << "Found slot" << slot << "on click position";
+            qCDebug(lcMouse) << "Found slot" << *slot << " on click position";
             m_timer.start();
             m_startPoint = event->pos();
         }
@@ -443,7 +443,7 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
         for (Slot *slot : m_slots) {
             QPointF point = mapToItem(slot, event->pos());
             if (slot->contains(point)) {
-                qCDebug(lcPatience) << "Detected click on" << slot;
+                qCDebug(lcPatience) << "Detected click on" << *slot;
                 emit doClick(-1, slot->id());
             }
         }
