@@ -502,6 +502,7 @@ void EnginePrivate::endMove()
     qCDebug(lcEngine) << "End recorded move";
     if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
         die("Can not end move");
+    emit engine()->moveEnded();
 }
 
 void EnginePrivate::discardMove()

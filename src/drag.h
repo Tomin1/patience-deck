@@ -64,6 +64,7 @@ private:
         Dropping,
         Dropped,
         Canceled,
+        Clicked,
     };
 
     enum Droppability {

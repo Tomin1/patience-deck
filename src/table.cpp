@@ -25,6 +25,7 @@
 #include "table.h"
 #include "constants.h"
 #include "engine.h"
+#include "enginerelay.h"
 #include "slot.h"
 #include "logging.h"
 
@@ -48,6 +49,7 @@ Table::Table(QQuickItem *parent)
     , m_dirty(true)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
+    , m_relay(this)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -58,10 +60,6 @@ Table::Table(QQuickItem *parent)
     connect(engine, &Engine::newSlot, this, &Table::handleNewSlot);
     connect(engine, &Engine::setExpansionToDown, this, &Table::handleSetExpansionToDown);
     connect(engine, &Engine::setExpansionToRight, this, &Table::handleSetExpansionToRight);
-    connect(engine, &Engine::insertCard, this, &Table::handleInsertCard);
-    connect(engine, &Engine::appendCard, this, &Table::handleAppendCard);
-    connect(engine, &Engine::removeCard, this, &Table::handleRemoveCard);
-    connect(engine, &Engine::clearSlot, this, &Table::handleClearSlot);
     connect(engine, &Engine::clearData, this, &Table::handleClearData);
     connect(engine, &Engine::gameStarted, this, &Table::handleGameStarted);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
@@ -69,6 +67,11 @@ Table::Table(QQuickItem *parent)
     connect(this, &Table::heightChanged, this, &Table::updateCardSize);
     connect(this, &Table::widthChanged, this, &Table::updateCardSize);
     connect(this, &Table::doClick, engine, &Engine::click);
+
+    connect(&m_relay, &EngineRelay::insertNewCard, this, &Table::handleInsertCard);
+    connect(&m_relay, &EngineRelay::appendNewCard, this, &Table::handleAppendCard);
+    connect(&m_relay, &EngineRelay::removeNewCard, this, &Table::handleRemoveCard);
+    connect(&m_relay, &EngineRelay::clearSlot, this, &Table::handleClearSlot);
 }
 
 QSGNode *Table::getPaintNodeForSlot(Slot *slot)
@@ -268,6 +271,16 @@ void Table::highlight(Slot *slot)
     }
 }
 
+Slot *Table::slot(int id) const
+{
+    return m_slots.value(id);
+}
+
+void Table::store(QList<Card *> cards)
+{
+    m_relay.store(cards);
+}
+
 void Table::handleNewSlot(int id, const CardList &cards, int type,
                           double x, double y, int expansionDepth,
                           bool expandedDown, bool expandedRight)
@@ -304,29 +317,44 @@ void Table::handleSetExpansionToRight(int id, double expansion)
     }
 }
 
-void Table::handleInsertCard(int slotId, int index, const CardData &card)
+void Table::handleInsertCard(int slotId, int index, const CardData &data)
 {
-    m_slots[slotId]->insertCard(index, card);
+    // TODO: Get rid of this
+    Slot *slot = m_slots[slotId];
+    Card *card = new Card(data, this, slot);
+    slot->insert(index, card);
     updateIfNotPreparing();
 }
 
-void Table::handleAppendCard(int slotId, const CardData &card)
+void Table::handleAppendCard(int slotId, const CardData &data)
 {
-    m_slots[slotId]->appendCard(card);
+    // TODO: Get rid of this
+    Slot *slot = m_slots[slotId];
+    Card *card = new Card(data, this, slot);
+    slot->append(card);
     updateIfNotPreparing();
 }
 
 void Table::handleRemoveCard(int slotId, int index)
 {
-    m_slots[slotId]->removeCard(index);
-    if (m_slots[slotId]->empty())
+    // TODO: Get rid of this
+    Slot *slot = m_slots[slotId];
+    Card *card = slot->takeAt(index);
+    card->setParentItem(nullptr);
+    card->deleteLater();
+    if (slot->empty())
         m_dirty = true;
     updateIfNotPreparing();
 }
 
 void Table::handleClearSlot(int slotId)
 {
-    m_slots[slotId]->clear();
+    // TODO: Get rid of this
+    auto cards = m_slots[slotId]->takeAll();
+    for (Card *card : cards) {
+        card->setParentItem(nullptr);
+        card->deleteLater();
+    }
     m_dirty = true;
     updateIfNotPreparing();
 }
@@ -415,6 +443,7 @@ void Table::updateCardSize()
 
 void Table::updateIfNotPreparing()
 {
+    // TODO: Get rid of this
     if (!m_preparing)
         update();
 }

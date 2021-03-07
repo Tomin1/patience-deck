@@ -75,22 +75,14 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     m_mayBeADoubleClick = couldBeDoubleClick(card);
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
+
+    qCDebug(lcDrag) << "Started drag of" << *card << " for " << *slot;
 }
 
 Drag::~Drag()
 {
-    if (m_state >= Dragging) {
-        if (m_state == Dropped) {
-            for (Card *card : m_cards) {
-                card->setParentItem(nullptr);
-                card->deleteLater();
-            }
-        } else {
-            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
-            m_source->put(m_cards);
-        }
-        m_cards.clear();
-    }
+    if (m_state < Dropped)
+        qCWarning(lcDrag) << "Drag was not finished or canceled when it was destroyed";
 }
 
 Card *Drag::card() const
@@ -130,12 +122,13 @@ void Drag::finish(QMouseEvent *event)
             qCDebug(lcDrag) << "Detected click on" << *m_card;
             emit doClick(m_id, m_source->id());
         }
-        deleteLater();
+        m_state = Clicked;
+        cancel();
     } else if (m_state == Dragging) {
         m_state = Dropping;
         checkTargets(true);
     } else {
-        deleteLater();
+        cancel();
     }
 }
 
@@ -192,7 +185,9 @@ void Drag::highlightOrDrop()
 
 void Drag::cancel()
 {
-    if (m_state == Dragging) {
+    qCDebug(lcDrag) << "Canceling drag of" << *m_card << " at state " << m_state;
+
+    if (m_state == Dragging || m_state == Dropping) {
         emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
         m_source->put(m_cards);
         m_cards.clear();
@@ -233,12 +228,13 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     if (id != m_id)
         return;
 
-    if (could)
+    if (could) {
         m_state = Dropped;
-    else
+        m_table->store(m_cards);
+        deleteLater();
+    } else {
         cancel();
-
-    deleteLater();
+    }
 }
 
 bool Drag::mayBeAClick(QMouseEvent *event)

@@ -42,6 +42,7 @@ public:
     Suit suit() const;
     Rank rank() const;
     bool show() const;
+    void setShow(bool show);
     bool isBlack() const;
     bool dragged() const;
 
@@ -54,13 +55,13 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
-    bool top() const;
+    Slot *slot() const;
+    bool highlighted() const;
 
     static QSvgRenderer *cardRenderer();
     static QSGTexture *cardTexture(const QSizeF &size, QQuickWindow *window);
 
     Table *m_table;
-    Slot *m_slot;
     CardData m_data;
     Drag *m_drag;
     bool m_dirty;

@@ -62,7 +62,6 @@ int getRow(Rank rank, Suit suit)
 Card::Card(const CardData &card, Table *table, Slot *slot)
     : QQuickItem(slot)
     , m_table(table)
-    , m_slot(slot)
     , m_data(card)
     , m_drag(nullptr)
     , m_dirty(true)
@@ -89,12 +88,12 @@ QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         node->setSourceRect(rect);
         m_dirty = false;
     }
-    if (m_slot->highlighted() && top()) {
+    if (highlighted()) {
         if (node->childCount() < 1) {
             auto color = m_table->highlightColor();
             node->appendChildNode(new QSGSimpleRectNode(boundingRect(), color));
         }
-    } else { // !m_slot->highlighted() || !top()
+    } else { // !highlighted()
         if (node->childCount() > 0)
             node->removeAllChildNodes();
     }
@@ -109,9 +108,11 @@ QSizeF Card::size() const
 
 void Card::setSize(const QSizeF &size)
 {
-    m_dirty = true;
-    setWidth(size.width());
-    setHeight(size.height());
+    if (width() != size.width() || height() != size.height()) {
+        m_dirty = true;
+        setWidth(size.width());
+        setHeight(size.height());
+    }
 }
 
 Suit Card::suit() const
@@ -144,6 +145,14 @@ CardData Card::data() const
     return m_data;
 }
 
+void Card::setShow(bool show)
+{
+    if (m_data.show != show) {
+        m_data.show = show;
+        m_dirty = true;
+    }
+}
+
 bool Card::operator==(const Card &other) const
 {
     return m_data == other.m_data;
@@ -158,7 +167,7 @@ void Card::mousePressEvent(QMouseEvent *event)
 
     setKeepMouseGrab(true);
 
-    m_drag = new Drag(event, m_table, m_slot, this);
+    m_drag = new Drag(event, m_table, slot(), this);
     Drag *drag = m_drag;
     connect(m_drag, &Drag::destroyed, this, [this, drag] {
         if (m_drag == drag)
@@ -192,9 +201,15 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     m_drag->update(event);
 }
 
-bool Card::top() const
+Slot *Card::slot() const
 {
-    return m_slot->top() == this;
+    return static_cast<Slot *>(parent());
+}
+
+bool Card::highlighted() const
+{
+    Slot *slot = this->slot();
+    return slot && slot->highlighted() && slot->top() == this;
 }
 
 QSvgRenderer *Card::cardRenderer()

@@ -118,49 +118,55 @@ bool Slot::highlighted() const
     return m_highlighted;
 }
 
-void Slot::appendCard(const CardData &card)
+void Slot::append(Card *card)
 {
-    Card *newCard = new Card(card, m_table, this);
-    newCard->setZ(m_cards.count());
-    m_cards.append(newCard);
+    card->setParent(this);
+    card->setParentItem(this);
+    card->setZ(m_cards.count());
+    m_cards.append(card);
+    // TODO: Do adjustments once move ends
     if (!m_table->preparing()) {
-        newCard->setSize(m_table->cardSize());
+        card->setSize(m_table->cardSize());
         updateLocations(expanded() ? firstExpanded() : end()-1);
     }
+    qCDebug(lcSlot) << "Added card to slot" << m_id << "and card count is now" << m_cards.count();
 }
 
-void Slot::insertCard(int index, const CardData &card)
+void Slot::insert(int index, Card *card)
 {
-    Card *newCard = new Card(card, m_table, this);
+    card->setParent(this);
+    card->setParentItem(this);
     auto it = m_cards.begin() + index;
-    it = m_cards.insert(it, newCard);
+    it = m_cards.insert(it, card);
+    // TODO: Do adjustments once move ends
     for (; it != m_cards.end(); it++)
         (*it)->setZ(it - m_cards.begin());
     if (!m_table->preparing()) {
-        newCard->setSize(m_table->cardSize());
+        card->setSize(m_table->cardSize());
         updateLocations();
     }
+    qCDebug(lcSlot) << "Inserted card to slot" << m_id << "and card count is now" << m_cards.count();
 }
 
-void Slot::removeCard(int index)
+Card *Slot::takeAt(int index)
 {
     auto it = m_cards.begin() + index;
-    (*it)->deleteLater();
+    Card *card = *it;
+    // TODO: Do adjustments once move ends
     for (it = m_cards.erase(it); it != m_cards.end(); it++)
         (*it)->setZ(it - m_cards.begin());
     if (expanded())
         updateLocations();
-    // TODO: Store to card cache and take it from there to new slot
+    qCDebug(lcSlot) << "Removed card from slot" << m_id << "and card count is now" << m_cards.count();
+    return card;
 }
 
-void Slot::clear()
+QList<Card *> Slot::takeAll()
 {
-    for (Card *card : m_cards) {
-        card->setParentItem(nullptr);
-        card->deleteLater();
-    }
-    m_cards.clear();
-    // TODO: Store to card cache and take from there to new slot
+    QList<Card *> cards;
+    m_cards.swap(cards);
+    qCDebug(lcSlot) << "Removed all cards from slot" << m_id;
+    return cards;
 }
 
 void Slot::highlight()
@@ -168,6 +174,7 @@ void Slot::highlight()
     m_highlighted = true;
     if (!empty())
         top()->update();
+    qCDebug(lcSlot) << "Slot" << m_id << "is now highlighted";
 }
 
 void Slot::removeHighlight()
@@ -175,6 +182,7 @@ void Slot::removeHighlight()
     m_highlighted = false;
     if (!empty())
         top()->update();
+    qCDebug(lcSlot) << "Slot" << m_id << "is no longer highlighted";
 }
 
 CardList Slot::asCardData(Card *first) const
@@ -183,7 +191,7 @@ CardList Slot::asCardData(Card *first) const
     for (auto it = constFind(first); it != constEnd(); it++)
         list << (*it)->data();
     if (list.isEmpty()) {
-        qCCritical(lcPatience) << "Returning an empty list of CardData";
+        qCCritical(lcSlot) << "Returning an empty list of CardData";
         abort();
     }
     return list;
@@ -195,6 +203,8 @@ QList<Card *> Slot::take(Card *first)
     m_cards.erase(find(first), end());
     if (expanded())
        updateLocations();
+    qCDebug(lcSlot) << "Removed" << tail.count() << "cards from slot" << m_id
+                    << "and card count is now" << m_cards.count();
     return tail;
 }
 
@@ -206,6 +216,8 @@ void Slot::put(const QList<Card *> &cards)
         card->setParentItem(this);
     }
     updateLocations();
+    qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id
+                    << "and card count is now" << m_cards.count();
 }
 
 Card *Slot::top() const
@@ -280,6 +292,7 @@ Slot::const_iterator Slot::constFind(Card *card) const
         if (*it == card)
             return it;
     }
+    qCWarning(lcSlot) << "Slot" << m_id << "did not contain" << *card;
     return constEnd();
 }
 
@@ -302,6 +315,7 @@ Slot::iterator Slot::find(Card *card)
         if (*it == card)
             return it;
     }
+    qCWarning(lcSlot) << "Slot" << m_id << "did not contain" << *card;
     return end();
 }
 

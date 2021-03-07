@@ -64,10 +64,10 @@ public:
     bool empty() const;
     bool highlighted() const;
 
-    void appendCard(const CardData &card);
-    void insertCard(int index, const CardData &card);
-    void removeCard(int index);
-    void clear();
+    void append(Card *card);
+    void insert(int index, Card *card);
+    Card *takeAt(int index);
+    QList<Card *> takeAll();
     void highlight();
     void removeHighlight();
 

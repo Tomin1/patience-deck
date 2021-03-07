@@ -25,6 +25,7 @@
 #include <QtQuick/QQuickItem>
 #include "engine.h"
 #include "enginedata.h"
+#include "enginerelay.h"
 #include "slot.h"
 
 class Table : public QQuickItem
@@ -75,6 +76,9 @@ public:
     QList<Slot *> getSlotsFor(const Card *card, Slot *source);
     void highlight(Slot *slot);
 
+    Slot *slot(int id) const;
+    void store(QList<Card *> cards);
+
 signals:
     void minimumSideMarginChanged();
     void horizontalMarginChanged();
@@ -92,8 +96,8 @@ private slots:
                        bool expandedDown, bool expandedRight);
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
-    void handleInsertCard(int slotId, int index, const CardData &card);
-    void handleAppendCard(int slotId, const CardData &card);
+    void handleInsertCard(int slotId, int index, const CardData &data);
+    void handleAppendCard(int slotId, const CardData &data);
     void handleRemoveCard(int slotId, int index);
     void handleClearSlot(int slotId);
     void handleClearData();
@@ -124,6 +128,8 @@ private:
 
     QElapsedTimer m_timer;
     QPointF m_startPoint;
+
+    EngineRelay m_relay;
 };
 
 QDebug operator<<(QDebug debug, const Table &);

@@ -90,6 +90,8 @@ signals:
     void clicked(quint32 id, int slotId, bool could);
     void doubleClicked(quint32 id, int slotId, bool could);
 
+    void moveEnded();
+
 private:
     friend EnginePrivate;
 
