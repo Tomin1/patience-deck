@@ -59,6 +59,7 @@ Table::Table(QQuickItem *parent)
     connect(engine, &Engine::setExpansionToRight, this, &Table::handleSetExpansionToRight);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
     connect(engine, &Engine::heightChanged, this, &Table::handleHeightChanged);
+    connect(engine, &Engine::engineFailure, this, &Table::handleEngineFailure);
     connect(this, &Table::heightChanged, this, &Table::updateCardSize);
     connect(this, &Table::widthChanged, this, &Table::updateCardSize);
     connect(this, &Table::doClick, engine, &Engine::click);
@@ -395,6 +396,11 @@ void Table::updateCardSize()
     m_dirty = true;
     if (!preparing())
         update();
+}
+
+void Table::handleEngineFailure()
+{
+    setEnabled(false);
 }
 
 void Table::mousePressEvent(QMouseEvent *event)

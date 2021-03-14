@@ -101,6 +101,7 @@ private slots:
     void handleSlotEmptied();
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);
+    void handleEngineFailure();
 
 private:
     void updateIfNotPreparing();

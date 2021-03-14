@@ -44,6 +44,7 @@ class Patience : public QObject
     Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
+    Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
 
 public:
     static Patience* instance();
@@ -89,6 +90,7 @@ public:
     bool showAllGames() const;
     void setShowAllGames(bool show);
     QStringList history() const;
+    bool engineFailed() const;
 
 signals:
     void canUndoChanged();
@@ -106,6 +108,7 @@ signals:
     void cardMoved();
     void showAllGamesChanged();
     void historyChanged();
+    void engineFailedChanged();
 
     void doStart();
     void doRestart();
@@ -138,6 +141,7 @@ private:
     void setState(GameState state);
 
     QThread m_engineThread;
+    bool m_engineFailed;
     bool m_canUndo;
     bool m_canRedo;
     bool m_canDeal;

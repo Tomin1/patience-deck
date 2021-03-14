@@ -58,12 +58,14 @@ Page {
             MenuItem {
                 //% "Select game"
                 text: qsTrId("patience-me-select_game")
+                enabled: !Patience.engineFailed
                 onClicked: pageStack.push(Qt.resolvedUrl("SelectGame.qml"))
             }
 
             MenuItem {
                 //% "Game options"
                 text: qsTrId("patience-me-game_options")
+                enabled: !Patience.engineFailed
                 onClicked: pageStack.push(Qt.resolvedUrl("GameOptions.qml"))
             }
         }
@@ -72,6 +74,8 @@ Page {
 
         Toolbar {
             id: toolbar
+
+            enabled: !Patience.engineFailed
             vertical: page.isLandscape
             z: 10
 
@@ -100,7 +104,7 @@ Page {
             Table {
                 id: table
 
-                enabled: Patience.state < Patience.GameOverState
+                enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
                 height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - messageBar.height
                 width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
                 minimumSideMargin: Theme.horizontalPageMargin
@@ -158,6 +162,17 @@ Page {
             z: 5
 
             onActiveChanged: if (active) toolbar.expanded = false
+        }
+
+        Loader {
+            id: failureOverlayLoader
+            active: Patience.engineFailed
+            source: "EngineFailureOverlay.qml"
+            x: tableContainer.x
+            y: tableContainer.y
+            height: table.height
+            width: table.width
+            z: 10
         }
     }
 

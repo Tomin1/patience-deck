@@ -47,6 +47,7 @@ QObject* Patience::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 Patience::Patience(QObject *parent)
     : QObject(parent)
+    , m_engineFailed(false)
     , m_canUndo(false)
     , m_canRedo(false)
     , m_canDeal(false)
@@ -289,6 +290,11 @@ QStringList Patience::history() const
     return list;
 }
 
+bool Patience::engineFailed() const
+{
+    return m_engineFailed;
+}
+
 void Patience::restoreSavedOrLoad(const QString &fallback)
 {
     m_gameFile = fallback + '-';
@@ -303,6 +309,8 @@ QString Patience::getIconPath(int size) const
 
 void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
+    m_engineFailed = true;
+    emit engineFailedChanged();
 }
 
 void Patience::handleGameLoaded(const QString &gameFile)
