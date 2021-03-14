@@ -221,6 +221,11 @@ void Engine::getHint()
 
 void Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
+    if (cards.isEmpty()) {
+        emit couldDrag(id, slotId, false);
+        return;
+    }
+
     d_ptr->recordMove(slotId);
 
     SCM args[2];
@@ -251,7 +256,7 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 
 void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
-    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable)) {
+    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable) || cards.isEmpty()) {
         emit couldDrop(id, endSlotId, false);
         return;
     }
@@ -272,6 +277,12 @@ void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
 
 void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
+    if (cards.isEmpty()) {
+        emit dropped(id, endSlotId, false);
+        d_ptr->discardMove();
+        return;
+    }
+
     SCM args[3];
     args[0] = scm_from_int(startSlotId);
     args[1] = Scheme::slotToSCM(cards);

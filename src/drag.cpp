@@ -32,10 +32,8 @@ CardList toCardData(const QList<Card *> &cards)
     CardList list;
     for (const Card *card : cards)
         list << card->data();
-    if (list.isEmpty()) {
+    if (list.isEmpty())
         qCCritical(lcDrag) << "Returning an empty list of CardData";
-        abort();
-    }
     return list;
 }
 

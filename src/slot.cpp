@@ -180,10 +180,8 @@ CardList Slot::asCardData(Card *first) const
     CardList list;
     for (auto it = constFind(first); it != constEnd(); it++)
         list << (*it)->data();
-    if (list.isEmpty()) {
+    if (list.isEmpty())
         qCCritical(lcSlot) << "Returning an empty list of CardData";
-        abort();
-    }
     return list;
 }
 
