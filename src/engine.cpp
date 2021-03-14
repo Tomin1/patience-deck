@@ -167,10 +167,14 @@ void Engine::undoMove()
         d_ptr->m_state = EnginePrivate::RunningState;
         emit gameStarted();
     }
-    if (!d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr))
+
+    if (!d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr)) {
         d_ptr->die("Can not undo move");
-    else
-        d_ptr->updateDealable();
+        return;
+    }
+
+    d_ptr->updateDealable();
+    emit moveEnded();
 }
 
 void Engine::redoMove()
