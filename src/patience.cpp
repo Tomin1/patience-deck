@@ -117,11 +117,9 @@ void Patience::restartGame()
 void Patience::loadGame(const QString &gameFile)
 {
     qCDebug(lcPatience) << "Loading" << gameFile;
-    if (gameFile.isEmpty()) {
-        qCritical() << "gameFile can not be empty";
-        abort();
-    }
-    if (m_gameFile != gameFile)
+    if (gameFile.isEmpty())
+        qCWarning(lcPatience) << "gameFile can not be empty";
+    else if (m_gameFile != gameFile)
         emit doLoad(gameFile);
 }
 
