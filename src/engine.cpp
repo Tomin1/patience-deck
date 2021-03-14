@@ -185,7 +185,6 @@ void Engine::dealCard()
     d_ptr->recordMove(-1);
     if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
         d_ptr->die("Can not deal card");
-    d_ptr->endMove();
     d_ptr->testGameOver();
 }
 
@@ -284,12 +283,12 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
+    emit dropped(id, endSlotId, scm_is_true(rv));
+
     if (scm_is_true(rv))
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
-
-    emit dropped(id, endSlotId, scm_is_true(rv));
 }
 
 void Engine::click(quint32 id, int slotId)
@@ -305,12 +304,12 @@ void Engine::click(quint32 id, int slotId)
 
     scm_remember_upto_here_1(args[0]);
 
+    emit clicked(id, slotId, scm_is_true(rv));
+
     if (scm_is_true(rv))
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
-
-    emit clicked(id, slotId, scm_is_true(rv));
 }
 
 void Engine::doubleClick(quint32 id, int slotId)
@@ -326,13 +325,12 @@ void Engine::doubleClick(quint32 id, int slotId)
 
     scm_remember_upto_here_1(args[0]);
 
+    emit doubleClicked(id, slotId, scm_is_true(rv));
+
     if (scm_is_true(rv))
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
-
-
-    emit doubleClicked(id, slotId, scm_is_true(rv));
 }
 
 void Engine::requestGameOptions()
