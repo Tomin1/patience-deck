@@ -29,8 +29,8 @@ const qreal MinCardStep = 0.05;
 
 } // namespace
 
-Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
-           int expansionDepth, bool expandedDown, bool expandedRight, Table *table)
+Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
+           bool expandedDown, bool expandedRight, Table *table)
     : QQuickItem(table)
     , m_table(table)
     , m_id(id)
@@ -44,11 +44,6 @@ Slot::Slot(int id, const CardList &cards, SlotType type, double x, double y,
     , m_expansionDepth(expansionDepth)
     , m_highlighted(false)
 {
-    for (const CardData &card : cards) {
-        auto newCard = new Card(card, table, this);
-        newCard->setZ(m_cards.count());
-        m_cards.append(newCard);
-    }
 }
 
 void Slot::updateDimensions()
@@ -80,6 +75,7 @@ void Slot::updateLocations(iterator first)
 
     for (auto it = first; it != end(); it++) {
         Card *card = *it;
+        card->setZ(it - begin());
         if (expandedRight()) {
             card->setX(round(delta(it)));
             card->setY(0);
@@ -122,11 +118,9 @@ void Slot::append(Card *card)
 {
     card->setParent(this);
     card->setParentItem(this);
-    card->setZ(m_cards.count());
     m_cards.append(card);
     // TODO: Do adjustments once move ends
     if (!m_table->preparing()) {
-        card->setSize(m_table->cardSize());
         updateLocations(expanded() ? firstExpanded() : end()-1);
     }
     qCDebug(lcSlot) << "Added card to slot" << m_id << "and card count is now" << m_cards.count();
@@ -137,12 +131,9 @@ void Slot::insert(int index, Card *card)
     card->setParent(this);
     card->setParentItem(this);
     auto it = m_cards.begin() + index;
-    it = m_cards.insert(it, card);
+    m_cards.insert(it, card);
     // TODO: Do adjustments once move ends
-    for (; it != m_cards.end(); it++)
-        (*it)->setZ(it - m_cards.begin());
     if (!m_table->preparing()) {
-        card->setSize(m_table->cardSize());
         updateLocations();
     }
     qCDebug(lcSlot) << "Inserted card to slot" << m_id << "and card count is now" << m_cards.count();
@@ -150,14 +141,12 @@ void Slot::insert(int index, Card *card)
 
 Card *Slot::takeAt(int index)
 {
-    auto it = m_cards.begin() + index;
-    Card *card = *it;
-    // TODO: Do adjustments once move ends
-    for (it = m_cards.erase(it); it != m_cards.end(); it++)
-        (*it)->setZ(it - m_cards.begin());
-    if (expanded())
+    Card *card = m_cards.takeAt(index);
+    if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed card from slot" << m_id << "and card count is now" << m_cards.count();
+    if (empty())
+        emit slotEmptied();
     return card;
 }
 
@@ -166,6 +155,7 @@ QList<Card *> Slot::takeAll()
     QList<Card *> cards;
     m_cards.swap(cards);
     qCDebug(lcSlot) << "Removed all cards from slot" << m_id;
+    emit slotEmptied();
     return cards;
 }
 
@@ -201,8 +191,8 @@ QList<Card *> Slot::take(Card *first)
 {
     QList<Card *> tail = m_cards.mid(m_cards.indexOf(first));
     m_cards.erase(find(first), end());
-    if (expanded())
-       updateLocations();
+    if (expanded() && !m_table->preparing())
+        updateLocations();
     qCDebug(lcSlot) << "Removed" << tail.count() << "cards from slot" << m_id
                     << "and card count is now" << m_cards.count();
     return tail;
@@ -215,7 +205,8 @@ void Slot::put(const QList<Card *> &cards)
         card->setParent(this);
         card->setParentItem(this);
     }
-    updateLocations();
+    if (!m_table->preparing())
+        updateLocations();
     qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id
                     << "and card count is now" << m_cards.count();
 }

@@ -28,23 +28,20 @@
 class Engine;
 class Table;
 class Card;
-class EngineRelay : public QObject
+class Manager : public QObject
 {
     Q_OBJECT
 public:
-    explicit EngineRelay(Table *table);
+    explicit Manager(Table *table);
 
     operator QString() const;
 
+    bool preparing() const;
     void store(QList<Card *> cards);
 
-signals:
-    void insertNewCard(int slotId, int index, const CardData &card);
-    void appendNewCard(int slotId, const CardData &card);
-    void removeNewCard(int slotId, int index);
-    void clearSlot(int slotId);
-
 private slots:
+    void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
+                       int expansionDepth, bool expandedDown, bool expandedRight);
     void handleInsertCard(int slotId, int index, const CardData &card);
     void handleAppendCard(int slotId, const CardData &card);
     void handleRemoveCard(int slotId, int index);

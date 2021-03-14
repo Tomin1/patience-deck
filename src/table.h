@@ -25,7 +25,7 @@
 #include <QtQuick/QQuickItem>
 #include "engine.h"
 #include "enginedata.h"
-#include "enginerelay.h"
+#include "manager.h"
 #include "slot.h"
 
 class Table : public QQuickItem
@@ -76,8 +76,13 @@ public:
     QList<Slot *> getSlotsFor(const Card *card, Slot *source);
     void highlight(Slot *slot);
 
+    void addSlot(Slot *slot);
     Slot *slot(int id) const;
+    void clear();
     void store(QList<Card *> cards);
+
+public slots:
+    void updateCardSize();
 
 signals:
     void minimumSideMarginChanged();
@@ -91,20 +96,11 @@ signals:
     void doClick(quint32 id, int slotId);
 
 private slots:
-    void handleNewSlot(int id, const CardList &cards, int type,
-                       double x, double y, int expansionDepth,
-                       bool expandedDown, bool expandedRight);
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
-    void handleInsertCard(int slotId, int index, const CardData &data);
-    void handleAppendCard(int slotId, const CardData &data);
-    void handleRemoveCard(int slotId, int index);
-    void handleClearSlot(int slotId);
-    void handleClearData();
-    void handleGameStarted();
+    void handleSlotEmptied();
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);
-    void updateCardSize();
 
 private:
     void updateIfNotPreparing();
@@ -120,7 +116,6 @@ private:
     QSizeF m_cardSize;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
-    bool m_preparing;
     bool m_dirty;
 
     Slot *m_highlightedSlot;
@@ -129,7 +124,7 @@ private:
     QElapsedTimer m_timer;
     QPointF m_startPoint;
 
-    EngineRelay m_relay;
+    Manager m_manager;
 };
 
 QDebug operator<<(QDebug debug, const Table &);

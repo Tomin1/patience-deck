@@ -20,7 +20,7 @@
 
 Q_LOGGING_CATEGORY(lcPatience, "site.tomin.patience.table", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcDrag, "site.tomin.patience.table.drag", QtWarningMsg);
-Q_LOGGING_CATEGORY(lcRelay, "site.tomin.patience.table.relay", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcManager, "site.tomin.patience.table.manager", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcSlot, "site.tomin.patience.table.slot", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcGameList, "site.tomin.patience.gamelist", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcTimer, "site.tomin.patience.timer", QtWarningMsg);

@@ -25,7 +25,6 @@
 #include "table.h"
 #include "constants.h"
 #include "engine.h"
-#include "enginerelay.h"
 #include "slot.h"
 #include "logging.h"
 
@@ -45,11 +44,10 @@ Table::Table(QQuickItem *parent)
     : QQuickItem(parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
-    , m_preparing(true)
     , m_dirty(true)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
-    , m_relay(this)
+    , m_manager(this)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -57,21 +55,13 @@ Table::Table(QQuickItem *parent)
     m_highlightColor.setAlphaF(DefaultHighlightOpacity);
 
     auto engine = Engine::instance();
-    connect(engine, &Engine::newSlot, this, &Table::handleNewSlot);
     connect(engine, &Engine::setExpansionToDown, this, &Table::handleSetExpansionToDown);
     connect(engine, &Engine::setExpansionToRight, this, &Table::handleSetExpansionToRight);
-    connect(engine, &Engine::clearData, this, &Table::handleClearData);
-    connect(engine, &Engine::gameStarted, this, &Table::handleGameStarted);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
     connect(engine, &Engine::heightChanged, this, &Table::handleHeightChanged);
     connect(this, &Table::heightChanged, this, &Table::updateCardSize);
     connect(this, &Table::widthChanged, this, &Table::updateCardSize);
     connect(this, &Table::doClick, engine, &Engine::click);
-
-    connect(&m_relay, &EngineRelay::insertNewCard, this, &Table::handleInsertCard);
-    connect(&m_relay, &EngineRelay::appendNewCard, this, &Table::handleAppendCard);
-    connect(&m_relay, &EngineRelay::removeNewCard, this, &Table::handleRemoveCard);
-    connect(&m_relay, &EngineRelay::clearSlot, this, &Table::handleClearSlot);
 }
 
 QSGNode *Table::getPaintNodeForSlot(Slot *slot)
@@ -235,7 +225,7 @@ QSizeF Table::cardMargin() const
 
 bool Table::preparing() const
 {
-    return m_preparing;
+    return m_manager.preparing();
 }
 
 QList<Slot *> Table::getSlotsFor(const Card *card, Slot *source)
@@ -271,123 +261,87 @@ void Table::highlight(Slot *slot)
     }
 }
 
+void Table::addSlot(Slot *slot)
+{
+    connect(slot, &Slot::slotEmptied, this, &Table::handleSlotEmptied);
+    m_slots.insert(slot->id(), slot);
+    m_dirty = true;
+}
+
 Slot *Table::slot(int id) const
 {
     return m_slots.value(id);
 }
 
-void Table::store(QList<Card *> cards)
+void Table::clear()
 {
-    m_relay.store(cards);
-}
-
-void Table::handleNewSlot(int id, const CardList &cards, int type,
-                          double x, double y, int expansionDepth,
-                          bool expandedDown, bool expandedRight)
-{
-    m_slots.insert(id, new Slot(id, cards, SlotType(type), x, y, expansionDepth,
-                                expandedDown, expandedRight, this));
-    m_dirty = true;
-    updateIfNotPreparing();
-}
-
-void Table::handleSetExpansionToDown(int id, double expansion)
-{
-    Slot *slot = m_slots[id];
-    if (slot->expandedRight()) {
-        qCWarning(lcPatience) << "Can not set delta for expansion to down when expansion to right is set";
-    } else if (slot->expandedDown()) {
-        slot->setDelta(expansion);
-        updateIfNotPreparing();
-    } else {
-        qCWarning(lcPatience) << "Can not set delta when expansion is not set";
-    }
-}
-
-void Table::handleSetExpansionToRight(int id, double expansion)
-{
-    Slot *slot = m_slots[id];
-    if (slot->expandedDown()) {
-        qCWarning(lcPatience) << "Can not set delta for expansion to right when expansion to down is set";
-    } else if (slot->expandedRight()) {
-        slot->setDelta(expansion);
-        updateIfNotPreparing();
-    } else {
-        qCWarning(lcPatience) << "Can not set delta when expansion is not set";
-    }
-}
-
-void Table::handleInsertCard(int slotId, int index, const CardData &data)
-{
-    // TODO: Get rid of this
-    Slot *slot = m_slots[slotId];
-    Card *card = new Card(data, this, slot);
-    slot->insert(index, card);
-    updateIfNotPreparing();
-}
-
-void Table::handleAppendCard(int slotId, const CardData &data)
-{
-    // TODO: Get rid of this
-    Slot *slot = m_slots[slotId];
-    Card *card = new Card(data, this, slot);
-    slot->append(card);
-    updateIfNotPreparing();
-}
-
-void Table::handleRemoveCard(int slotId, int index)
-{
-    // TODO: Get rid of this
-    Slot *slot = m_slots[slotId];
-    Card *card = slot->takeAt(index);
-    card->setParentItem(nullptr);
-    card->deleteLater();
-    if (slot->empty())
-        m_dirty = true;
-    updateIfNotPreparing();
-}
-
-void Table::handleClearSlot(int slotId)
-{
-    // TODO: Get rid of this
-    auto cards = m_slots[slotId]->takeAll();
-    for (Card *card : cards) {
-        card->setParentItem(nullptr);
-        card->deleteLater();
-    }
-    m_dirty = true;
-    updateIfNotPreparing();
-}
-
-
-void Table::handleClearData()
-{
-    m_preparing = true;
-    for (auto it = m_slots.begin(); it != m_slots.end(); it++) {
+    for (auto it = m_slots.begin(); it != m_slots.end(); it++)
         it.value()->deleteLater();
-    }
     m_slots.clear();
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();
 }
 
-void Table::handleGameStarted()
+void Table::store(QList<Card *> cards)
 {
-    m_preparing = false;
+    m_manager.store(cards);
+}
+
+void Table::handleSetExpansionToDown(int id, double expansion)
+{
+    if (!preparing()) {
+        qCWarning(lcPatience) << "Trying to change expansion to down while Table is not being prepared";
+    } else {
+        Slot *slot = m_slots[id];
+        if (slot->expandedRight()) {
+            qCWarning(lcPatience) << "Can not set delta for expansion to down when expansion to right is set";
+        } else if (slot->expandedDown()) {
+            slot->setDelta(expansion);
+        } else {
+            qCWarning(lcPatience) << "Can not set delta when expansion is not set";
+        }
+    }
+}
+
+void Table::handleSetExpansionToRight(int id, double expansion)
+{
+    if (!preparing()) {
+        qCWarning(lcPatience) << "Trying to change expansion to down while Table is not being prepared";
+    } else {
+        Slot *slot = m_slots[id];
+        if (slot->expandedDown()) {
+            qCWarning(lcPatience) << "Can not set delta for expansion to right when expansion to down is set";
+        } else if (slot->expandedRight()) {
+            slot->setDelta(expansion);
+        } else {
+            qCWarning(lcPatience) << "Can not set delta when expansion is not set";
+        }
+    }
+}
+
+void Table::handleSlotEmptied()
+{
     m_dirty = true;
-    update();
+    if (!preparing())
+        update();
 }
 
 void Table::handleWidthChanged(double width)
 {
-    m_tableSize.setWidth(width);
-    updateCardSize();
+    if (!preparing()) {
+        qCWarning(lcPatience) << "Trying to table width while Table is not being prepared";
+    } else {
+        m_tableSize.setWidth(width);
+    }
 }
 
 void Table::handleHeightChanged(double height)
 {
-    m_tableSize.setHeight(height);
-    updateCardSize();
+    if (!preparing()) {
+        qCWarning(lcPatience) << "Trying to table height while Table is not being prepared";
+    } else {
+        m_tableSize.setHeight(height);
+    }
 }
 
 void Table::updateCardSize()
@@ -439,12 +393,7 @@ void Table::updateCardSize()
     }
 
     m_dirty = true;
-}
-
-void Table::updateIfNotPreparing()
-{
-    // TODO: Get rid of this
-    if (!m_preparing)
+    if (!preparing())
         update();
 }
 
