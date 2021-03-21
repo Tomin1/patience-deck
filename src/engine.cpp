@@ -23,6 +23,8 @@
 #include "interface.h"
 #include "logging.h"
 
+#define MAX_RETRIES 10
+
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 const QString StateConf = QStringLiteral("/state");
 
@@ -144,18 +146,31 @@ void Engine::startEngine(bool newSeed)
         d_ptr->die("Game must be initialized first");
         return;
     }
-    d_ptr->resetGenerator(newSeed);
-    d_ptr->m_state = EnginePrivate::BeginState;
-    bool error = false;
-    scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
-                Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
-    if (error) {
-        qCWarning(lcEngine) << "A scheme error happened while starting new game";
-        d_ptr->die("Starting new game failed");
-    } else {
-        d_ptr->m_state = EnginePrivate::RunningState;
-        emit gameStarted();
-    }
+
+    int count = 0;
+
+    do {
+        if (count)
+            qCInfo(lcEngine) << "No moves left at the beginning, starting over";
+
+        d_ptr->resetGenerator(newSeed);
+        d_ptr->m_state = EnginePrivate::BeginState;
+        bool error = false;
+        scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
+                    Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
+        if (error) {
+            qCWarning(lcEngine) << "A scheme error happened while starting new game";
+            d_ptr->die("Starting new game failed");
+            return;
+        }
+
+        newSeed = true; // If we need to try again, use a new seed anyway
+    } while (d_ptr->isGameOver() && count++ < MAX_RETRIES);
+
+    d_ptr->m_state = EnginePrivate::RunningState;
+    emit gameStarted();
+
+    d_ptr->testGameOver();
 }
 
 void Engine::restart()

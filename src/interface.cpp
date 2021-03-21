@@ -166,7 +166,7 @@ SCM Scheme::slotToSCM(const CardList &slot)
 SCM Scheme::startNewGame(void *data)
 {
     EnginePrivate *engine = static_cast<EnginePrivate *>(data);
-    // TODO: Deal with game over situations
+
     SCM size = SCM_UNDEFINED;
     engine->makeSCMCall(EnginePrivate::NewGameLambda, nullptr, 0, &size);
     engine->setWidth(scm_to_double(SCM_CAR(size)));
@@ -175,11 +175,7 @@ SCM Scheme::startNewGame(void *data)
 
     engine->makeSCMCall(QStringLiteral("start-game"), nullptr, 0, nullptr);
 
-    if (engine->hasFeature(EnginePrivate::FeatureDealable)) {
-        SCM rv;
-        engine->makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv);
-        engine->setCanDeal(scm_is_true(rv));
-    }
+    engine->updateDealable();
 
     return SCM_BOOL_T;
 }

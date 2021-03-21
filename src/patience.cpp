@@ -204,6 +204,7 @@ Patience::GameState Patience::state() const
 void Patience::setState(GameState state)
 {
     if (m_state != state) {
+        qCDebug(lcPatience) << "Setting game state to" << state;
         switch (state) {
         case UninitializedState:
         case LoadedState:
@@ -343,7 +344,8 @@ void Patience::handleGameStarted()
 
 void Patience::handleCardMoved()
 {
-    setState(RunningState);
+    if (state() >= StartingState)
+        setState(RunningState);
 }
 
 void Patience::handleGameOver(bool won)
