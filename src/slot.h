@@ -61,7 +61,7 @@ public:
     int id() const;
     QPointF position() const;
     int count() const;
-    bool empty() const;
+    bool isEmpty() const;
     bool highlighted() const;
 
     void append(Card *card);

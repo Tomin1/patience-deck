@@ -104,9 +104,9 @@ int Slot::count() const
     return m_cards.count();
 }
 
-bool Slot::empty() const
+bool Slot::isEmpty() const
 {
-    return m_cards.empty();
+    return m_cards.isEmpty();
 }
 
 bool Slot::highlighted() const
@@ -145,7 +145,7 @@ Card *Slot::takeAt(int index)
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed card from slot" << m_id << "and card count is now" << m_cards.count();
-    if (empty())
+    if (isEmpty())
         emit slotEmptied();
     return card;
 }
@@ -162,7 +162,7 @@ QList<Card *> Slot::takeAll()
 void Slot::highlight()
 {
     m_highlighted = true;
-    if (!empty())
+    if (!isEmpty())
         top()->update();
     qCDebug(lcSlot) << "Slot" << m_id << "is now highlighted";
 }
@@ -170,7 +170,7 @@ void Slot::highlight()
 void Slot::removeHighlight()
 {
     m_highlighted = false;
-    if (!empty())
+    if (!isEmpty())
         top()->update();
     qCDebug(lcSlot) << "Slot" << m_id << "is no longer highlighted";
 }
@@ -337,5 +337,5 @@ QDebug operator<<(QDebug debug, const Slot &slot)
     debug.nospace() << ", #cards=";
     debug.nospace() << slot.count();
     debug.nospace() << ")";
-    return debug.maybeSpace();
+    return debug.space();
 }

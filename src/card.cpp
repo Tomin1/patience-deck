@@ -246,5 +246,5 @@ QDebug operator<<(QDebug debug, const Card &card)
     debug.nospace() << ", show=";
     debug.nospace() << card.show();
     debug.nospace() << ")";
-    return debug.maybeSpace();
+    return debug.space();
 }

@@ -74,7 +74,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 
-    qCDebug(lcDrag) << "Started drag of" << *card << " for " << *slot;
+    qCDebug(lcDrag) << "Started drag of" << *card << "for" << *slot;
 }
 
 Drag::~Drag()
@@ -183,7 +183,7 @@ void Drag::highlightOrDrop()
 
 void Drag::cancel()
 {
-    qCDebug(lcDrag) << "Canceling drag of" << *m_card << " at state " << m_state;
+    qCDebug(lcDrag) << "Canceling drag of" << *m_card << "at state" << m_state;
 
     if (m_state == Dragging || m_state == Dropping) {
         emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
