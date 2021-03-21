@@ -24,6 +24,8 @@
 #include <QStyleHints>
 #include "table.h"
 #include "constants.h"
+#include "card.h"
+#include "drag.h"
 #include "engine.h"
 #include "slot.h"
 #include "logging.h"
@@ -48,6 +50,7 @@ Table::Table(QQuickItem *parent)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
     , m_manager(this)
+    , m_drag(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -73,7 +76,7 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     QColor backgroundColor(Qt::darkGreen);
     auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
     node->appendChildNode(innerNode);
-    if (slot->highlighted() && slot->empty()) {
+    if (slot->highlighted() && slot->isEmpty()) {
         node->appendChildNode(new QSGSimpleRectNode(target, m_highlightColor));
     }
     return node;
@@ -286,6 +289,27 @@ void Table::clear()
 void Table::store(QList<Card *> cards)
 {
     m_manager.store(cards);
+}
+
+Drag *Table::drag(QMouseEvent *event, Card *card)
+{
+    if (event->type() != QEvent::MouseButtonPress && m_drag && m_drag->card() == card)
+        return m_drag;
+
+    if (m_drag)
+        m_drag->cancel();
+
+    if (event->type() == QEvent::MouseButtonPress) {
+        m_drag = new Drag(event, this, card->slot(), card);
+        Drag *drag = m_drag;
+        connect(m_drag, &Drag::destroyed, this, [this, drag] {
+            if (m_drag == drag)
+                m_drag = nullptr;
+        });
+        return m_drag;
+    }
+
+    return nullptr;
 }
 
 void Table::handleSetExpansionToDown(int id, double expansion)

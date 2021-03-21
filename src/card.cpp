@@ -63,7 +63,6 @@ Card::Card(const CardData &card, Table *table, Slot *slot)
     : QQuickItem(slot)
     , m_table(table)
     , m_data(card)
-    , m_drag(nullptr)
     , m_dirty(true)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
@@ -135,11 +134,6 @@ bool Card::isBlack() const
     return m_data.suit == SuitClubs || m_data.suit == SuitSpade;
 }
 
-bool Card::dragged() const
-{
-    return m_drag != nullptr;
-}
-
 CardData Card::data() const
 {
     return m_data;
@@ -162,29 +156,23 @@ void Card::mousePressEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
 
-    if (m_drag)
-        m_drag->cancel();
+    m_table->drag(event, this);
 
     setKeepMouseGrab(true);
-
-    m_drag = new Drag(event, m_table, slot(), this);
-    Drag *drag = m_drag;
-    connect(m_drag, &Drag::destroyed, this, [this, drag] {
-        if (m_drag == drag)
-            m_drag = nullptr;
-    });
 }
 
 void Card::mouseReleaseEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
 
-    if (!m_drag) {
+    auto drag = m_table->drag(event, this);
+
+    if (!drag) {
         qCCritical(lcDrag) << "Can not handle mouse release! There is no drag ongoing!";
         return;
     }
 
-    m_drag->finish(event);
+    drag->finish(event);
 
     setKeepMouseGrab(false);
 }
@@ -193,12 +181,14 @@ void Card::mouseMoveEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
 
-    if (!m_drag) {
+    auto drag = m_table->drag(event, this);
+
+    if (!drag) {
         qCCritical(lcDrag) << "Can not handle mouse move! There is no drag ongoing!";
         return;
     }
 
-    m_drag->update(event);
+    drag->update(event);
 }
 
 Slot *Card::slot() const

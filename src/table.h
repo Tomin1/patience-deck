@@ -80,6 +80,7 @@ public:
     Slot *slot(int id) const;
     void clear();
     void store(QList<Card *> cards);
+    Drag *drag(QMouseEvent *event, Card *card);
 
 public slots:
     void updateCardSize();
@@ -126,6 +127,7 @@ private:
     QPointF m_startPoint;
 
     Manager m_manager;
+    Drag *m_drag;
 };
 
 QDebug operator<<(QDebug debug, const Table &);

@@ -44,8 +44,8 @@ public:
     bool show() const;
     void setShow(bool show);
     bool isBlack() const;
-    bool dragged() const;
 
+    Slot *slot() const;
     CardData data() const;
 
     bool operator==(const Card &other) const;
@@ -55,7 +55,6 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
-    Slot *slot() const;
     bool highlighted() const;
 
     static QSvgRenderer *cardRenderer();
@@ -63,7 +62,6 @@ private:
 
     Table *m_table;
     CardData m_data;
-    Drag *m_drag;
     bool m_dirty;
 };
 
