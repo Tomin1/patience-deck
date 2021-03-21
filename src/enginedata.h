@@ -72,6 +72,7 @@ struct CardData {
     Rank rank;
     bool show;
 
+    bool equalValue(const CardData &other) const;
     bool operator==(const CardData &other) const;
     bool operator!=(const CardData &other) const;
     operator QString() const;

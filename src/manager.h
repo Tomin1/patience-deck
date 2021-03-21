@@ -27,6 +27,7 @@
 
 class Engine;
 class Table;
+class Slot;
 class Card;
 class Manager : public QObject
 {
@@ -37,14 +38,15 @@ public:
     operator QString() const;
 
     bool preparing() const;
-    void store(QList<Card *> cards);
+    void store(const QList<Card *> &cards);
 
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
                        int expansionDepth, bool expandedDown, bool expandedRight);
     void handleInsertCard(int slotId, int index, const CardData &card);
     void handleAppendCard(int slotId, const CardData &card);
-    void handleRemoveCard(int slotId, int index);
+    void handleRemoveCard(int slotId, int index, const CardData &card);
+    void handleFlipCard(int slotId, int index, const CardData &card);
     void handleClearSlot(int slotId);
     void handleClearData();
     void handleGameStarted();
@@ -53,25 +55,38 @@ private slots:
 private:
     typedef QPair<Suit, Rank> SuitAndRank;
 
-    struct Insertion {
+    struct Action {
+        enum ActionType {
+            InsertionAction,
+            RemovalAction,
+            FlipAction,
+            ClearAction,
+        };
+
+        ActionType type;
         int slot;
         int index;
         CardData data;
 
-        Insertion(int slot, int index, const CardData &data) : slot(slot), index(index), data(data) {};
-        SuitAndRank suitAndRank() const { return SuitAndRank(data.suit, data.rank); };
+        Action(ActionType type, int slot, int index, const CardData &data);
+
+        SuitAndRank suitAndRank() const;
+
+        operator QString() const;
     };
 
     void store(Card *card);
-    void queue(int slotId, int index, const CardData &data);
-    const Insertion *nextAction() const;
+    void queue(Action::ActionType type, int slotId, int index, const CardData &data);
+    const Action *nextAction(int slot) const;
+    void discardAction(int slot);
     void dequeue();
+    bool handle(Slot *slot, const Action *action);
 
     Engine *m_engine;
     Table *m_table;
     bool m_preparing;
     QHash<SuitAndRank, Card *> m_cards;
-    QLinkedList<Insertion> m_insertions;
+    QHash<int, QLinkedList<Action>> m_actions;
 };
 
 #endif // ENGINERELAY_H

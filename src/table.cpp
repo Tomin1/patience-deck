@@ -286,7 +286,7 @@ void Table::clear()
     m_cardSize = QSizeF();
 }
 
-void Table::store(QList<Card *> cards)
+void Table::store(const QList<Card *> &cards)
 {
     m_manager.store(cards);
 }
@@ -425,6 +425,16 @@ void Table::updateCardSize()
 void Table::handleEngineFailure()
 {
     setEnabled(false);
+}
+
+Table::iterator Table::begin()
+{
+    return m_slots.keyBegin();
+}
+
+Table::iterator Table::end()
+{
+    return m_slots.keyEnd();
 }
 
 void Table::mousePressEvent(QMouseEvent *event)

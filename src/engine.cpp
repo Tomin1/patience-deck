@@ -26,15 +26,20 @@
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 const QString StateConf = QStringLiteral("/state");
 
+bool CardData::equalValue(const CardData &other) const
+{
+    return suit == other.suit && rank == other.rank;
+}
+
 bool CardData::operator==(const CardData &other) const
 {
-    return suit == other.suit && rank == other.rank && show == other.show;
-};
+    return equalValue(other) && show == other.show;
+}
 
 bool CardData::operator!=(const CardData &other) const
 {
     return !(*this == other);
-};
+}
 
 CardData::operator QString() const
 {
@@ -42,7 +47,7 @@ CardData::operator QString() const
         .arg(QString::number(rank))
         .arg(QString::number(suit))
         .arg(!show ? QStringLiteral(" from behind") : QString());
-};
+}
 
 EnginePrivate::EnginePrivate(QObject *parent)
     : QObject(parent)
@@ -260,7 +265,8 @@ void Engine::drag(quint32 id, int slotId, const CardList &cards)
 void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 {
     Q_UNUSED(id) // There is no signal to send back
-    d_ptr->m_cardSlots[slotId].append(cards);
+    qCDebug(lcEngine) << "Canceling move, putting back" << cards.count() << "cards to slot" << slotId;
+    d_ptr->m_cardSlots[slotId].append(cards); // Put the cards back
     d_ptr->discardMove();
 }
 
@@ -651,29 +657,37 @@ const CardList &EnginePrivate::getSlot(int slot)
 void EnginePrivate::setCards(int id, const CardList &cards)
 {
     if (cards.isEmpty()) {
-        qCDebug(lcEngine) << "Clearing slot" << id;
-        emit engine()->clearSlot(id);
-        m_cardSlots[id].clear();
+        if (!m_cardSlots[id].isEmpty()) {
+            qCDebug(lcEngine) << "Clearing slot" << id;
+            emit engine()->clearSlot(id);
+            m_cardSlots[id].clear();
+        }
         return;
     }
 
     auto it = cards.constBegin();
     int i = 0;
     for (; it != cards.end() && i < m_cardSlots[id].count(); it++, i++) {
-        if (*it != m_cardSlots[id][i]) {
-            qCDebug(lcEngine) << "Inserting" << *it << "to position" << i << "at slot" << id;
+        if (m_cardSlots[id][i].equalValue(*it)) {
+            if ((*it).show != m_cardSlots[id][i].show) {
+                qCDebug(lcEngine) << "Flipping" << *it << "in slot" << id << "at index" << i;
+                emit engine()->flipCard(id, i, *it);
+                m_cardSlots[id][i].show = (*it).show;
+            }
+        } else {
+            qCDebug(lcEngine) << "Inserting" << *it << "to slot" << id << "to index" << i;
             emit engine()->insertCard(id, i, *it);
             m_cardSlots[id].insert(i, *it);
         }
     }
     for (; it != cards.end(); it++, i++) {
-        qCDebug(lcEngine) << "Appending" << *it << "to slot" << id;
+        qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << id << "to index" << i;
         emit engine()->appendCard(id, *it);
         m_cardSlots[id].append(*it);
     }
     while (i < m_cardSlots[id].count()) {
-        qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id;
-        emit engine()->removeCard(id, i);
+        qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
+        emit engine()->removeCard(id, i, m_cardSlots[id][i]);
         m_cardSlots[id].removeAt(i);
     }
 

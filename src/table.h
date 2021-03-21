@@ -79,8 +79,12 @@ public:
     void addSlot(Slot *slot);
     Slot *slot(int id) const;
     void clear();
-    void store(QList<Card *> cards);
+    void store(const QList<Card *> &cards);
     Drag *drag(QMouseEvent *event, Card *card);
+
+    typedef QMap<int, Slot *>::key_iterator iterator;
+    iterator begin();
+    iterator end();
 
 public slots:
     void updateCardSize();

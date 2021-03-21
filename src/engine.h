@@ -78,7 +78,8 @@ signals:
     void setExpansionToRight(int id, double expansion);
     void insertCard(int slotId, int index, const CardData &card);
     void appendCard(int slotId, const CardData &card);
-    void removeCard(int slotId, int index);
+    void removeCard(int slotId, int index, const CardData &card);
+    void flipCard(int slotId, int index, const CardData &card);
     void clearSlot(int slotId);
     void clearData();
     void widthChanged(double width);
