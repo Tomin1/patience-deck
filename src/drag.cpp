@@ -162,8 +162,7 @@ void Drag::highlightOrDrop()
                 m_table->highlight(target);
             } else {
                 m_table->highlight(nullptr);
-                qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << target->id();
-                emit doDrop(m_id, m_source->id(), target->id(), toCardData(m_cards));
+                drop(target);
             }
             break;
         case CantDrop:
@@ -179,6 +178,12 @@ void Drag::highlightOrDrop()
             cancel();
         }
     }
+}
+
+void Drag::drop(Slot *slot)
+{
+    qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << slot->id();
+    emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards));
 }
 
 void Drag::cancel()
@@ -229,6 +234,7 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     if (could) {
         m_state = Dropped;
         m_table->store(m_cards);
+        m_cards.clear();
         deleteLater();
     } else {
         cancel();

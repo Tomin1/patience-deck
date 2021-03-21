@@ -40,6 +40,7 @@ public:
 
     void update(QMouseEvent *event);
     void finish(QMouseEvent *event);
+    void drop(Slot *slot);
     void cancel();
 
 signals:
