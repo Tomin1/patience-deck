@@ -146,9 +146,9 @@ void Manager::handleMoveEnded()
     for (const auto list : m_actions)
         count += list.count();
 
-    if (!m_cards.isEmpty() || count != 0) {
-        qCWarning(lcManager) << "There were still" << m_cards.count() << "cards and"
-                           << count << "actions to be done when move ended!";
+    if (count > 0) {
+        qCWarning(lcManager) << "There were still" << count << "actions to be done"
+                             << "and" << m_cards.count() << "cards stored when move ended!";
         if (lcManager().isDebugEnabled()) {
             for (const auto list : m_actions) {
                 for (const auto action : list) {
