@@ -280,6 +280,10 @@ Slot *Table::slot(int id) const
 void Table::clear()
 {
     m_slots.clear();
+    m_highlightedSlot = nullptr;
+    if (m_drag)
+        m_drag->deleteLater();
+    m_drag = nullptr;
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();
 }
