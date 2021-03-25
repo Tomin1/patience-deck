@@ -32,7 +32,7 @@ class Card : public QQuickItem
     Q_OBJECT
 
 public:
-    Card(const CardData &card, Table *table, Slot *slot);
+    Card(const CardData &card, Table *table, Slot *slot, QObject *parent = nullptr);
 
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
 

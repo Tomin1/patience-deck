@@ -279,8 +279,6 @@ Slot *Table::slot(int id) const
 
 void Table::clear()
 {
-    for (auto it = m_slots.begin(); it != m_slots.end(); it++)
-        it.value()->deleteLater();
     m_slots.clear();
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();

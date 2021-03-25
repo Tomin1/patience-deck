@@ -55,7 +55,7 @@ void Manager::handleNewSlot(int id, const CardList &dataList, int type,
         if (!dataList.isEmpty()) {
             QList<Card *> cards;
             for (const CardData &data : dataList) {
-                auto card = new Card(data, m_table, slot);
+                auto card = new Card(data, m_table, slot, this);
                 cards.append(card);
             }
             slot->put(cards);
@@ -69,7 +69,7 @@ void Manager::handleInsertCard(int slotId, int index, const CardData &data)
 {
     if (m_preparing) {
         Slot *slot = m_table->slot(slotId);
-        Card *card = new Card(data, m_table, slot);
+        Card *card = new Card(data, m_table, slot, this);
         slot->insert(index, card);
     } else {
         queue(Action::InsertionAction, slotId, index, data);
@@ -80,7 +80,7 @@ void Manager::handleAppendCard(int slotId, const CardData &data)
 {
     if (m_preparing) {
         Slot *slot = m_table->slot(slotId);
-        Card *card = new Card(data, m_table, slot);
+        Card *card = new Card(data, m_table, slot, this);
         slot->append(card);
     } else {
         queue(Action::InsertionAction, slotId, -1, data);
@@ -127,7 +127,20 @@ void Manager::handleClearSlot(int slotId)
 void Manager::handleClearData()
 {
     m_preparing = true;
+    for (int slotId : *m_table) {
+        Slot *slot = m_table->slot(slotId);
+        auto cards = slot->takeAll();
+        for (Card *card : cards) {
+            card->setParentItem(nullptr);
+            card->deleteLater();
+        }
+        slot->setParentItem(nullptr);
+        slot->deleteLater();
+    }
     m_table->clear();
+    for (Card *card : m_cards)
+        card->deleteLater();
+    m_cards.clear();
     qCDebug(lcManager) << "Started preparing while" << *this;
 }
 
@@ -163,7 +176,6 @@ void Manager::store(Card *card)
 {
     qCDebug(lcManager) << "Storing" << *card;
     card->setParentItem(nullptr);
-    card->setParent(this);
     m_cards.insertMulti(SuitAndRank(card->suit(), card->rank()), card);
 }
 

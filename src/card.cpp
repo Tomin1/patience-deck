@@ -59,12 +59,13 @@ int getRow(Rank rank, Suit suit)
 
 } // namespace
 
-Card::Card(const CardData &card, Table *table, Slot *slot)
+Card::Card(const CardData &card, Table *table, Slot *slot, QObject *parent)
     : QQuickItem(slot)
     , m_table(table)
     , m_data(card)
     , m_dirty(true)
 {
+    setParent(parent);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemHasContents);
     setSmooth(true);
@@ -193,7 +194,7 @@ void Card::mouseMoveEvent(QMouseEvent *event)
 
 Slot *Card::slot() const
 {
-    return static_cast<Slot *>(parent());
+    return dynamic_cast<Slot *>(parentItem());
 }
 
 bool Card::highlighted() const

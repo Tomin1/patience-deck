@@ -116,7 +116,6 @@ bool Slot::highlighted() const
 
 void Slot::append(Card *card)
 {
-    card->setParent(this);
     card->setParentItem(this);
     m_cards.append(card);
     // TODO: Do adjustments once move ends
@@ -128,7 +127,6 @@ void Slot::append(Card *card)
 
 void Slot::insert(int index, Card *card)
 {
-    card->setParent(this);
     card->setParentItem(this);
     auto it = m_cards.begin() + index;
     m_cards.insert(it, card);
@@ -199,10 +197,8 @@ QList<Card *> Slot::take(Card *first)
 void Slot::put(const QList<Card *> &cards)
 {
     m_cards.append(cards);
-    for (Card *card : cards) {
-        card->setParent(this);
+    for (Card *card : cards)
         card->setParentItem(this);
-    }
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id
