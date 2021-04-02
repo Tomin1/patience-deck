@@ -312,6 +312,7 @@ void Patience::catchFailure(QString message) {
     qCritical() << "Engine failed!" << message;
     m_engineFailed = true;
     emit engineFailedChanged();
+    m_timer.stop();
 }
 
 void Patience::handleGameLoaded(const QString &gameFile)
