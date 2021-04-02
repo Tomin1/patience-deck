@@ -7,6 +7,7 @@ License:    GPLv3
 URL:        https://github.com/Tomin1/patience-deck/
 Source0:    %{name}-%{version}.tar.bz2
 Patch0:     0001-Fix-errors-with-anglo.svg.patch
+Patch1:     0002-Use-let-instead-of-letrec.patch
 Requires:   sailfishsilica-qt5 >= 0.10.9
 BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
