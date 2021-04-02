@@ -128,6 +128,7 @@ private:
     QString m_gameFile;
     uint_fast32_t m_seed;
     std::mt19937 m_generator;
+    bool m_recordingMove;
 
     Engine *engine();
 };

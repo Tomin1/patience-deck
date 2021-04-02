@@ -58,6 +58,7 @@ EnginePrivate::EnginePrivate(QObject *parent)
     , m_state(UninitializedState)
     , m_timeout(0)
     , m_seed(std::mt19937::default_seed)
+    , m_recordingMove(false)
 {
 }
 
@@ -540,6 +541,11 @@ void EnginePrivate::recordMove(int slotId)
 {
     qCDebug(lcEngine) << "Start recording move for slot" << slotId
                       << "with" << m_cardSlots[slotId].count() << "cards";
+
+    if (m_recordingMove)
+        qCCritical(lcEngine) << "There was already a move ongoing";
+    m_recordingMove = true;
+
     SCM args[2];
     args[0] = scm_from_int(slotId);
     args[1] = Scheme::slotToSCM(m_cardSlots[slotId]);
@@ -557,6 +563,10 @@ void EnginePrivate::endMove()
         die("Can not end move");
     else
         emit engine()->moveEnded();
+
+    if (!m_recordingMove)
+        qCWarning(lcEngine) << "There was no move ongoing when ending move";
+    m_recordingMove = false;
 }
 
 void EnginePrivate::discardMove()
@@ -564,6 +574,10 @@ void EnginePrivate::discardMove()
     qCDebug(lcEngine) << "Discard recorded move";
     if (!makeSCMCall(QStringLiteral("discard-move"), nullptr, 0, nullptr))
         die("Can not discard move");
+
+    if (!m_recordingMove)
+        qCWarning(lcEngine) << "There was no move ongoing when discarding move";
+    m_recordingMove = false;
 }
 
 bool EnginePrivate::isGameOver()
