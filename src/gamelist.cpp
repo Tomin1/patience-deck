@@ -42,8 +42,9 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("thumb-and-pouch"),
     QStringLiteral("whitehead"),
     // Freecell / Bakers game
-    QStringLiteral("freecell"),
     QStringLiteral("bakers-game"),
+    QStringLiteral("freecell"),
+    QStringLiteral("seahaven"),
     // Spider and similar
     QStringLiteral("spider"),
     QStringLiteral("spiderette"),
@@ -55,16 +56,25 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("thirteen"),
     QStringLiteral("treize"),
     QStringLiteral("yield"),
+    // Canfield and similar
+    QStringLiteral("agnes"),
+    QStringLiteral("canfield"),
+    QStringLiteral("hamilton"),
+    QStringLiteral("kansas"),
     // Other
     QStringLiteral("bear-river"),
     QStringLiteral("beleaguered-castle"),
+    QStringLiteral("bristol"),
     QStringLiteral("camelot"),
-    QStringLiteral("canfield"),
+    QStringLiteral("carpet"),
     QStringLiteral("clock"),
+    QStringLiteral("easthaven"),
     QStringLiteral("forty-thieves"),
     QStringLiteral("helsinki"),
     QStringLiteral("lady-jane"),
+    QStringLiteral("triple-peaks"),
     QStringLiteral("valentine"),
+    QStringLiteral("westhaven"),
     QStringLiteral("yukon"),
 };
 
