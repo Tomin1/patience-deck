@@ -35,19 +35,13 @@ class Manager : public QObject
 public:
     explicit Manager(Table *table);
 
-    operator QString() const;
-
     bool preparing() const;
     void store(const QList<Card *> &cards);
 
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
                        int expansionDepth, bool expandedDown, bool expandedRight);
-    void handleInsertCard(int slotId, int index, const CardData &card);
-    void handleAppendCard(int slotId, const CardData &card);
-    void handleRemoveCard(int slotId, int index, const CardData &card);
-    void handleFlipCard(int slotId, int index, const CardData &card);
-    void handleClearSlot(int slotId);
+    void handleAction(Engine::ActionType action, int slotId, int index, const CardData &card);
     void handleClearData();
     void handleGameStarted();
     void handleMoveEnded();
@@ -56,31 +50,25 @@ private:
     typedef QPair<Suit, Rank> SuitAndRank;
 
     struct Action {
-        enum ActionType {
-            InsertionAction,
-            RemovalAction,
-            FlipAction,
-            ClearAction,
-        };
-
-        ActionType type;
+        Engine::ActionType type;
         int slot;
         int index;
         CardData data;
 
-        Action(ActionType type, int slot, int index, const CardData &data);
+        Action(Engine::ActionType type, int slot, int index, const CardData &data);
 
         SuitAndRank suitAndRank() const;
-
-        operator QString() const;
     };
 
+    friend QDebug operator<<(QDebug debug, const Manager::Action &action);
+
     void store(Card *card);
-    void queue(Action::ActionType type, int slotId, int index, const CardData &data);
+    void queue(Engine::ActionType type, int slotId, int index, const CardData &data);
     const Action *nextAction(int slot) const;
     void discardAction(int slot);
     void dequeue();
     bool handle(Slot *slot, const Action *action);
+    int actionCount() const;
 
     Engine *m_engine;
     Table *m_table;

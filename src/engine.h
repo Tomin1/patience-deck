@@ -32,6 +32,14 @@ public:
 
     static Engine *instance();
 
+    enum ActionType {
+        InsertionAction,
+        RemovalAction,
+        FlippingAction,
+        ClearingAction,
+    };
+    Q_ENUM(ActionType)
+
 public slots:
     void init();
     void load(const QString &gameFile);
@@ -76,11 +84,7 @@ signals:
                  int expansionDepth, bool expandedDown, bool expandedRight);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
-    void insertCard(int slotId, int index, const CardData &card);
-    void appendCard(int slotId, const CardData &card);
-    void removeCard(int slotId, int index, const CardData &card);
-    void flipCard(int slotId, int index, const CardData &card);
-    void clearSlot(int slotId);
+    void action(Engine::ActionType action, int slotId, int index, const CardData &card);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);

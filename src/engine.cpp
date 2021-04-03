@@ -95,6 +95,7 @@ Engine::Engine(QObject *parent)
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
+    qRegisterMetaType<ActionType>();
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
     connect(&m_stateConf, &MGConfItem::valueChanged, this, [&]() {
@@ -688,7 +689,8 @@ void EnginePrivate::setCards(int id, const CardList &cards)
     if (cards.isEmpty()) {
         if (!m_cardSlots[id].isEmpty()) {
             qCDebug(lcEngine) << "Clearing slot" << id;
-            emit engine()->clearSlot(id);
+            CardData none;
+            emit engine()->action(Engine::ClearingAction, id, -1, none);
             m_cardSlots[id].clear();
         }
         return;
@@ -700,23 +702,23 @@ void EnginePrivate::setCards(int id, const CardList &cards)
         if (m_cardSlots[id][i].equalValue(*it)) {
             if ((*it).show != m_cardSlots[id][i].show) {
                 qCDebug(lcEngine) << "Flipping" << *it << "in slot" << id << "at index" << i;
-                emit engine()->flipCard(id, i, *it);
+                emit engine()->action(Engine::FlippingAction, id, i, *it);
                 m_cardSlots[id][i].show = (*it).show;
             }
             i++; it++;
         } else {
             qCDebug(lcEngine) << "Removing" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
-            emit engine()->removeCard(id, i, m_cardSlots[id].takeAt(i));
+            emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
         }
     }
     while (i < m_cardSlots[id].count()) {
         qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
-        emit engine()->removeCard(id, i, m_cardSlots[id].takeAt(i));
+        emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
     }
     for (; it != cards.end(); it++, i++) {
         qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << "to index" << i;
-        emit engine()->appendCard(id, *it);
-        m_cardSlots[id].append(*it);
+        emit engine()->action(Engine::InsertionAction, id, i, *it);
+        m_cardSlots[id].insert(i, *it);
     }
 
     if (m_cardSlots[id] != cards)
