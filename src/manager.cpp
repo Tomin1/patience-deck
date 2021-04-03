@@ -141,6 +141,7 @@ void Manager::handleClearData()
     for (Card *card : m_cards)
         card->deleteLater();
     m_cards.clear();
+    m_actions.clear();
     qCDebug(lcManager) << "Started preparing while" << *this;
 }
 
