@@ -34,7 +34,7 @@ Row {
     Label {
         id: nameLabel
         color: Theme.highlightColor
-        visible: nameVisible && (expanded || animating)
+        opacity: expanded || animating ? 1.0 : 0.0
     }
 
     Label {
