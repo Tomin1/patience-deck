@@ -27,6 +27,7 @@
 #include "enginedata.h"
 
 class Engine;
+class EngineHelper;
 class EnginePrivate : public QObject
 {
     Q_OBJECT
@@ -119,6 +120,9 @@ public:
 
 private:
     friend Engine;
+#ifdef ENGINE_EXERCISER
+    friend EngineHelper;
+#endif
 
     QHash<int, CardList> m_cardSlots;
     SCM m_lambdas[LambdaCount];

@@ -91,17 +91,21 @@ Engine *Engine::instance()
 Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
+#ifndef ENGINE_EXERCISER
     , m_stateConf(Constants::ConfPath + StateConf)
+#endif // ENGINE_EXERCISER
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
     qRegisterMetaType<ActionType>();
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
+#ifndef ENGINE_EXERCISER
     connect(&m_stateConf, &MGConfItem::valueChanged, this, [&]() {
         qCDebug(lcEngine) << (m_stateConf.value().isValid()
                               ? "Saved engine state" : "Reset saved state");
     });
+#endif // ENGINE_EXERCISER
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
@@ -135,9 +139,11 @@ void Engine::load(const QString &gameFile)
         qCDebug(lcEngine) << "Loaded" << gameFile;
         d_ptr->m_state = EnginePrivate::LoadedState;
         d_ptr->m_gameFile = gameFile;
+#ifndef ENGINE_EXERCISER
         GameOptionList options = d_ptr->getGameOptions();
         if (!options.isEmpty() && GameOptionModel::loadOptions(gameFile, options))
             setGameOptions(options);
+#endif // ENGINE_EXERCISER
         emit gameLoaded(gameFile);
     }
 }
@@ -501,6 +507,7 @@ void Engine::setGameOptions(const GameOptionList &options)
     scm_dynwind_end();
 }
 
+#ifndef ENGINE_EXERCISER
 void Engine::saveState()
 {
     m_stateConf.set(QStringLiteral("%1;%2").arg(d_ptr->m_gameFile).arg(d_ptr->m_seed));
@@ -536,6 +543,7 @@ void Engine::restoreSavedState()
         }
     }
 }
+#endif // ENGINE_EXERCISER
 
 void EnginePrivate::updateDealable()
 {

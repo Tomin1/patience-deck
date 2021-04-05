@@ -2,6 +2,7 @@
 *.pro.user
 Makefile
 moc_*.cpp
+moc_*.h
 *.list
 *.qm
 /translations/patience-deck.ts
@@ -9,3 +10,6 @@ moc_*.cpp
 patience-deck
 /icons/convert
 /installroot/
+/tools/exerciser/games/
+/tools/exerciser/engine-exerciser
+.qmake.stash

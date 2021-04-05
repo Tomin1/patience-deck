@@ -18,11 +18,15 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#ifndef ENGINE_EXERCISER
 #include <MGConfItem>
+#endif
+
 #include <QObject>
 #include <QString>
 #include "enginedata.h"
 
+class EngineHelper;
 class EnginePrivate;
 class Engine : public QObject
 {
@@ -59,9 +63,11 @@ public slots:
     void requestGameOptions();
     void setGameOption(const GameOption &option);
     void setGameOptions(const GameOptionList &options);
+#ifndef ENGINE_EXERCISER
     void saveState();
     void resetSavedState();
     void restoreSavedState();
+#endif // ENGINE_EXERCISER
 
 signals:
     void canUndo(bool canUndo);
@@ -100,13 +106,18 @@ signals:
 
 private:
     friend EnginePrivate;
+#ifdef ENGINE_EXERCISER
+    friend EngineHelper;
+#endif
 
     void startEngine(bool newSeed);
 
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
     EnginePrivate *d_ptr;
+#ifndef ENGINE_EXERCISER
     MGConfItem m_stateConf;
+#endif // ENGINE_EXERCISER
 };
 
 #endif // ENGINE_H
