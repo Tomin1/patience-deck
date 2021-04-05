@@ -42,6 +42,7 @@ public:
 
 public slots:
     void init();
+    void initWithDirectory(const QString &gameDirectory);
     void load(const QString &gameFile);
     void start();
     void restart();

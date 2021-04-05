@@ -107,7 +107,12 @@ Engine::Engine(QObject *parent)
 
 void Engine::init()
 {
-    scm_with_guile(&Interface::init, (void *)&Constants::GameDirectory);
+    initWithDirectory(Constants::GameDirectory);
+}
+
+void Engine::initWithDirectory(const QString &gameDirectory)
+{
+    scm_with_guile(&Interface::init, (void *)&gameDirectory);
     qCInfo(lcEngine) << "Initialized Patience Engine";
 }
 
