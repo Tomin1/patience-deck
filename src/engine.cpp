@@ -254,11 +254,11 @@ void Engine::getHint()
     emit hint(message);
 }
 
-void Engine::drag(quint32 id, int slotId, const CardList &cards)
+bool Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
     if (cards.isEmpty()) {
         emit couldDrag(id, slotId, false);
-        return;
+        return false;
     }
 
     d_ptr->recordMove(slotId);
@@ -270,7 +270,7 @@ void Engine::drag(quint32 id, int slotId, const CardList &cards)
     SCM rv;
     if (!d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 2, &rv)) {
         d_ptr->die("Can not start drag");
-        return;
+        return false;
     }
 
     scm_remember_upto_here_2(args[0], args[1]);
@@ -282,6 +282,7 @@ void Engine::drag(quint32 id, int slotId, const CardList &cards)
     }
 
     emit couldDrag(id, slotId, scm_is_true(rv));
+    return scm_is_true(rv);
 }
 
 void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
@@ -292,11 +293,11 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
     d_ptr->discardMove();
 }
 
-void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
+bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
     if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable) || cards.isEmpty()) {
         emit couldDrop(id, endSlotId, false);
-        return;
+        return false;
     }
 
     SCM args[3];
@@ -307,20 +308,21 @@ void Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
     SCM rv;
     if (!d_ptr->makeSCMCall(EnginePrivate::DroppableLambda, args, 3, &rv)) {
         d_ptr->die("Can not check if dropping is allowed");
-        return;
+        return false;
     }
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
     emit couldDrop(id, endSlotId, scm_is_true(rv));
+    return scm_is_true(rv);
 }
 
-void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
+bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
     if (cards.isEmpty()) {
         emit dropped(id, endSlotId, false);
         d_ptr->discardMove();
-        return;
+        return false;
     }
 
     SCM args[3];
@@ -331,7 +333,7 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     SCM rv;
     if (!d_ptr->makeSCMCall(EnginePrivate::ButtonReleasedLambda, args, 3, &rv)) {
         d_ptr->die("Can not drop");
-        return;
+        return false;
     }
 
     scm_remember_upto_here(args[0], args[1], args[2]);
@@ -342,9 +344,10 @@ void Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
+    return scm_is_true(rv);
 }
 
-void Engine::click(quint32 id, int slotId)
+bool Engine::click(quint32 id, int slotId)
 {
     d_ptr->recordMove(-1);
 
@@ -354,7 +357,7 @@ void Engine::click(quint32 id, int slotId)
     SCM rv;
     if (!d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv)) {
         d_ptr->die("Can not click");
-        return;
+        return false;
     }
 
     scm_remember_upto_here_1(args[0]);
@@ -365,9 +368,10 @@ void Engine::click(quint32 id, int slotId)
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
+    return scm_is_true(rv);
 }
 
-void Engine::doubleClick(quint32 id, int slotId)
+bool Engine::doubleClick(quint32 id, int slotId)
 {
     d_ptr->recordMove(-1);
 
@@ -377,7 +381,7 @@ void Engine::doubleClick(quint32 id, int slotId)
     SCM rv;
     if (!d_ptr->makeSCMCall(EnginePrivate::ButtonDoubleClickedLambda, args, 1, &rv)) {
         d_ptr->die("Can not double click");
-        return;
+        return false;
     }
 
     scm_remember_upto_here_1(args[0]);
@@ -388,6 +392,7 @@ void Engine::doubleClick(quint32 id, int slotId)
         d_ptr->testGameOver();
     else
         d_ptr->discardMove();
+    return scm_is_true(rv);
 }
 
 void Engine::requestGameOptions()

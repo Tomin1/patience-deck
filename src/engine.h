@@ -50,12 +50,12 @@ public slots:
     void redoMove();
     void dealCard();
     void getHint();
-    void drag(quint32 id, int slotId, const CardList &cards);
+    bool drag(quint32 id, int slotId, const CardList &cards);
     void cancelDrag(quint32 id, int slotId, const CardList &cards);
-    void checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
-    void drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
-    void click(quint32 id, int slotId);
-    void doubleClick(quint32 id, int slotId);
+    bool checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
+    bool drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards);
+    bool click(quint32 id, int slotId);
+    bool doubleClick(quint32 id, int slotId);
     void requestGameOptions();
     void setGameOption(const GameOption &option);
     void setGameOptions(const GameOptionList &options);
