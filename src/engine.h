@@ -110,6 +110,7 @@ private:
     friend EngineHelper;
 #endif
 
+    void loadGame(const QString &gameFile, bool restored);
     void startEngine(bool newSeed);
 
     explicit Engine(QObject *parent = nullptr);

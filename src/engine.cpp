@@ -127,6 +127,11 @@ Engine::~Engine()
 
 void Engine::load(const QString &gameFile)
 {
+    loadGame(gameFile, false);
+}
+
+void Engine::loadGame(const QString &gameFile, bool restored)
+{
     qCDebug(lcEngine) << "Loading game from" << gameFile;
     d_ptr->clear(true);
     bool error = false;
@@ -137,7 +142,7 @@ void Engine::load(const QString &gameFile)
         d_ptr->die("Loading new game failed");
     } else {
         qCDebug(lcEngine) << "Loaded" << gameFile;
-        d_ptr->m_state = EnginePrivate::LoadedState;
+        d_ptr->m_state = restored ? EnginePrivate::RestoredState : EnginePrivate::LoadedState;
         d_ptr->m_gameFile = gameFile;
 #ifndef ENGINE_EXERCISER
         GameOptionList options = d_ptr->getGameOptions();
@@ -532,9 +537,7 @@ void Engine::restoreSavedState()
             if (parts.count() >= 2)
                 d_ptr->m_seed = parts.at(1).toULongLong(&ok);
             if (ok) {
-                load(gameFile);
-                if (parts.count() >= 2)
-                    d_ptr->m_state = EnginePrivate::RestoredState;
+                loadGame(gameFile, parts.count() >= 2);
             }
             emit restoreCompleted(ok);
         } else {
