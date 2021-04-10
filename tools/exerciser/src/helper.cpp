@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QCommandLineParser>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include "helper.h"
@@ -34,6 +36,29 @@ EngineHelper::EngineHelper()
 
 EngineHelper::~EngineHelper()
 {
+}
+
+bool EngineHelper::parseArgs()
+{
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Tool to test Patience Deck engine");
+    parser.addOptions({
+        {{"g", "game"}, "Game file name to load", "filename"},
+        {{"s", "seed"}, "Seed to use", "seed"},
+    });
+    parser.process(QCoreApplication::arguments());
+
+    if (parser.isSet("seed")) {
+        bool ok;
+        EnginePrivate::instance()->m_seed = parser.value("seed").toULongLong(&ok);
+        if (!ok)
+            return false;
+    }
+
+    Engine::instance()->loadGame(parser.isSet("game") ? parser.value("game") : "klondike.scm",
+                                 parser.isSet("seed"));
+    return true;
 }
 
 Engine *EngineHelper::engine() const

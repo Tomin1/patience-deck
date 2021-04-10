@@ -90,9 +90,7 @@ Item {
         }
     }
 
-    Component.onCompleted: {
-        helper.engine.load("klondike.scm")
-    }
+    Component.onCompleted: if (!helper.parseArgs()) quit()
 
     EngineHelper {
         id: helper
