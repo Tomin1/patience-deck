@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE bool parseArgs();
     Q_INVOKABLE quint32 getSeed() const;
     Q_INVOKABLE void move(const QVariantMap &from, const QVariantMap &to);
+    Q_INVOKABLE void click(const QVariantMap &clicked);
 
     enum Slots : int {
         Unknown,

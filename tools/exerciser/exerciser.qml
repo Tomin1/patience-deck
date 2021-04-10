@@ -26,6 +26,7 @@ Item {
     property var moveOnto: /Move ([\w\s]+) onto ([\w\s]+)/
     property var tryMovingCards: /Try moving cards down from the foundation/
     property var dealNew: /Deal a new card from the deck/
+    property var removeCard: /Remove ([\w\s]+)/
     property var ranks: ["joker", "ace", "two", "three", "four", "five", "six",
                          "seven", "eight", "nine", "ten", "jack", "queen", "king"]
     property var suits: ["clubs", "diamonds", "hearts", "spades"]
@@ -84,6 +85,10 @@ Item {
             console.log("No more hints, unsuccessful")
             console.log("Final score was:", score)
             quit()
+        } else if (removeCard.test(hint)) {
+            var matches = hint.match(removeCard)
+            console.log("Removing", matches[1])
+            helper.click(getCard(matches[1]))
         } else {
             console.warn("Unknown hint:", hint)
             quit()

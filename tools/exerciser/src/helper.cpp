@@ -117,6 +117,19 @@ void EngineHelper::move(const QVariantMap &from, const QVariantMap &to)
     }
 }
 
+void EngineHelper::click(const QVariantMap &clicked)
+{
+    auto engine = Engine::instance();
+    if (isCard(clicked)) {
+        auto card = toCard(clicked);
+        int slot = findSlot(card);
+        if (slot != -1) {
+            qDebug() << "Clicking" << card << "at slot" << slot;
+            engine->click(-1, slot);
+        }
+    }
+}
+
 bool EngineHelper::isCard(const QVariantMap &map)
 {
     return map.contains("rank") && map.contains("suit");
