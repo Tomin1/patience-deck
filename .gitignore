@@ -8,8 +8,8 @@ moc_*.h
 /translations/patience-deck.ts
 /RPMS/
 patience-deck
-/icons/convert
 /installroot/
+/tools/convert
 /tools/exerciser/games/
 /tools/exerciser/engine-exerciser
 .qmake.stash

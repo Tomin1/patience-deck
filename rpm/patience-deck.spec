@@ -27,7 +27,7 @@ BuildRequires:  guile22-devel
 %qmake5
 make %{?_smp_mflags}
 
-g++ -o icons/convert icons/convert.cpp -fPIC \
+g++ -o tools/convert tools/convert.cpp -fPIC \
     $(pkg-config --cflags --libs Qt5Core Qt5Gui Qt5Svg)
 
 %install
@@ -41,7 +41,7 @@ desktop-file-install --delete-original \
     --dir %{buildroot}%{_datadir}/applications \
      %{buildroot}%{_datadir}/applications/*.desktop
 
-icons/convert icons/svg/patience-deck.svg \
+tools/convert data/patience-deck.svg \
     %{buildroot}%{_datadir}/icons/hicolor/%1/apps/patience-deck.png \
     86x86 108x108 128x128 172x172
 
