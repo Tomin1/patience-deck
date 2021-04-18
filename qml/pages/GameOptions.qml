@@ -16,6 +16,7 @@
  */
 
 import QtQuick 2.0
+import QtQml.Models 2.2
 import Sailfish.Silica 1.0
 import Patience 1.0
 
@@ -81,39 +82,81 @@ Page {
 
             Repeater {
                 model: gameOptions
-                delegate: BackgroundItem {
-                    id: delegate
+                delegate: Component {
+                    Loader {
+                        property string displayName: display
+                        property bool selected: set
+                        property int selectedIndex: current
+                        property int topIndex: index
 
-                    enabled: type !== GameOptions.RadioType || !set
+                        signal select(bool selected)
+                        signal selectIndex(int index)
 
-                    Label {
-                        x: Theme.horizontalPageMargin
-                        text: display
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
-                    }
-
-                    Icon {
-                        x: page.width - Theme.horizontalPageMargin - width
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: {
-                            if (type === GameOptions.CheckType) {
-                                return "image://theme/icon-s-" + (set ? "accept" : "decline")
-                            } else {
-                                return "image://theme/icon-s-" + (set ? "installed" : "checkmark")
-                            }
+                        function finish() {
+                            Patience.startNewGame()
+                            pageStack.pop()
                         }
-                    }
 
-                    onClicked: {
-                        gameOptions.select(index)
-                        Patience.startNewGame()
-                        pageStack.pop()
+                        sourceComponent: type === GameOptions.RadioType
+                            ? radioOptionComponent
+                            : checkOptionComponent
+                        width: parent.width
+
+                        onSelect: {
+                            set = selected
+                            finish()
+                        }
+                        onSelectIndex: {
+                            current = index
+                            finish()
+                        }
                     }
                 }
             }
         }
 
         VerticalScrollDecorator {}
+    }
+
+    Component {
+        id: radioOptionComponent
+
+        ComboBox {
+            id: comboBox
+
+            property bool ready
+
+            currentIndex: selectedIndex
+            menu: ContextMenu {
+                Repeater {
+                    model: DelegateModel {
+                        model: gameOptions
+                        rootIndex: modelIndex(topIndex)
+
+                        delegate: MenuItem {
+                            text: display
+                            onClicked: comboBox.currentIndex = index
+                        }
+                    }
+                }
+            }
+
+            onCurrentIndexChanged: if (ready) parent.selectIndex(currentIndex)
+            Component.onCompleted: ready = true
+        }
+    }
+
+    Component {
+        id: checkOptionComponent
+
+        TextSwitch {
+            property bool ready
+
+            text: displayName
+            checked: selected
+
+            onCheckedChanged: if (ready) parent.select(checked)
+            Component.onCompleted: ready = true
+        }
     }
 }
