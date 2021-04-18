@@ -8,10 +8,10 @@ letrec seems to cause an exception with this version of guile.
  games/hamilton.scm | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/games/hamilton.scm b/games/hamilton.scm
+diff --git a/aisleriot/games/hamilton.scm b/aisleriot/games/hamilton.scm
 index 6ee557c3..ae4dace8 100644
---- a/games/hamilton.scm
-+++ b/games/hamilton.scm
+--- a/aisleriot/games/hamilton.scm
++++ b/aisleriot/games/hamilton.scm
 @@ -290,7 +290,7 @@
  ; start to end. If the end slot is a foundation, the hint is just the first
  ; card. If in the tableau, the hint must be the longest moveable list of cards.
