@@ -451,7 +451,7 @@ SCM Interface::delayedCall(SCM callback)
         engine->m_delayedCallTimer = nullptr;
 
         if (engine->makeSCMCall(callback, nullptr, 0, nullptr))
-            engine->testGameOver();
+            engine->endMove();
     });
     engine->m_delayedCallTimer->start(DelayedCallDelay);
     return SCM_EOL;

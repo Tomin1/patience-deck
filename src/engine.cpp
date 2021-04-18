@@ -211,16 +211,19 @@ void Engine::undoMove()
         return;
     }
 
-    d_ptr->updateDealable();
     emit moveEnded();
+    d_ptr->updateDealable();
 }
 
 void Engine::redoMove()
 {
-    if (!d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr))
+    if (!d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr)) {
         d_ptr->die("Can not redo move");
-    else
+    } else {
+        emit moveEnded();
+        d_ptr->updateDealable();
         d_ptr->testGameOver();
+    }
 }
 
 void Engine::dealCard()
@@ -229,7 +232,7 @@ void Engine::dealCard()
     if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
         d_ptr->die("Can not deal card");
     else
-        d_ptr->testGameOver();
+        d_ptr->endMove();
 }
 
 void Engine::getHint()
@@ -352,7 +355,7 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     emit dropped(id, endSlotId, scm_is_true(rv));
 
     if (scm_is_true(rv))
-        d_ptr->testGameOver();
+        d_ptr->endMove();
     else
         d_ptr->discardMove();
     return scm_is_true(rv);
@@ -376,7 +379,7 @@ bool Engine::click(quint32 id, int slotId)
     emit clicked(id, slotId, scm_is_true(rv));
 
     if (scm_is_true(rv))
-        d_ptr->testGameOver();
+        d_ptr->endMove();
     else
         d_ptr->discardMove();
     return scm_is_true(rv);
@@ -400,7 +403,7 @@ bool Engine::doubleClick(quint32 id, int slotId)
     emit doubleClicked(id, slotId, scm_is_true(rv));
 
     if (scm_is_true(rv))
-        d_ptr->testGameOver();
+        d_ptr->endMove();
     else
         d_ptr->discardMove();
     return scm_is_true(rv);
@@ -589,6 +592,9 @@ void EnginePrivate::endMove()
     if (!m_recordingMove)
         qCWarning(lcEngine) << "There was no move ongoing when ending move";
     m_recordingMove = false;
+
+    updateDealable();
+    testGameOver();
 }
 
 void EnginePrivate::discardMove()
@@ -640,8 +646,6 @@ void EnginePrivate::clear(bool resetData)
 
 void EnginePrivate::testGameOver()
 {
-    endMove();
-    updateDealable();
     if (m_state < GameOverState) {
         if (isGameOver()) {
             m_state = GameOverState;
