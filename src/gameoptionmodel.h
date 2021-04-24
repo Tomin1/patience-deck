@@ -39,6 +39,7 @@ public:
 
     static bool loadOptions(const QString &gameFile, GameOptionList &options);
     static void saveOptions(const QString &gameFile, const GameOptionList &options);
+    static void clearOptions(const QString &gameFile);
 
     enum Roles {
         DisplayRole = Qt::DisplayRole,

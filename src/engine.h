@@ -61,8 +61,8 @@ public slots:
     bool click(quint32 id, int slotId);
     bool doubleClick(quint32 id, int slotId);
     void requestGameOptions();
-    void setGameOption(const GameOption &option);
-    void setGameOptions(const GameOptionList &options);
+    bool setGameOption(const GameOption &option);
+    bool setGameOptions(const GameOptionList &options);
 #ifndef ENGINE_EXERCISER
     void saveState();
     void resetSavedState();

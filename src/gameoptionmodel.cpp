@@ -253,6 +253,13 @@ void GameOptionModel::saveOptions(const QString &gameFile, const GameOptionList 
     optionsConf.sync();
 }
 
+void GameOptionModel::clearOptions(const QString &gameFile)
+{
+    MGConfItem optionsConf(Constants::ConfPath + OptionsConfTemplate.arg(GameList::name(gameFile)));
+    optionsConf.set(QVariant());
+    optionsConf.sync();
+}
+
 void GameOptionModel::handleGameOptions(GameOptionList options)
 {
     if (!m_options.isEmpty()) {

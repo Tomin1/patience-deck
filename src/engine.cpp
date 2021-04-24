@@ -146,8 +146,13 @@ void Engine::loadGame(const QString &gameFile, bool restored)
         d_ptr->m_gameFile = gameFile;
 #ifndef ENGINE_EXERCISER
         GameOptionList options = d_ptr->getGameOptions();
-        if (!options.isEmpty() && GameOptionModel::loadOptions(gameFile, options))
-            setGameOptions(options);
+        if (!options.isEmpty() && GameOptionModel::loadOptions(gameFile, options) && !setGameOptions(options)) {
+            qCWarning(lcEngine) << "Stored game options don't apply, clearing stored game options";
+            GameOptionModel::clearOptions(gameFile);
+            // Reload to reset options
+            loadGame(gameFile, restored);
+            return;
+        }
 #endif // ENGINE_EXERCISER
         emit gameLoaded(gameFile);
     }
@@ -455,45 +460,48 @@ GameOptionList EnginePrivate::getGameOptions()
     return list;
 }
 
-void Engine::setGameOption(const GameOption &option)
+bool Engine::setGameOption(const GameOption &option)
 {
     SCM optionsList;
     if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get game option");
-        return;
+        return false;
     }
 
     if (scm_is_false(scm_list_p(optionsList))) {
-        d_ptr->die("Game doesn't have options but Patience tried to set an option anyway");
-        return;
+        qCWarning(lcEngine) << "Game doesn't have options but Patience tried to set an option anyway";
+        return false;
     }
 
     SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
 
     if (scm_is_false(scm_list_p(entry))) {
-        d_ptr->die("Option is an atom, can not set it");
-        return;
+        qCWarning(lcEngine) << "Option is an atom, can not set it! Not setting game options";
+        return false;
     }
 
     scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
 
-    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
-        d_ptr->die("Can not apply game option");
+    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL)) {
+        qCWarning(lcEngine) << "Can not apply option! Not setting game options";
+        return false;
+    }
 
     scm_remember_upto_here_1(optionsList);
+    return true;
 }
 
-void Engine::setGameOptions(const GameOptionList &options)
+bool Engine::setGameOptions(const GameOptionList &options)
 {
     SCM optionsList;
     if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get options");
-        return;
+        return false;
     }
 
     if (scm_is_false(scm_list_p(optionsList))) {
-        d_ptr->die("Game doesn't have options but Patience tried to set an option anyway");
-        return;
+        qCWarning(lcEngine) << "Game doesn't have options but Patience tried to set options anyway";
+        return false;
     }
 
     scm_dynwind_begin((scm_t_dynwind_flags)0);
@@ -502,17 +510,22 @@ void Engine::setGameOptions(const GameOptionList &options)
         SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
 
         if (scm_is_false(scm_list_p(entry))) {
-            d_ptr->die("Option is an atom, can not set it");
-            return;
+            qCWarning(lcEngine) << "Option is an atom, can not set it! Not setting game options";
+            scm_dynwind_end();
+            return false;
         }
 
         scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
     }
 
-    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL))
-        d_ptr->die("Can not apply options");
+    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL)) {
+        qCWarning(lcEngine) << "Can not apply options! Not setting game options";
+        scm_dynwind_end();
+        return false;
+    }
 
     scm_dynwind_end();
+    return true;
 }
 
 #ifndef ENGINE_EXERCISER
