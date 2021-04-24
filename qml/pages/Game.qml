@@ -133,6 +133,7 @@ Page {
                 axis: Drag.XAxis
                 minimumX: Math.min(width - message.contentWidth, 0)
                 maximumX: 0
+                threshold: 0
             }
 
             Label {
