@@ -18,7 +18,8 @@
 #include <QLoggingCategory>
 #include "logging.h"
 
-Q_LOGGING_CATEGORY(lcPatience, "site.tomin.patience.table", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcPatience, "site.tomin.patience", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcTable, "site.tomin.patience.table", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcDrag, "site.tomin.patience.table.drag", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcManager, "site.tomin.patience.table.manager", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcSlot, "site.tomin.patience.table.slot", QtWarningMsg);

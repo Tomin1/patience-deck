@@ -317,15 +317,15 @@ Drag *Table::drag(QMouseEvent *event, Card *card)
 void Table::handleSetExpansionToDown(int id, double expansion)
 {
     if (!preparing()) {
-        qCWarning(lcPatience) << "Trying to change expansion to down while Table is not being prepared";
+        qCWarning(lcTable) << "Trying to change expansion to down while Table is not being prepared";
     } else {
         Slot *slot = m_slots[id];
         if (slot->expandedRight()) {
-            qCWarning(lcPatience) << "Can not set delta for expansion to down when expansion to right is set";
+            qCWarning(lcTable) << "Can not set delta for expansion to down when expansion to right is set";
         } else if (slot->expandedDown()) {
             slot->setDelta(expansion);
         } else {
-            qCWarning(lcPatience) << "Can not set delta when expansion is not set";
+            qCWarning(lcTable) << "Can not set delta when expansion is not set";
         }
     }
 }
@@ -333,15 +333,15 @@ void Table::handleSetExpansionToDown(int id, double expansion)
 void Table::handleSetExpansionToRight(int id, double expansion)
 {
     if (!preparing()) {
-        qCWarning(lcPatience) << "Trying to change expansion to down while Table is not being prepared";
+        qCWarning(lcTable) << "Trying to change expansion to down while Table is not being prepared";
     } else {
         Slot *slot = m_slots[id];
         if (slot->expandedDown()) {
-            qCWarning(lcPatience) << "Can not set delta for expansion to right when expansion to down is set";
+            qCWarning(lcTable) << "Can not set delta for expansion to right when expansion to down is set";
         } else if (slot->expandedRight()) {
             slot->setDelta(expansion);
         } else {
-            qCWarning(lcPatience) << "Can not set delta when expansion is not set";
+            qCWarning(lcTable) << "Can not set delta when expansion is not set";
         }
     }
 }
@@ -356,7 +356,7 @@ void Table::handleSlotEmptied()
 void Table::handleWidthChanged(double width)
 {
     if (!preparing()) {
-        qCWarning(lcPatience) << "Trying to table width while Table is not being prepared";
+        qCWarning(lcTable) << "Trying to table width while Table is not being prepared";
     } else {
         m_tableSize.setWidth(width);
     }
@@ -365,7 +365,7 @@ void Table::handleWidthChanged(double width)
 void Table::handleHeightChanged(double height)
 {
     if (!preparing()) {
-        qCWarning(lcPatience) << "Trying to table height while Table is not being prepared";
+        qCWarning(lcTable) << "Trying to table height while Table is not being prepared";
     } else {
         m_tableSize.setHeight(height);
     }
@@ -377,7 +377,7 @@ void Table::updateCardSize()
     if (!m_tableSize.isValid())
         return;
 
-    qCDebug(lcPatience).nospace() << "Drawing to " << QSize(width(), height())
+    qCDebug(lcTable).nospace() << "Drawing to " << QSize(width(), height())
                                   << " area with margin of " << m_margin
                                   << ", maximum margin of " << m_maximumMargin
                                   << ", minimum side margin of " << m_minimumSideMargin
@@ -395,7 +395,7 @@ void Table::updateCardSize()
         m_cardMargin = QSizeF(0.0, (maximumHeight - m_cardSize.height()) / 2.0);
     }
 
-    qCDebug(lcPatience) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
+    qCDebug(lcTable) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
                         << "and card margin of" << m_cardMargin;
 
     if (m_maximumMargin.width() > 0 && m_cardMargin.width() + m_margin.width() > m_maximumMargin.width())
@@ -406,13 +406,13 @@ void Table::updateCardSize()
     m_cardSpace = m_cardSize + m_cardMargin;
     m_sideMargin = ceil((width() - (m_cardSpace.width()+m_margin.width())*m_tableSize.width() + m_margin.width()) / 2.0);
     if (m_sideMargin < m_minimumSideMargin)
-        qCWarning(lcPatience) << "Miscalculated side margin! Current is" << m_sideMargin
+        qCWarning(lcTable) << "Miscalculated side margin! Current is" << m_sideMargin
                               << "but it should be" << m_minimumSideMargin;
 
-    qCInfo(lcPatience) << "Set card dimensions to" << m_cardSize
+    qCInfo(lcTable) << "Set card dimensions to" << m_cardSize
                        << "with space of" << m_cardSpace
                        << "and margin of" << m_cardMargin;
-    qCDebug(lcPatience) << "Side margin is" << m_sideMargin;
+    qCDebug(lcTable) << "Side margin is" << m_sideMargin;
 
     for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
         Slot *slot = it.value();
@@ -463,7 +463,7 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
         for (Slot *slot : m_slots) {
             QPointF point = mapToItem(slot, event->pos());
             if (slot->contains(point)) {
-                qCDebug(lcPatience) << "Detected click on" << *slot;
+                qCDebug(lcTable) << "Detected click on" << *slot;
                 emit doClick(-1, slot->id());
             }
         }

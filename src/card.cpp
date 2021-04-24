@@ -232,7 +232,7 @@ QSGTexture *Card::cardTexture(const QSizeF &cardSize, QQuickWindow *window)
             texture->deleteLater();
             texture = nullptr;
         });
-        qCDebug(lcPatience) << "Drew new card texture for card size of" << cardSize;
+        qCDebug(lcTable) << "Drew new card texture for card size of" << cardSize;
     }
     previousCardSize = cardSize;
     return texture;
