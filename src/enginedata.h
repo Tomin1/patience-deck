@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,16 +84,21 @@ Q_DECLARE_METATYPE(struct CardData)
 
 Q_DECLARE_METATYPE(CardList)
 
-enum GameOptionType {
-    CheckGameOption,
-    RadioGameOption
-};
+#define NoOptionGroup 0
 
 struct GameOption {
     QString displayName;
-    GameOptionType type;
+    uint group;
     uint index;
     bool set;
+
+    bool isCheckOption() const {
+        return group == NoOptionGroup;
+    }
+
+    bool isRadioOption() const {
+        return group != NoOptionGroup;
+    }
 };
 
 typedef QList<GameOption> GameOptionList;

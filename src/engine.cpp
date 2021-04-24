@@ -434,14 +434,18 @@ GameOptionList EnginePrivate::getGameOptions()
     scm_dynwind_begin((scm_t_dynwind_flags)0);
 
     uint length = scm_to_uint(scm_length(optionsList));
-    GameOptionType type = CheckGameOption;
+    uint group = NoOptionGroup;
+    bool checkOption = true;
     GameOptionList list;
 
     for (uint i = 0; i < length; i++) {
         SCM entry = scm_list_ref(optionsList, scm_from_uint(i));
         if (scm_is_false(scm_list_p(entry))) {
+            qCDebug(lcOptions) << "Atom at" << i;
             // Atom => change mode
-            type = (type == CheckGameOption) ? RadioGameOption : CheckGameOption;
+            if (checkOption)
+                group++;
+            checkOption = !checkOption;
         } else {
             char *name = scm_to_utf8_string(scm_list_ref(entry, scm_from_uint(0)));
             scm_dynwind_free(name);
@@ -450,7 +454,13 @@ GameOptionList EnginePrivate::getGameOptions()
                 continue;
             }
 
-            list.append({ name, type, i, scm_is_true(scm_list_ref(entry, scm_from_uint(1))) });
+            qCDebug(lcOptions) << (checkOption ? "Checkbox" : "Radio") << "option" << name << "at" << i;
+            list.append({
+                name,
+                checkOption ? NoOptionGroup : group,
+                i,
+                scm_is_true(scm_list_ref(entry, scm_from_uint(1)))
+            });
         }
     }
 
@@ -462,6 +472,8 @@ GameOptionList EnginePrivate::getGameOptions()
 
 bool Engine::setGameOption(const GameOption &option)
 {
+    qCDebug(lcOptions) << "Setting" << option.displayName << "at" << option.index << "to" << option.set;
+
     SCM optionsList;
     if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get game option");
@@ -493,6 +505,7 @@ bool Engine::setGameOption(const GameOption &option)
 
 bool Engine::setGameOptions(const GameOptionList &options)
 {
+    qCDebug(lcOptions) << "Setting" << options.count() << "options";
     SCM optionsList;
     if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get options");
@@ -507,6 +520,7 @@ bool Engine::setGameOptions(const GameOptionList &options)
     scm_dynwind_begin((scm_t_dynwind_flags)0);
 
     for (const GameOption &option : options) {
+        qCDebug(lcOptions) << "Setting" << option.displayName << "at" << option.index << "to" << option.set;
         SCM entry = scm_list_ref(optionsList, scm_from_uint(option.index));
 
         if (scm_is_false(scm_list_p(entry))) {

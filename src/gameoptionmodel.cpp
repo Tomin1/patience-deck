@@ -85,7 +85,7 @@ int GameOptionModel::groupIndex(int optionsIndex) const
 
 int GameOptionModel::getCurrent(int first) const
 {
-    for (int i = first; i < m_options.count() && m_options[i].type == RadioGameOption; i++) {
+    for (int i = first; i < m_options.count() && m_options[i].isRadioOption(); i++) {
         if (m_options[i].set)
             return i - first;
     }
@@ -129,7 +129,7 @@ QModelIndex GameOptionModel::index(int row, int column, const QModelIndex &paren
         if ((i+1) < m_groups.count() && m_groups[i] + row < m_groups[i + 1])
             return createIndex(row, 0, fromOptionsIndex(m_groups[i] + row));
     } else if (row < m_groups.count()) {
-        return createIndex(row, 0, m_options[m_groups[row]].type == CheckGameOption
+        return createIndex(row, 0, m_options[m_groups[row]].isCheckOption()
                 ? fromOptionsIndex(m_groups[row]) : fromGroupsIndex(row));
     }
 
@@ -144,7 +144,7 @@ QModelIndex GameOptionModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     int i = toOptionsIndex(index.internalId());
-    if (i >= 0 && i < m_options.count() && m_options[i].type == RadioGameOption) {
+    if (i >= 0 && i < m_options.count() && m_options[i].isRadioOption()) {
         int group = groupIndex(i);
         return createIndex(group, 0, fromGroupsIndex(group));
     }
@@ -175,7 +175,7 @@ QVariant GameOptionModel::data(const QModelIndex &index, int role) const
     case DisplayRole:
         return m_options[i].displayName;
     case TypeRole:
-        return m_options[i].type == CheckGameOption ? CheckType : RadioType;
+        return m_options[i].isCheckOption() ? CheckType : RadioType;
     case SetRole:
         return m_options[i].set;
     case CurrentRole:
@@ -194,7 +194,7 @@ bool GameOptionModel::setData(const QModelIndex &index, const QVariant &value, i
 
     if (role == SetRole) {
         int i = toOptionsIndex(index.internalId());
-        if (i < 0 || i >= m_options.count() || m_options[i].type != CheckGameOption)
+        if (i < 0 || i >= m_options.count() || m_options[i].isRadioOption())
             return false;
         bool set = value.toBool();
         if (m_options[i].set != set) {
@@ -207,7 +207,7 @@ bool GameOptionModel::setData(const QModelIndex &index, const QVariant &value, i
         if (group < 0 || group >= m_groups.count())
             return false;
         int first = m_groups[group];
-        if (m_options[first].type != RadioGameOption)
+        if (m_options[first].isCheckOption())
             return false;
         int end = m_groups[group + 1];
         int i = first + value.toInt();
@@ -233,6 +233,7 @@ bool GameOptionModel::loadOptions(const QString &gameFile, GameOptionList &optio
     auto stored = optionsConf.value();
     if (stored.isValid()) {
         auto values = stored.toString().split(';').toSet();
+        qCDebug(lcOptionList) << values.count() << "options stored for" << gameFile;
         for (int i = 0; i < options.length(); i++) {
             options[i].set = values.contains(QString::number(options.at(i).index));
         }
@@ -273,10 +274,10 @@ void GameOptionModel::handleGameOptions(GameOptionList options)
     m_groups.append(0);
     if (!options.isEmpty()) {
         m_options.swap(options);
-        GameOptionType lastType = m_options[0].type;
+        uint lastGroup = m_options[0].group;
         for (auto it = ++m_options.constBegin(); it != m_options.constEnd(); it++) {
-            if (it->type == CheckGameOption || it->type != lastType) {
-                lastType = it->type;
+            if (it->isCheckOption() || it->group != lastGroup) {
+                lastGroup = it->group;
                 m_groups.append(it - m_options.constBegin());
             }
         }

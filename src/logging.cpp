@@ -27,4 +27,5 @@ Q_LOGGING_CATEGORY(lcOptionList, "site.tomin.patience.optionlist", QtWarningMsg)
 Q_LOGGING_CATEGORY(lcTimer, "site.tomin.patience.timer", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcMouse, "site.tomin.patience.mouse", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcEngine, "site.tomin.patience.engine", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcOptions, "site.tomin.patience.engine.options", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcScheme, "site.tomin.patience.scheme", QtWarningMsg);
