@@ -608,7 +608,7 @@ void EnginePrivate::recordMove(int slotId)
     scm_remember_upto_here_2(args[0], args[1]);
 }
 
-void EnginePrivate::endMove()
+void EnginePrivate::endMove(bool fromDelayedCall)
 {
     qCDebug(lcEngine) << "End recorded move";
     if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
@@ -616,9 +616,11 @@ void EnginePrivate::endMove()
     else
         emit engine()->moveEnded();
 
-    if (!m_recordingMove)
-        qCWarning(lcEngine) << "There was no move ongoing when ending move";
-    m_recordingMove = false;
+    if (!fromDelayedCall) {
+        if (!m_recordingMove)
+            qCWarning(lcEngine) << "There was no move ongoing when ending move";
+        m_recordingMove = false;
+    }
 
     updateDealable();
     testGameOver();

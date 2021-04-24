@@ -58,8 +58,8 @@ public:
         FeatureDealable = 0x04,
         AllFeatures = 0x07,
     };
-    Q_ENUM(GameFeature);
-    Q_DECLARE_FLAGS(GameFeatures, GameFeature);
+    Q_ENUM(GameFeature)
+    Q_DECLARE_FLAGS(GameFeatures, GameFeature)
 
     enum GameState : int {
         UninitializedState,
@@ -69,7 +69,7 @@ public:
         RunningState,
         GameOverState,
     };
-    Q_ENUM(GameState);
+    Q_ENUM(GameState)
 
     explicit EnginePrivate(QObject *parent = nullptr);
     ~EnginePrivate();
@@ -78,7 +78,7 @@ public:
     GameOptionList getGameOptions();
     void updateDealable();
     void recordMove(int slotId);
-    void endMove();
+    void endMove(bool fromDelayedCall = false);
     void discardMove();
     bool isGameOver();
     bool isWinningGame();
