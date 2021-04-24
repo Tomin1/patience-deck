@@ -357,29 +357,35 @@ void Patience::handleGameOver(bool won)
 
 void Patience::handleCanUndoChanged(bool canUndo)
 {
-    qCDebug(lcPatience) << (canUndo ? "Can" : "Can't") << "undo";
-    m_canUndo = canUndo;
-    emit canUndoChanged();
+    if (m_canUndo != canUndo) {
+        qCDebug(lcPatience) << (canUndo ? "Can" : "Can't") << "undo";
+        m_canUndo = canUndo;
+        emit canUndoChanged();
+    }
 }
 
 void Patience::handleCanRedoChanged(bool canRedo)
 {
-    qCDebug(lcPatience) << (canRedo ? "Can" : "Can't") << "redo";
-    m_canRedo = canRedo;
-    emit canRedoChanged();
+    if (m_canRedo != canRedo) {
+        qCDebug(lcPatience) << (canRedo ? "Can" : "Can't") << "redo";
+        m_canRedo = canRedo;
+        emit canRedoChanged();
+    }
 }
 
 void Patience::handleCanDealChanged(bool canDeal)
 {
-    qCDebug(lcPatience) << (canDeal ? "Can" : "Can't") << "deal";
-    m_canDeal = canDeal;
-    emit canDealChanged();
+    if (m_canDeal != canDeal) {
+        qCDebug(lcPatience) << (canDeal ? "Can" : "Can't") << "deal";
+        m_canDeal = canDeal;
+        emit canDealChanged();
+    }
 }
 
 void Patience::handleScoreChanged(int score)
 {
-    qCDebug(lcPatience) << "Score is now" << score;
     if (m_score != score) {
+        qCDebug(lcPatience) << "Score is now" << score;
         m_score = score;
         emit scoreChanged();
     }
@@ -387,8 +393,8 @@ void Patience::handleScoreChanged(int score)
 
 void Patience::handleMessageChanged(const QString &message)
 {
-    qCDebug(lcPatience) << "New message" << message;
     if (m_message != message) {
+        qCDebug(lcPatience) << "New message" << message;
         m_message = message;
         emit messageChanged();
     }
@@ -397,6 +403,7 @@ void Patience::handleMessageChanged(const QString &message)
 void Patience::handleShowScore(bool show)
 {
     if (m_showScore != show) {
+        qCDebug(lcPatience) << (show ? "Showing" : "Not showing") << "score";
         m_showScore = show;
         emit showScoreChanged();
     }
@@ -405,6 +412,7 @@ void Patience::handleShowScore(bool show)
 void Patience::handleShowDeal(bool show)
 {
     if (m_showDeal != show) {
+        qCDebug(lcPatience) << (show ? "Showing" : "Not showing") << "deal";
         m_showDeal = show;
         emit showDealChanged();
     }
