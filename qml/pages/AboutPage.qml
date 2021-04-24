@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2021 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Patience 1.0
@@ -37,9 +38,9 @@ Page {
             PageHeader {
                 //% "About"
                 title: qsTrId("patience-he-about")
-                //: Name of this application
-                //% "Patience Deck"
-                description: qsTrId("patience-de-patience_deck")
+                //: Name of this application, %1 is version number
+                //% "Patience Deck %1"
+                description: qsTrId("patience-de-patience_deck").arg(Qt.application.version)
             }
 
             Label {

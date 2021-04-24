@@ -8,3 +8,4 @@
 #   - translation filenames have to be changed
 
 NAME = patience-deck
+VERSION = unknown

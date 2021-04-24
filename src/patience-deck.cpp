@@ -24,6 +24,7 @@
 #include <QScopedPointer>
 #include <QtQml>
 #include <sailfishapp.h>
+#include "constants.h"
 #include "patience.h"
 #include "table.h"
 #include "gamelist.h"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Table>("Patience", 1, 0, "Table");
     qmlRegisterType<GameList>("Patience", 1, 0, "GameList");
     qmlRegisterType<GameOptionModel>("Patience", 1, 0, "GameOptions");
+    app->setApplicationVersion(QUOTE(VERSION));
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
     return app->exec();

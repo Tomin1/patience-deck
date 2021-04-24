@@ -16,6 +16,7 @@ BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 BuildRequires:  guile22-devel
+BuildRequires:  git-core
 
 %description
 %{summary} for Sailfish. Based on GNOME Aisleriot.
@@ -24,6 +25,7 @@ BuildRequires:  guile22-devel
 %autosetup -p1 -n %{name}-%{version}
 
 %build
+sed "/^VERSION =/s/=.*$/= $(git describe --tags)/" -i common.pri
 %qmake5
 make %{?_smp_mflags}
 

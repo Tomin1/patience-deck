@@ -13,3 +13,4 @@ patience-deck
 /tools/exerciser/games/
 /tools/exerciser/engine-exerciser
 .qmake.stash
+/common.pri
