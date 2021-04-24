@@ -3,7 +3,7 @@
 ;
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation, either version 3 of the License.
+; the Free Software Foundation, version 3 of the License.
 ;
 ; This program is distributed in the hope that it will be useful,
 ; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -61,31 +61,32 @@
   #f)
 
 (define (get-options) 
-  (list (list (_"Option A") option-A)
+  (list
+    (list (_"Option A") option-A)
+	(list (_"Option B") option-B)
         'begin-exclusive 
 	(list (_"Option One") option-one)
 	(list (_"Option Two") option-two)
 	(list (_"Option Three") option-three)
         'end-exclusive
-	(list (_"Option B") option-B)
-	(list (_"Option C") option-C)
         'begin-exclusive 
 	(list (_"Option Four") option-four)
 	(list (_"Option Five") option-five)
 	(list (_"Option Six") option-six)
         'end-exclusive
+	(list (_"Option C") option-C)
 	(list (_"Option D") option-D)))
 
 (define (apply-options options) 
   (set! option-A (cadr (list-ref options 0)))
-  (set! option-one (cadr (list-ref options 2)))
-  (set! option-two (cadr (list-ref options 3)))
-  (set! option-three (cadr (list-ref options 4)))
-  (set! option-B (cadr (list-ref options 6)))
-  (set! option-C (cadr (list-ref options 7)))
-  (set! option-four (cadr (list-ref options 9)))
-  (set! option-five (cadr (list-ref options 10)))
-  (set! option-six (cadr (list-ref options 11)))
+  (set! option-B (cadr (list-ref options 1)))
+  (set! option-one (cadr (list-ref options 3)))
+  (set! option-two (cadr (list-ref options 4)))
+  (set! option-three (cadr (list-ref options 5)))
+  (set! option-four (cadr (list-ref options 8)))
+  (set! option-five (cadr (list-ref options 9)))
+  (set! option-six (cadr (list-ref options 10)))
+  (set! option-C (cadr (list-ref options 12)))
   (set! option-D (cadr (list-ref options 13))))
 
 (define (timeout) 
