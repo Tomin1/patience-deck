@@ -343,7 +343,7 @@ void Patience::handleGameStarted()
 
 void Patience::handleCardMoved()
 {
-    if (state() >= StartingState)
+    if (state() == StartingState)
         setState(RunningState);
 }
 
