@@ -24,8 +24,14 @@ games.path = /usr/share/$$TARGET/games/
 api.files = aisleriot/games/api.scm
 api.path = /usr/share/$$TARGET/games/aisleriot/
 
+manual.files = aisleriot/help/C/*.xml
+manual.path = /usr/share/$$TARGET/help/
+
+figures.files = aisleriot/help/C/figures/*.png
+figures.path = /usr/share/$$TARGET/help/figures/
+
 data.files = aisleriot/AUTHORS \
     aisleriot/cards/anglo.svg
 data.path = /usr/share/$$TARGET/data/
 
-INSTALLS += games api data
+INSTALLS += games api data manual figures
