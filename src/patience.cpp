@@ -175,6 +175,17 @@ QString Patience::gameFile() const
     return m_gameFile;
 }
 
+QString Patience::helpFile() const
+{
+    if (m_gameFile.isEmpty() || m_gameFile.endsWith('-'))
+        return QString();
+    auto file = QStringLiteral(QUOTE(DATADIR) "/help/%1.xml")
+        .arg(m_gameFile.left(m_gameFile.length()-4).replace("-", "_"));
+    if (!QFile::exists(file))
+        return QString();
+    return file;
+}
+
 void Patience::getHint()
 {
     emit doGetHint();

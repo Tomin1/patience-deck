@@ -45,6 +45,7 @@ class Patience : public QObject
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
+    Q_PROPERTY(QString helpFile READ helpFile NOTIFY gameNameChanged)
 
 public:
     static Patience* instance();
@@ -79,6 +80,7 @@ public:
     bool showDeal() const;
     QString gameName() const;
     QString gameFile() const;
+    QString helpFile() const;
     int score() const;
     bool showScore() const;
     QString elapsedTime() const;

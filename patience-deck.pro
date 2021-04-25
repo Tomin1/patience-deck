@@ -7,6 +7,8 @@ DISTFILES += \
     qml/*.qml \
     qml/cover/*.qml \
     qml/pages/*.qml \
+    qml/help/*.qml \
+    qml/help/components/*.qml \
     qml/images/*.svg \
     rpm/$$(NAME).spec \
     translations/*.ts \

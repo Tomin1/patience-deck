@@ -19,6 +19,7 @@ import QtQuick 2.0
 import QtQml.Models 2.2
 import Sailfish.Silica 1.0
 import Patience 1.0
+import "../help"
 
 Page {
     id: page
@@ -31,7 +32,6 @@ Page {
 
     SilicaFlickable {
         anchors.fill: parent
-
         contentHeight: column.height
 
         Column {
@@ -42,7 +42,7 @@ Page {
 
             PageHeader {
                 // Page title for options page
-                //% "Options"
+                //% "Options & Help"
                 title: qsTrId("patience-he-options")
             }
 
@@ -74,9 +74,8 @@ Page {
             }
 
             SectionHeader {
-                //: Options section title for game named %1
-                //% "%1 options"
-                text: qsTrId("patience-se-game_options").arg(Patience.gameName)
+                //% "Options"
+                text: qsTrId("patience-se-game_options")
                 visible: gameOptions.count > 0
             }
 
@@ -112,6 +111,45 @@ Page {
                         }
                     }
                 }
+                width: parent.width
+            }
+
+            SectionHeader {
+                //% "Help"
+                text: qsTrId("patience-se-game_help")
+            }
+
+            BusyIndicator {
+                id: loadingIndicator
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: running ? implicitHeight : 0
+                running: true
+                size: BusyIndicatorSize.Large
+            }
+
+            Loader {
+                active: page.status == PageStatus.Active
+                sourceComponent: Component {
+                    HelpView {
+                        source: Patience.helpFile
+                        opacity: ready ? 1.0 : 0.0
+                        Behavior on opacity {
+                            FadeAnimator {
+                                duration: 500
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
+                        bottomPadding: Theme.paddingLarge
+                        onReadyChanged: if (ready) loadingIndicator.running = false
+                    }
+                }
+                anchors {
+                    left: parent.left
+                    leftMargin: Theme.horizontalPageMargin
+                    right: parent.right
+                    rightMargin: Theme.horizontalPageMargin
+                }
+                onActiveChanged: if (active) active = true // Break binding
             }
         }
 

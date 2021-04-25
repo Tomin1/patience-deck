@@ -71,7 +71,7 @@ Page {
             }
 
             MenuItem {
-                //% "Game options"
+                //% "Options & Help"
                 text: qsTrId("patience-me-game_options")
                 enabled: !Patience.engineFailed
                 onClicked: pageStack.push(Qt.resolvedUrl("GameOptions.qml"))
