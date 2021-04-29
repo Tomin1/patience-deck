@@ -125,6 +125,7 @@ private slots:
     void catchFailure(QString message);
     void handleGameLoaded(const QString &gameFile);
     void handleGameStarted();
+    void handleGameContinued();
     void handleCardMoved();
     void handleGameOver(bool won);
     void handleCanUndoChanged(bool canUndo);

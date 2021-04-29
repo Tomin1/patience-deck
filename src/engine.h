@@ -80,6 +80,7 @@ signals:
     void engineFailure(QString message);
     void gameLoaded(const QString &gameFile);
     void gameStarted();
+    void gameContinued();
     void restoreCompleted(bool success);
     void gameOver(bool won);
     void gameOptions(GameOptionList options);

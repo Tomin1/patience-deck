@@ -208,7 +208,7 @@ void Engine::undoMove()
 {
     if (d_ptr->m_state == EnginePrivate::GameOverState) {
         d_ptr->m_state = EnginePrivate::RunningState;
-        emit gameStarted();
+        emit gameContinued();
     }
 
     if (!d_ptr->makeSCMCall(QStringLiteral("undo"), nullptr, 0, nullptr)) {

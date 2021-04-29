@@ -63,6 +63,7 @@ Patience::Patience(QObject *parent)
     connect(&m_engineThread, &QThread::finished, engine, &Engine::deleteLater);
     connect(engine, &Engine::gameLoaded, this, &Patience::handleGameLoaded);
     connect(engine, &Engine::gameStarted, this, &Patience::handleGameStarted);
+    connect(engine, &Engine::gameContinued, this, &Patience::handleGameContinued);
     connect(engine, &Engine::gameOver, this, &Patience::handleGameOver);
     connect(engine, &Engine::canUndo, this, &Patience::handleCanUndoChanged);
     connect(engine, &Engine::canRedo, this, &Patience::handleCanRedoChanged);
@@ -336,9 +337,16 @@ void Patience::handleGameLoaded(const QString &gameFile)
 void Patience::handleGameStarted()
 {
     qCDebug(lcPatience) << "Game started";
-    if (state() != GameOverState)
+    emit doSaveEngineState();
+    setState(StartingState);
+}
+
+void Patience::handleGameContinued()
+{
+    qCDebug(lcPatience) << "Game continued";
+    if (state() == WonState)
         emit doSaveEngineState();
-    setState(state() >= GameOverState ? RunningState : StartingState);
+    setState(RunningState);
 }
 
 void Patience::handleCardMoved()
