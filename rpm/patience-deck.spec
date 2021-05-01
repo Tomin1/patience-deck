@@ -25,7 +25,10 @@ BuildRequires:  git-core
 %autosetup -p1 -n %{name}-%{version}
 
 %build
-sed "/^VERSION =/s/=.*$/= $(git describe --tags)/" -i common.pri
+export NAME="%{name}"
+export VERSION="$(git describe --tags)"
+touch src/patience-deck.cpp
+
 %qmake5
 make %{?_smp_mflags}
 

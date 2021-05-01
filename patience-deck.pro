@@ -1,18 +1,16 @@
-include(common.pri)
-
 TEMPLATE = subdirs
 SUBDIRS = src translations
 
 CONFIG += sailfishapp
 
-DISTFILES += common.pri \
+DISTFILES += \
     qml/*.qml \
     qml/cover/*.qml \
     qml/pages/*.qml \
     qml/images/*.svg \
-    rpm/$$NAME.spec \
+    rpm/$$(NAME).spec \
     translations/*.ts \
-    $$NAME.desktop
+    $$(NAME).desktop
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
