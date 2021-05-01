@@ -28,9 +28,16 @@ Page {
 
     allowedOrientations: Orientation.All
 
+    function resetHint() {
+        message.hint = ""
+    }
+
     onOrientationChanged: message.x = 0
 
-    onActiveChanged: Patience.paused = !active
+    onActiveChanged: {
+        Patience.paused = !active
+        resetHint()
+    }
 
     Connections {
         target: Qt.application
@@ -40,6 +47,7 @@ Page {
             } else {
                 Patience.paused = true
             }
+            resetHint()
         }
     }
 
@@ -182,12 +190,14 @@ Page {
         onStateChanged: {
             if (Patience.state === Patience.LoadedState) {
                 Patience.startNewGame()
+            } else if (Patience.state === Patience.StartingState) {
+                resetHint()
             }
         }
         onHint: {
             message.hint = hint
             hintTimer.restart()
         }
-        onCardMoved: message.hint = ""
+        onCardMoved: resetHint()
     }
 }
