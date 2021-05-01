@@ -750,29 +750,31 @@ void EnginePrivate::setCards(int id, const CardList &cards)
         return;
     }
 
-    auto it = cards.constBegin();
-    int i = 0;
-    while (i < m_cardSlots[id].count() && it != cards.end()) {
+    auto it = cards.constEnd();
+    int i = m_cardSlots[id].count() - 1;
+    while (it-- != cards.constBegin() && i >= 0) {
         if (m_cardSlots[id][i].equalValue(*it)) {
             if ((*it).show != m_cardSlots[id][i].show) {
                 qCDebug(lcEngine) << "Flipping" << *it << "in slot" << id << "at index" << i;
                 emit engine()->action(Engine::FlippingAction, id, i, *it);
                 m_cardSlots[id][i].show = (*it).show;
             }
-            i++; it++;
+            i--;
         } else {
             qCDebug(lcEngine) << "Removing" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
             emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
+            i--; it++;
         }
     }
-    while (i < m_cardSlots[id].count()) {
+    for (; i >= 0; i--) {
         qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
         emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
     }
-    for (; it != cards.end(); it++, i++) {
-        qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << "to index" << i;
-        emit engine()->action(Engine::InsertionAction, id, i, *it);
-        m_cardSlots[id].insert(i, *it);
+    it++;
+    while (it-- != cards.constBegin()) {
+        qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << "to index 0";
+        emit engine()->action(Engine::InsertionAction, id, 0, *it);
+        m_cardSlots[id].insert(0, *it);
     }
 
     if (m_cardSlots[id] != cards)
