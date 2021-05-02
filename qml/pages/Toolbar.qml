@@ -45,7 +45,7 @@ Item {
         }
     }
     Behavior on height {
-        enabled: !vertical && !orientationTransitionRunning
+        enabled: !vertical && !orientationTransitionRunning && page.active
 
         NumberAnimation {
             id: heightAnimation
@@ -62,7 +62,7 @@ Item {
         }
     }
     Behavior on width {
-        enabled: vertical && !orientationTransitionRunning
+        enabled: vertical && !orientationTransitionRunning && page.active
 
         NumberAnimation {
             id: widthAnimation
@@ -124,7 +124,7 @@ Item {
                 }
             }
             Behavior on rotation {
-                enabled: !orientationTransitionRunning
+                enabled: !orientationTransitionRunning && page.active
                 NumberAnimation { duration: 100 }
             }
             onClicked: expanded = !expanded
