@@ -69,6 +69,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     connect(engine, &Engine::couldDrag, this, &Drag::handleCouldDrag);
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
+    connect(engine, &Engine::clicked, this, &Drag::handleClicked);
 
     m_mayBeADoubleClick = couldBeDoubleClick(card);
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
@@ -113,15 +114,15 @@ void Drag::update(QMouseEvent *event)
 void Drag::finish(QMouseEvent *event)
 {
     if (mayBeAClick(event)) {
+        m_state = Clicked;
         if (m_mayBeADoubleClick) {
             qCDebug(lcDrag) << "Detected double click on" << *m_card;
             emit doDoubleClick(m_id, m_source->id());
+            deleteLater();
         } else {
             qCDebug(lcDrag) << "Detected click on" << *m_card;
             emit doClick(m_id, m_source->id());
         }
-        m_state = Clicked;
-        cancel();
     } else if (m_state == Dragging) {
         m_state = Dropping;
         checkTargets(true);
@@ -239,6 +240,19 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     } else {
         cancel();
     }
+}
+
+void Drag::handleClicked(quint32 id, int slotId, bool could)
+{
+    Q_UNUSED(slotId)
+
+    if (id != m_id)
+        return;
+
+    if (could)
+        s_doubleClickTimer.invalidate();
+
+    deleteLater();
 }
 
 bool Drag::mayBeAClick(QMouseEvent *event)

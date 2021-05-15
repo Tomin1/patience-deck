@@ -55,6 +55,7 @@ private slots:
     void handleCouldDrag(quint32 id, int slotId, bool could);
     void handleCouldDrop(quint32 id, int slotId, bool could);
     void handleDropped(quint32 id, int slotId, bool could);
+    void handleClicked(quint32 id, int slotId, bool could);
 
 private:
     enum DragState {
