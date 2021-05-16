@@ -25,6 +25,7 @@ Page {
 
     property bool isPortrait: orientation & Orientation.PortraitMask
     property bool active: page.status === PageStatus.Active
+    property bool needsGameStart
 
     allowedOrientations: Orientation.All
 
@@ -37,6 +38,10 @@ Page {
     onActiveChanged: {
         Patience.paused = !active
         resetHint()
+        if (needsGameStart) {
+            Patience.startNewGame()
+            needsGameStart = false
+        }
     }
 
     Connections {
@@ -189,7 +194,11 @@ Page {
         target: Patience
         onStateChanged: {
             if (Patience.state === Patience.LoadedState) {
-                Patience.startNewGame()
+                if (active) {
+                    Patience.startNewGame()
+                } else {
+                    needsGameStart = true
+                }
             } else if (Patience.state === Patience.StartingState) {
                 resetHint()
             }
