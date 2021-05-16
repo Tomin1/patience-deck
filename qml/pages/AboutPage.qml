@@ -45,6 +45,7 @@ Page {
 
             Label {
                 color: Theme.highlightColor
+                font.pixelSize: Theme.fontSizeSmall
                 linkColor: Theme.primaryColor
                 //: About this application, %1 is the name of the author. Keep the line break.
                 //% "This is a collection of patience games for Sailfish OS written by %1.<br />It utilises <a href=%2>GNOME Aisleriot</a>'s implementations of patience games and artwork."
@@ -62,6 +63,7 @@ Page {
 
             Label {
                 color: Theme.highlightColor
+                font.pixelSize: Theme.fontSizeSmall
                 linkColor: Theme.primaryColor
                 text: "Github: <a href=%2>%1</a>"
                     .arg("github.com/Tomin1/patience-deck")
@@ -83,6 +85,7 @@ Page {
 
             Label {
                 color: Theme.highlightColor
+                font.pixelSize: Theme.fontSizeSmall
                 //: Listing all developers of GNOME Aisleriot developers below this
                 //% "Thank you to GNOME Aisleriot authors"
                 text: qsTrId("patience-la-thank_you_gnome_aisleriot_authors")
@@ -108,8 +111,9 @@ Page {
 
             Label {
                 color: Theme.highlightColor
-                //: Listing the card graphics creator below this
-                //% "Also thank you to card graphics creator"
+                font.pixelSize: Theme.fontSizeSmall
+                //: Listing the card graphics creator and game manual author below this
+                //% "Also thank you to card graphics creator and game manual author"
                 text: qsTrId("patience-la-thank_you_card_graphics_author")
                 wrapMode: Text.Wrap
                 anchors {
@@ -123,6 +127,31 @@ Page {
                 color: Theme.secondaryHighlightColor
                 font.pixelSize: Theme.fontSizeSmall
                 text: "Aike Reyer"
+                wrapMode: Text.Wrap
+                anchors {
+                    left: parent.left
+                    leftMargin: Theme.horizontalPageMargin
+                }
+                width: aboutPage.width - 2*Theme.horizontalPageMargin
+            }
+
+            Label {
+                color: Theme.secondaryHighlightColor
+                font.pixelSize: Theme.fontSizeSmall
+                text: "Rosanna Yuen"
+                wrapMode: Text.Wrap
+                anchors {
+                    left: parent.left
+                    leftMargin: Theme.horizontalPageMargin
+                }
+                width: aboutPage.width - 2*Theme.horizontalPageMargin
+            }
+
+            Label {
+                color: Theme.secondaryHighlightColor
+                font.pixelSize: Theme.fontSizeSmall
+                //% "See also individual game manuals for their authors"
+                text: qsTrId("patience-la-see_also_manuals")
                 wrapMode: Text.Wrap
                 anchors {
                     left: parent.left
