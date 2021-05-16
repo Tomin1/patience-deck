@@ -20,7 +20,9 @@
 #include <QBrush>
 #include <QColor>
 #include <QGuiApplication>
+#include <QQuickWindow>
 #include <QSGSimpleRectNode>
+#include <QSGTexture>
 #include <QStyleHints>
 #include "table.h"
 #include "constants.h"
@@ -28,6 +30,7 @@
 #include "drag.h"
 #include "engine.h"
 #include "slot.h"
+#include "texturerenderer.h"
 #include "logging.h"
 
 namespace {
@@ -47,15 +50,24 @@ Table::Table(QQuickItem *parent)
     , m_minimumSideMargin(0)
     , m_sideMargin(0)
     , m_dirty(true)
+    , m_dirtyCardSize(true)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
     , m_manager(this)
     , m_drag(nullptr)
+    , m_cardTexture(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
     setFlag(QQuickItem::ItemHasContents);
     m_highlightColor.setAlphaF(DefaultHighlightOpacity);
+
+    auto renderer = new TextureRenderer();
+    renderer->moveToThread(&m_textureThread);
+    connect(&m_textureThread, &QThread::finished, renderer, &TextureRenderer::deleteLater);
+    connect(this, &Table::doRenderCardTexture, renderer, &TextureRenderer::renderTexture);
+    connect(renderer, &TextureRenderer::textureRendered, this, &Table::handleCardTextureRendered);
+    m_textureThread.start();
 
     auto engine = Engine::instance();
     connect(engine, &Engine::gameLoaded, this, &Table::update);
@@ -64,9 +76,20 @@ Table::Table(QQuickItem *parent)
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
     connect(engine, &Engine::heightChanged, this, &Table::handleHeightChanged);
     connect(engine, &Engine::engineFailure, this, &Table::handleEngineFailure);
-    connect(this, &Table::heightChanged, this, &Table::updateCardSize);
-    connect(this, &Table::widthChanged, this, &Table::updateCardSize);
+    connect(this, &Table::heightChanged, this, &Table::setDirtyCardSize);
+    connect(this, &Table::widthChanged, this, &Table::setDirtyCardSize);
     connect(this, &Table::doClick, engine, &Engine::click);
+}
+
+Table::~Table()
+{
+    m_textureThread.quit();
+}
+
+void Table::updatePolish()
+{
+    if (m_dirtyCardSize)
+        updateCardSize();
 }
 
 QSGNode *Table::getPaintNodeForSlot(Slot *slot)
@@ -76,9 +99,12 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     auto *node = new QSGSimpleRectNode(target, outlineColor);
     QColor backgroundColor(Qt::darkGreen);
     auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
+    innerNode->setFlag(QSGNode::OwnedByParent);
     node->appendChildNode(innerNode);
     if (slot->highlighted() && slot->isEmpty()) {
-        node->appendChildNode(new QSGSimpleRectNode(target, m_highlightColor));
+        auto child = new QSGSimpleRectNode(target, m_highlightColor);
+        child->setFlag(QSGNode::OwnedByParent);
+        node->appendChildNode(child);
     }
     return node;
 }
@@ -97,6 +123,7 @@ QSGNode *Table::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         }
         for (Slot *slot : m_slots) {
             auto slotNode = getPaintNodeForSlot(slot);
+            slotNode->setFlag(QSGNode::OwnedByParent);
             node->appendChildNode(slotNode);
         }
     }
@@ -113,7 +140,7 @@ void Table::setMinimumSideMargin(qreal minimumSideMargin)
     if (m_minimumSideMargin != minimumSideMargin) {
         m_minimumSideMargin = minimumSideMargin;
         emit minimumSideMarginChanged();
-        updateCardSize();
+        setDirtyCardSize();
     }
 }
 
@@ -127,7 +154,7 @@ void Table::setHorizontalMargin(qreal horizontalMargin)
     if (m_margin.width() != horizontalMargin) {
         m_margin.setWidth(horizontalMargin);
         emit horizontalMarginChanged();
-        updateCardSize();
+        setDirtyCardSize();
     }
 }
 
@@ -141,7 +168,7 @@ void Table::setMaximumHorizontalMargin(qreal maximumHorizontalMargin)
     if (m_maximumMargin.width() != maximumHorizontalMargin) {
         m_maximumMargin.setWidth(maximumHorizontalMargin);
         emit maximumHorizontalMarginChanged();
-        updateCardSize();
+        setDirtyCardSize();
     }
 }
 
@@ -155,7 +182,7 @@ void Table::setVerticalMargin(qreal verticalMargin)
     if (m_margin.height() != verticalMargin) {
         m_margin.setHeight(verticalMargin);
         emit verticalMarginChanged();
-        updateCardSize();
+        setDirtyCardSize();
     }
 }
 
@@ -169,7 +196,7 @@ void Table::setMaximumVerticalMargin(qreal maximumVerticalMargin)
     if (m_maximumMargin.height() != maximumVerticalMargin) {
         m_maximumMargin.setHeight(maximumVerticalMargin);
         emit maximumVerticalMarginChanged();
-        updateCardSize();
+        setDirtyCardSize();
     }
 }
 
@@ -216,6 +243,11 @@ QSizeF Table::tableSize() const
 QSizeF Table::cardSize() const
 {
     return m_cardSize;
+}
+
+QSizeF Table::cardSizeInTexture() const
+{
+    return m_cardSizeInTexture;
 }
 
 QSizeF Table::cardSpace() const
@@ -287,6 +319,9 @@ void Table::clear()
     m_drag = nullptr;
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();
+    setCardTexture(nullptr);
+    m_cardSizeInTexture = QSizeF();
+    m_cardImage = QImage();
 }
 
 void Table::store(const QList<Card *> &cards)
@@ -334,7 +369,7 @@ void Table::handleSetExpansionToDown(int id, double expansion)
 void Table::handleSetExpansionToRight(int id, double expansion)
 {
     if (!preparing()) {
-        qCWarning(lcTable) << "Trying to change expansion to down while Table is not being prepared";
+        qCWarning(lcTable) << "Trying to change expansion to right while Table is not being prepared";
     } else {
         Slot *slot = m_slots[id];
         if (slot->expandedDown()) {
@@ -372,9 +407,14 @@ void Table::handleHeightChanged(double height)
     }
 }
 
+void Table::setDirtyCardSize()
+{
+    m_dirtyCardSize = true;
+    polish();
+}
+
 void Table::updateCardSize()
 {
-    // TODO: Queue this, don't update many times in a row
     if (!m_tableSize.isValid())
         return;
 
@@ -388,12 +428,20 @@ void Table::updateCardSize()
     qreal horizontalSpace = height() - m_margin.height()*2.0;
     qreal maximumWidth = (verticalSpace + m_margin.width()) / m_tableSize.width() - m_margin.width();
     qreal maximumHeight = (horizontalSpace + m_margin.height()) / m_tableSize.height() - m_margin.height();
+    QSizeF newCardSize;
     if ((maximumHeight * CardRatio) < maximumWidth) {
-        m_cardSize = QSizeF(round(maximumHeight * CardRatio), round(maximumHeight));
-        m_cardMargin = QSizeF((maximumWidth - m_cardSize.width()) / 2.0, 0.0);
+        newCardSize = QSizeF(round(maximumHeight * CardRatio), round(maximumHeight));
+        m_cardMargin = QSizeF((maximumWidth - newCardSize.width()) / 2.0, 0.0);
     } else {
-        m_cardSize = QSizeF(round(maximumWidth), round(maximumWidth / CardRatio));
-        m_cardMargin = QSizeF(0.0, (maximumHeight - m_cardSize.height()) / 2.0);
+        newCardSize = QSizeF(round(maximumWidth), round(maximumWidth / CardRatio));
+        m_cardMargin = QSizeF(0.0, (maximumHeight - newCardSize.height()) / 2.0);
+    }
+
+    if (m_cardSize != newCardSize) {
+        m_cardSize = newCardSize;
+        m_cardImage = QImage();
+        QSize size(m_cardSize.width()*13, m_cardSize.height()*5);
+        emit doRenderCardTexture(size);
     }
 
     qCDebug(lcTable) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
@@ -415,14 +463,44 @@ void Table::updateCardSize()
                        << "and margin of" << m_cardMargin;
     qCDebug(lcTable) << "Side margin is" << m_sideMargin;
 
-    for (auto it = m_slots.constBegin(); it != m_slots.constEnd(); it++) {
-        Slot *slot = it.value();
+    m_dirtyCardSize = false;
+
+    for (Slot *slot : m_slots)
         slot->updateDimensions();
-    }
 
     m_dirty = true;
     if (!preparing())
         update();
+}
+
+QSGTexture *Table::cardTexture()
+{
+    if (!m_cardTexture && !m_cardImage.isNull()) {
+        setCardTexture(window()->createTextureFromImage(m_cardImage));
+        connect(window(), &QQuickWindow::sceneGraphInvalidated, this, [this] {
+            setCardTexture(nullptr);
+        });
+    }
+    return m_cardTexture;
+}
+
+void Table::setCardTexture(QSGTexture *texture)
+{
+    if (m_cardTexture)
+        m_cardTexture->deleteLater();
+    m_cardTexture = texture;
+}
+
+void Table::handleCardTextureRendered(QImage image, const QSize &size)
+{
+    QSize expectedSize(m_cardSize.width()*13, m_cardSize.height()*5);
+    if (expectedSize == size) {
+        m_cardImage = image;
+        m_cardSizeInTexture = m_cardSize;
+        setCardTexture(nullptr);
+        qCDebug(lcTable) << "New card texture rendered for card size of" << m_cardSize;
+        emit cardTextureUpdated();
+    }
 }
 
 void Table::handleEngineFailure()

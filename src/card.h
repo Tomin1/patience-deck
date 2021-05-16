@@ -50,15 +50,15 @@ public:
 
     bool operator==(const Card &other) const;
 
+private slots:
+    void handleCardTextureUpdated();
+
 private:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
     bool highlighted() const;
-
-    static QSvgRenderer *cardRenderer();
-    static QSGTexture *cardTexture(const QSizeF &size, QQuickWindow *window);
 
     Table *m_table;
     CardData m_data;

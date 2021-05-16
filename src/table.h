@@ -19,15 +19,19 @@
 #define TABLE_H
 
 #include <QColor>
+#include <QImage>
 #include <QMap>
 #include <QPointF>
 #include <QSizeF>
+#include <QThread>
 #include <QtQuick/QQuickItem>
 #include "engine.h"
 #include "enginedata.h"
 #include "manager.h"
 #include "slot.h"
 
+class QSGTexture;
+class QQuickWindow;
 class Table : public QQuickItem
 {
     Q_OBJECT
@@ -46,9 +50,12 @@ class Table : public QQuickItem
 
 public:
     explicit Table(QQuickItem *parent = nullptr);
+    ~Table();
 
+    void updatePolish();
     QSGNode *getPaintNodeForSlot(Slot *slot);
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
+    QSGTexture *cardTexture();
 
     qreal minimumSideMargin() const;
     void setMinimumSideMargin(qreal minimumSideMargin);
@@ -69,6 +76,7 @@ public:
     QSizeF maximumMargin() const;
     QSizeF tableSize() const;
     QSizeF cardSize() const;
+    QSizeF cardSizeInTexture() const;
     QSizeF cardSpace() const;
     QSizeF cardMargin() const;
     bool preparing() const;
@@ -87,7 +95,7 @@ public:
     iterator end();
 
 public slots:
-    void updateCardSize();
+    void setDirtyCardSize();
 
 signals:
     void minimumSideMarginChanged();
@@ -97,10 +105,13 @@ signals:
     void maximumVerticalMarginChanged();
     void highlightColorChanged();
     void highlightOpacityChanged();
+    void cardTextureUpdated();
 
     void doClick(quint32 id, int slotId);
+    void doRenderCardTexture(const QSize &size);
 
 private slots:
+    void handleCardTextureRendered(QImage image, const QSize &size);
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
     void handleSlotEmptied();
@@ -109,9 +120,11 @@ private slots:
     void handleEngineFailure();
 
 private:
+    void updateCardSize();
     void updateIfNotPreparing();
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void setCardTexture(QSGTexture *texture);
 
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
@@ -120,9 +133,11 @@ private:
     QSizeF m_maximumMargin;
     QSizeF m_tableSize;
     QSizeF m_cardSize;
+    QSizeF m_cardSizeInTexture;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
     bool m_dirty;
+    bool m_dirtyCardSize;
 
     Slot *m_highlightedSlot;
     QColor m_highlightColor;
@@ -132,6 +147,10 @@ private:
 
     Manager m_manager;
     Drag *m_drag;
+
+    QThread m_textureThread;
+    QSGTexture *m_cardTexture;
+    QImage m_cardImage;
 };
 
 QDebug operator<<(QDebug debug, const Table &);

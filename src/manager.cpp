@@ -125,7 +125,7 @@ void Manager::handleClearData()
 void Manager::handleGameStarted()
 {
     m_preparing = false;
-    m_table->updateCardSize();
+    m_table->setDirtyCardSize();
     qCDebug(lcManager) << "Stopped preparing while storing" << m_cards.count()
                        << "for" << actionCount() << "actions";
 }

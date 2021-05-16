@@ -15,12 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QPainter>
-#include <QQuickWindow>
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
-#include <QSGTexture>
-#include <QSvgRenderer>
 #include "table.h"
 #include "card.h"
 #include "constants.h"
@@ -69,13 +65,17 @@ Card::Card(const CardData &card, Table *table, Slot *slot, QObject *parent)
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemHasContents);
     setSmooth(true);
+    connect(table, &Table::cardTextureUpdated, this, &Card::handleCardTextureUpdated);
 }
 
 QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    auto texture = cardTexture(size(), window());
-    if (!texture)
-        return oldNode;
+    auto texture = m_table->cardTexture();
+    if (!texture) {
+        if (oldNode)
+            delete oldNode;
+        return nullptr;
+    }
 
     auto *node = static_cast<QSGSimpleTextureNode *>(oldNode);
     if (!node || m_dirty) {
@@ -84,14 +84,17 @@ QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         node->setTexture(texture);
         int column = getColumn(show() ? rank() : CardBack);
         int row = getRow(show() ? rank() : CardBack, suit());
-        QRect rect(column * width(), row * height(), width(), height());
+        QSizeF size = m_table->cardSizeInTexture();
+        QRect rect(column * size.width(), row * size.height(), size.width(), size.height());
         node->setSourceRect(rect);
         m_dirty = false;
     }
     if (highlighted()) {
         if (node->childCount() < 1) {
             auto color = m_table->highlightColor();
-            node->appendChildNode(new QSGSimpleRectNode(boundingRect(), color));
+            auto child = new QSGSimpleRectNode(boundingRect(), color);
+            child->setFlag(QSGNode::OwnedByParent);
+            node->appendChildNode(child);
         }
     } else { // !highlighted()
         if (node->childCount() > 0)
@@ -153,6 +156,12 @@ bool Card::operator==(const Card &other) const
     return m_data == other.m_data;
 }
 
+void Card::handleCardTextureUpdated()
+{
+    m_dirty = true;
+    update();
+}
+
 void Card::mousePressEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << *this;
@@ -201,41 +210,6 @@ bool Card::highlighted() const
 {
     Slot *slot = this->slot();
     return slot && slot->highlighted() && slot->top() == this;
-}
-
-QSvgRenderer *Card::cardRenderer()
-{
-    static QSvgRenderer *cardRenderer = nullptr;
-    if (!cardRenderer)
-        cardRenderer = new QSvgRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"));
-    return cardRenderer;
-}
-
-QSGTexture *Card::cardTexture(const QSizeF &cardSize, QQuickWindow *window)
-{
-    if (cardSize.isEmpty())
-        return nullptr;
-
-    static QSizeF previousCardSize;
-    static QSGTexture *texture = nullptr;
-    if (!texture || previousCardSize != cardSize) {
-        auto renderer = cardRenderer();
-        QSize size(cardSize.width()*13, cardSize.height()*5);
-        QImage image(size, QImage::Format_ARGB32_Premultiplied);
-        QPainter painter(&image);
-        painter.setRenderHint(QPainter::Antialiasing);
-        renderer->render(&painter);
-        if (texture)
-            texture->deleteLater();
-        texture = window->createTextureFromImage(image);
-        connect(window, &QQuickWindow::sceneGraphInvalidated, texture, [&] {
-            texture->deleteLater();
-            texture = nullptr;
-        });
-        qCDebug(lcTable) << "Drew new card texture for card size of" << cardSize;
-    }
-    previousCardSize = cardSize;
-    return texture;
 }
 
 QDebug operator<<(QDebug debug, const Card &card)
