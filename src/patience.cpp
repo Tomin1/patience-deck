@@ -217,8 +217,8 @@ void Patience::setState(GameState state)
         qCDebug(lcPatience) << "Setting game state to" << state;
         switch (state) {
         case UninitializedState:
-        case LoadedState:
             break;
+        case LoadedState:
         case StartingState:
             m_timer.reset();
             break;
