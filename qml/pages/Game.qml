@@ -18,6 +18,8 @@
 import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import Nemo.Configuration 1.0
+import Nemo.KeepAlive 1.2
 import Patience 1.0
 
 Page {
@@ -208,5 +210,15 @@ Page {
             hintTimer.restart()
         }
         onCardMoved: resetHint()
+    }
+
+    DisplayBlanking {
+        preventBlanking: preventBlanking.value && Patience.state === Patience.RunningState && !Patience.paused
+    }
+
+    ConfigurationValue {
+        id: preventBlanking
+        defaultValue: false
+        key: "/site/tomin/apps/PatienceDeck/preventBlanking"
     }
 }

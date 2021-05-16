@@ -18,6 +18,7 @@
 import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
+import Nemo.Configuration 1.0
 import Patience 1.0
 
 Page {
@@ -175,10 +176,29 @@ Page {
                     : qsTrId("patience-de-unsupported_games_hidden")
                 checked: Patience.showAllGames
                 onClicked: Patience.showAllGames = !Patience.showAllGames
+                height: implicitHeight
+            }
+
+            TextSwitch {
+                //% "Prevent display blanking"
+                text: qsTrId("patience-la-prevent_display_blanking")
+                description: preventBlanking.value
+                    //% "Select to allow display blanking while playing"
+                    ? qsTrId("patience-de-select_to_allow_display_blanking")
+                    //% "Select to prevent display blanking while playing"
+                    : qsTrId("patience-de-select_to_prevent_display_blanking")
+                checked: preventBlanking.value
+                onClicked: preventBlanking.value = !preventBlanking.value
                 height: implicitHeight + Theme.paddingLarge
             }
         }
 
         VerticalScrollDecorator {}
+    }
+
+    ConfigurationValue {
+        id: preventBlanking
+        defaultValue: false
+        key: "/site/tomin/apps/PatienceDeck/preventBlanking"
     }
 }
