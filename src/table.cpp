@@ -58,6 +58,7 @@ Table::Table(QQuickItem *parent)
     m_highlightColor.setAlphaF(DefaultHighlightOpacity);
 
     auto engine = Engine::instance();
+    connect(engine, &Engine::gameLoaded, this, &Table::update);
     connect(engine, &Engine::setExpansionToDown, this, &Table::handleSetExpansionToDown);
     connect(engine, &Engine::setExpansionToRight, this, &Table::handleSetExpansionToRight);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
