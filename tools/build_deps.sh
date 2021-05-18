@@ -142,6 +142,7 @@ build_libffi() {
         autoreconf -i -f
         ./configure \
                 --disable-docs \
+                --disable-multi-os-directory \
                 --libdir=/lib \
                 --exec-prefix=/usr/share/harbour-patience-deck \
                 --prefix=/usr/share/harbour-patience-deck

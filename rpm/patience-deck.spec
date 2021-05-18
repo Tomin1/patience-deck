@@ -33,7 +33,7 @@ BuildRequires:  git-core
 %build
 %if %{with harbour}
 export CACHE=%{_builddir}/libs/%{_arch}
-tools/build_deps.sh
+tools/build_deps.sh %{?_smp_mflags}
 %endif
 
 export NAME="%{name}"
