@@ -142,10 +142,11 @@ build_libffi() {
         autoreconf -i -f
         ./configure \
                 --disable-docs \
-                --libdir="/lib" \
-                --prefix="/usr/share/harbour-patience-deck"
+                --libdir=/lib \
+                --exec-prefix=/usr/share/harbour-patience-deck \
+                --prefix=/usr/share/harbour-patience-deck
         make $@
-        make DESTDIR=${_PREFIX}/ install
+        make DESTDIR=${_PREFIX}/usr/share/harbour-patience-deck install
         popd
         echo "Built libffi"
     else

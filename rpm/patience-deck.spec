@@ -16,6 +16,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
+# TODO: Use headers from downloaded guile
 BuildRequires:  guile22-devel
 BuildRequires:  git-core
 %if %{with harbour}
@@ -62,11 +63,6 @@ desktop-file-install \
 %endif
      patience-deck.desktop
 
-%if %{with harbour}
-mv %{buildroot}%{_datadir}/applications/patience-deck.desktop \
-   %{buildroot}%{_datadir}/applications/harbour-patience-deck.desktop
-%endif
-
 tools/convert data/patience-deck.svg \
     %{buildroot}%{_datadir}/icons/hicolor/%1/apps/%{name}.png \
     86x86 108x108 128x128 172x172
@@ -80,7 +76,7 @@ cp -P %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libgc.so* \
       %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libffi.so* \
       %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libguile-2.2.so* \
       %{buildroot}%{_datadir}/%{name}/lib/
-rm /usr/share/harbour-patience-deck/lib/libguile-2.2.so.1.4.2-gdb.scm
+rm %{buildroot}/usr/share/harbour-patience-deck/lib/libguile-2.2.so.*-gdb.scm
 mkdir -p %{buildroot}%{_datadir}/%{name}/share/guile/
 cp -r %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/share/guile/2.2/ \
       %{buildroot}%{_datadir}/%{name}/share/guile/
@@ -88,6 +84,12 @@ mkdir -p %{buildroot}%{_datadir}/%{name}/lib/guile/2.2/
 cp -r %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/guile/2.2/ccache \
       %{buildroot}%{_datadir}/%{name}/lib/guile/2.2/
 #find %{buildroot}%{_datadir}/%{name}/lib/guile/ -name '*.go' -exec strip '{}' \+
+
+mv %{buildroot}%{_datadir}/applications/patience-deck.desktop \
+   %{buildroot}%{_datadir}/applications/harbour-patience-deck.desktop
+
+mv %{buildroot}%{_datadir}/%{name}/qml/patience-deck.qml \
+   %{buildroot}%{_datadir}/%{name}/qml/harbour-patience-deck.qml
 %endif
 
 %files
