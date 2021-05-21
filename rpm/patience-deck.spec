@@ -18,6 +18,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 BuildRequires:  guile22-devel
 BuildRequires:  git-core
+BuildRequires:  python3-base
 
 %description
 %{summary} for Sailfish. Based on GNOME Aisleriot.
@@ -50,6 +51,13 @@ desktop-file-install --delete-original \
 tools/convert data/patience-deck.svg \
     %{buildroot}%{_datadir}/icons/hicolor/%1/apps/patience-deck.png \
     86x86 108x108 128x128 172x172
+
+python3 tools/generate_authors.py \
+        --authors=aisleriot/AUTHORS \
+        --manual=aisleriot/help/C \
+        --games=aisleriot/games \
+        --append="Aike Reyer" \
+        %{buildroot}%{_datadir}/%{name}/data/AUTHORS
 
 %files
 %defattr(-,root,root,-)

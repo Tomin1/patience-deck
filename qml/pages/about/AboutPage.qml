@@ -44,124 +44,74 @@ Page {
                 description: qsTrId("patience-de-patience_deck").arg(Qt.application.version)
             }
 
-            Label {
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeSmall
+            Paragraph {
                 linkColor: Theme.primaryColor
-                //: About this application, %1 is the name of the author. Keep the line break.
-                //% "This is a collection of patience games for Sailfish OS written by %1.<br />It utilises <a href=%2>GNOME Aisleriot</a>'s implementations of patience games and artwork."
+                //% "Patience Deck is a collection of %1 supported patience games for Sailfish OS. "
+                //% "It reimplements game engine from <a href=%2>GNOME Aisleriot</a> and utilises "
+                //% "its implementations of patience games including manual pages and artwork."
                 text: qsTrId("patience-la-about_text")
-                    .arg("Tomi Leppänen")
+                    .arg(Patience.gamesCount)
                     .arg("\"https://wiki.gnome.org/Apps/Aisleriot\"")
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 
-            Label {
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeSmall
+            SectionHeader {
+                //: Section to list developers and link to github
+                //% "Development"
+                text: qsTrId("patience-se-development")
+            }
+
+            Paragraph {
+                //% "Main developer: %1"
+                text: qsTrId("patience-la-see_also_manuals")
+                    .arg("Tomi Leppänen")
+                spacing: Theme.paddingSmall
+            }
+
+            Paragraph {
                 linkColor: Theme.primaryColor
-                text: "Github: <a href=%2>%1</a>"
+                //% "You may obtain source code and report bugs on Github: <a href=%2>%1</a>"
+                text: qsTrId("patience-la-source_code_report_bugs_github")
                     .arg("github.com/Tomin1/patience-deck")
                     .arg("\"https://github.com/Tomin1/patience-deck/\"")
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 
             SectionHeader {
                 //: Thank you section for developers of GNOME Aisleriot
-                //% "Thanks"
-                text: qsTrId("patience-se-thanks")
+                //% "Acknowledgements"
+                text: qsTrId("patience-se-acknowledgements")
             }
 
-            Label {
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                //: Listing all developers of GNOME Aisleriot developers below this
-                //% "Thank you to GNOME Aisleriot authors"
+            Paragraph {
+                //% "Thank you to all GNOME Aisleriot authors for making such high quality games "
+                //% "to enjoy! This project would not be possible without your work!"
                 text: qsTrId("patience-la-thank_you_gnome_aisleriot_authors")
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
+                spacing: Theme.paddingSmall
             }
 
-            Label {
-                color: Theme.secondaryHighlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                text: Patience.aisleriotAuthors
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
-            }
-
-            Label {
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                //: Listing the card graphics creator and game manual author below this
-                //% "Also thank you to card graphics creator and game manual author"
-                text: qsTrId("patience-la-thank_you_card_graphics_author")
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
-            }
-
-            Label {
-                color: Theme.secondaryHighlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                text: "Aike Reyer"
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
-            }
-
-            Label {
-                color: Theme.secondaryHighlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                text: "Rosanna Yuen"
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
-            }
-
-            Label {
-                color: Theme.secondaryHighlightColor
-                font.pixelSize: Theme.fontSizeSmall
-                //% "See also individual game manuals for their authors"
-                text: qsTrId("patience-la-see_also_manuals")
-                wrapMode: Text.Wrap
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                }
-                width: aboutPage.width - 2*Theme.horizontalPageMargin
+            Button {
+                //% "Authors"
+                text: qsTrId("patience-bt-authors")
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: pageStack.push(authorsPage)
             }
 
             SectionHeader {
+                //: Section that mentions license(s) of Patience Deck
+                //% "License"
+                text: qsTrId("patience-se-license")
+            }
+
+            Paragraph {
+                //% "Patience Deck is free software and distributed under GNU General Public License version 3. "
+                //% "Game manuals are distributed under GNU Free Documentation License."
+                text: qsTrId("patience-la-distributed_under_gplv3_gfdl")
+                spacing: Theme.paddingSmall
+            }
+
+            SectionHeader {
+                //: Section for enabling experimental features
                 //% "Experimental"
                 text: qsTrId("patience-se-experimental")
             }
@@ -169,11 +119,8 @@ Page {
             TextSwitch {
                 //% "Show all games"
                 text: qsTrId("patience-la-show_all_games")
-                description: Patience.showAllGames
-                    //% "Select to hide unsupported games"
-                    ? qsTrId("patience-de-unsupported_games_shown")
-                    //% "Select to show unsupported games"
-                    : qsTrId("patience-de-unsupported_games_hidden")
+                //% "List also unsupported games in game selection"
+                description: qsTrId("patience-de-list_unsupported_games")
                 checked: Patience.showAllGames
                 onClicked: Patience.showAllGames = !Patience.showAllGames
                 height: implicitHeight
@@ -182,11 +129,8 @@ Page {
             TextSwitch {
                 //% "Prevent display blanking"
                 text: qsTrId("patience-la-prevent_display_blanking")
-                description: preventBlanking.value
-                    //% "Select to allow display blanking while playing"
-                    ? qsTrId("patience-de-select_to_allow_display_blanking")
-                    //% "Select to prevent display blanking while playing"
-                    : qsTrId("patience-de-select_to_prevent_display_blanking")
+                //% "Display will not dim or turn black while a game is running"
+                description: qsTrId("patience-de-display_will_not_blank")
                 checked: preventBlanking.value
                 onClicked: preventBlanking.value = !preventBlanking.value
                 height: implicitHeight + Theme.paddingLarge
@@ -200,5 +144,36 @@ Page {
         id: preventBlanking
         defaultValue: false
         key: "/site/tomin/apps/PatienceDeck/preventBlanking"
+    }
+
+    Component {
+        id: authorsPage
+
+        Page {
+            allowedOrientations: Orientation.All
+
+            SilicaFlickable {
+                anchors.fill: parent
+                contentHeight: authorsContent.height
+
+                Column {
+                    id: authorsContent
+                    width: parent.width
+
+                    PageHeader {
+                        //% "Thanks to"
+                        title: qsTrId("patience-he-thanks_to")
+                        //% "GNOME Aislertiot authors"
+                        description: qsTrId("patience-de-aisleriot_authors")
+                    }
+
+                    Paragraph {
+                        text: Patience.aisleriotAuthors
+                    }
+                }
+
+                VerticalScrollDecorator { }
+            }
+        }
     }
 }

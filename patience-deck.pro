@@ -30,8 +30,7 @@ manual.path = /usr/share/$$TARGET/help/
 figures.files = aisleriot/help/C/figures/*.png
 figures.path = /usr/share/$$TARGET/help/figures/
 
-data.files = aisleriot/AUTHORS \
-    aisleriot/cards/anglo.svg
+data.files = aisleriot/cards/anglo.svg
 data.path = /usr/share/$$TARGET/data/
 
 copying.files = COPYING.GPL3 \
