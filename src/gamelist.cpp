@@ -235,6 +235,11 @@ MGConfItem *GameList::showAllConf()
     return confItem;
 }
 
+int GameList::supportedCount()
+{
+    return s_allowlist.count();
+}
+
 QString GameList::getFileName(int row) const
 {
     if (row < m_lastPlayed.count())

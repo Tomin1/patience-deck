@@ -306,6 +306,11 @@ bool Patience::engineFailed() const
     return m_engineFailed;
 }
 
+int Patience::gamesCount() const
+{
+    return GameList::supportedCount();
+}
+
 void Patience::restoreSavedOrLoad(const QString &fallback)
 {
     m_gameFile = fallback + '-';

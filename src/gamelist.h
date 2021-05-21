@@ -31,6 +31,7 @@ public:
     static bool isSupported(const QString &fileName);
     static bool showAll();
     static void setShowAll(bool show);
+    static int supportedCount();
 
     Q_INVOKABLE void setFavorite(int row, bool favorite);
 
