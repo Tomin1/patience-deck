@@ -5,10 +5,8 @@ CONFIG += sailfishapp
 
 DISTFILES += \
     qml/*.qml \
-    qml/cover/*.qml \
-    qml/pages/*.qml \
-    qml/help/*.qml \
-    qml/help/components/*.qml \
+    qml/*/*.qml \
+    qml/*/*/*.qml \
     qml/images/*.svg \
     rpm/$$(NAME).spec \
     translations/*.ts \

@@ -21,6 +21,7 @@ import Sailfish.Silica 1.0
 import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.2
 import Patience 1.0
+import "../toolbar"
 
 Page {
     id: page
@@ -67,7 +68,7 @@ Page {
             MenuItem {
                 //% "About"
                 text: qsTrId("patience-me-about")
-                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+                onClicked: pageStack.push(Qt.resolvedUrl("about/AboutPage.qml"))
             }
 
             MenuItem {
