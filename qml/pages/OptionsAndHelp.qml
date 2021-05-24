@@ -41,7 +41,7 @@ Page {
             width: page.width
 
             PageHeader {
-                // Page title for options page
+                // Page title for options and help page
                 //% "Options & Help"
                 title: qsTrId("patience-he-options")
             }
@@ -69,7 +69,7 @@ Page {
                 text: qsTrId("patience-bt-new_game")
                 onClicked: {
                     Patience.startNewGame()
-                    pageStack.pop()
+                    pageStack.navigateBack()
                 }
                 anchors.horizontalCenter: parent.horizontalCenter
             }
@@ -94,7 +94,7 @@ Page {
 
                         function finish() {
                             Patience.startNewGame()
-                            pageStack.pop()
+                            pageStack.pop(pageStack.previousPage(page))
                         }
 
                         sourceComponent: type === GameOptions.RadioType
@@ -161,8 +161,6 @@ Page {
         id: radioOptionComponent
 
         ComboBox {
-            id: comboBox
-
             property bool ready
 
             currentIndex: selectedIndex
@@ -174,7 +172,6 @@ Page {
 
                         delegate: MenuItem {
                             text: display
-                            onClicked: comboBox.currentIndex = index
                         }
                     }
                 }
