@@ -82,7 +82,7 @@ Page {
                 //% "Options & Help"
                 text: qsTrId("patience-me-game_options")
                 enabled: !Patience.engineFailed
-                onClicked: pageStack.push(Qt.resolvedUrl("GameOptions.qml"))
+                onClicked: pageStack.push(Qt.resolvedUrl("OptionsAndHelp.qml"))
             }
         }
 
