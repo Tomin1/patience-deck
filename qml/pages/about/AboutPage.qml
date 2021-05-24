@@ -104,10 +104,19 @@ Page {
             }
 
             Paragraph {
-                //% "Patience Deck is free software and distributed under GNU General Public License version 3. "
-                //% "Game manuals are distributed under GNU Free Documentation License."
-                text: qsTrId("patience-la-distributed_under_gplv3_gfdl")
+                //% "Patience Deck is free software, "
+                //% "and you are welcome to redistribute it under certain conditions. "
+                //% "This software comes with ABSOLUTELY NO WARRANTY. "
+                //% "Tap the button below for more details."
+                text: qsTrId("patience-la-free_software_and_redistribution")
                 spacing: Theme.paddingSmall
+            }
+
+            Button {
+                //% "Licenses"
+                text: qsTrId("patience-bt-licenses")
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: pageStack.push(Qt.resolvedUrl("LicensesPage.qml"))
             }
 
             SectionHeader {
