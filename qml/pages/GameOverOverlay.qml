@@ -20,6 +20,8 @@ import Sailfish.Silica 1.0
 import Patience 1.0
 
 Rectangle {
+    readonly property bool isLandscape: width > height
+
     gradient: Gradient {
         GradientStop {
             position: 1.0
@@ -77,7 +79,7 @@ Rectangle {
                 id: buttonFlow
 
                 width: {
-                    if (page.isLandscape) {
+                    if (isLandscape) {
                         return newGameButton.width + spacing + restartButton.width
                     } else {
                         return Math.max(newGameButton.width, restartButton.width)
