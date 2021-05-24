@@ -93,6 +93,7 @@ Page {
 
             enabled: !Patience.engineFailed
             vertical: page.isLandscape
+            pageActive: page.active
             z: 10
 
             Connections {

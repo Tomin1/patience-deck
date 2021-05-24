@@ -23,6 +23,7 @@ Item {
     id: toolbar
 
     property bool vertical
+    property bool pageActive
     property bool expanded
     readonly property bool animating: heightAnimation.running || widthAnimation.running
     readonly property int _labeledButtonWidth: Theme.itemSizeLarge * 2
@@ -45,7 +46,7 @@ Item {
         }
     }
     Behavior on height {
-        enabled: !vertical && !orientationTransitionRunning && page.active
+        enabled: !vertical && !orientationTransitionRunning && pageActive
 
         NumberAnimation {
             id: heightAnimation
@@ -62,7 +63,7 @@ Item {
         }
     }
     Behavior on width {
-        enabled: vertical && !orientationTransitionRunning && page.active
+        enabled: vertical && !orientationTransitionRunning && pageActive
 
         NumberAnimation {
             id: widthAnimation
@@ -124,7 +125,7 @@ Item {
                 }
             }
             Behavior on rotation {
-                enabled: !orientationTransitionRunning && page.active
+                enabled: !orientationTransitionRunning && pageActive
                 NumberAnimation { duration: 100 }
             }
             onClicked: expanded = !expanded
