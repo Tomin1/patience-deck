@@ -84,6 +84,7 @@ Table::Table(QQuickItem *parent)
 Table::~Table()
 {
     m_textureThread.quit();
+    m_textureThread.wait();
 }
 
 void Table::updatePolish()
