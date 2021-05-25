@@ -61,6 +61,9 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("canfield"),
     QStringLiteral("hamilton"),
     QStringLiteral("kansas"),
+    // Auld Lang Syne and Scuffle
+    QStringLiteral("auld-lang-syne"),
+    QStringLiteral("scuffle"),
     // Other
     QStringLiteral("bear-river"),
     QStringLiteral("beleaguered-castle"),
@@ -69,13 +72,20 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("carpet"),
     QStringLiteral("clock"),
     QStringLiteral("easthaven"),
+    QStringLiteral("eliminator"),
     QStringLiteral("forty-thieves"),
+    QStringLiteral("giant"),
     QStringLiteral("helsinki"),
+    QStringLiteral("isabel"),
     QStringLiteral("lady-jane"),
+    QStringLiteral("napoleons-tomb"),
+    QStringLiteral("poker"),
+    QStringLiteral("ten-across"),
     QStringLiteral("triple-peaks"),
     QStringLiteral("valentine"),
     QStringLiteral("westhaven"),
     QStringLiteral("yukon"),
+    QStringLiteral("zebra"),
 };
 
 QHash<int, QByteArray> GameList::s_roleNames = {
