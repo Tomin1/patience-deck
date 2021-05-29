@@ -60,7 +60,7 @@ Page {
                     rightMargin: Theme.horizontalPageMargin
                 }
                 wrapMode: Text.Wrap
-                height: implicitHeight + Theme.paddingSmall
+                height: implicitHeight + Theme.paddingMedium
             }
 
             Button {

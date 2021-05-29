@@ -87,7 +87,7 @@ Page {
                 //% "Thank you to all GNOME Aisleriot authors for making such high quality games "
                 //% "to enjoy! This project would not be possible without your work!"
                 text: qsTrId("patience-la-thank_you_gnome_aisleriot_authors")
-                spacing: Theme.paddingSmall
+                spacing: Theme.paddingMedium
             }
 
             Button {
@@ -109,7 +109,7 @@ Page {
                 //% "This software comes with ABSOLUTELY NO WARRANTY. "
                 //% "Tap the button below for more details."
                 text: qsTrId("patience-la-free_software_and_redistribution")
-                spacing: Theme.paddingSmall
+                spacing: Theme.paddingMedium
             }
 
             Button {
