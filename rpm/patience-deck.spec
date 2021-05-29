@@ -91,6 +91,19 @@ do
     cp -r %{_builddir}/libs/%{_arch}/built${path} \
           %{buildroot}${path%/*}
 done
+mkdir -p %{buildroot}%{_datadir}/%{name}/lib/licenses
+cp libs/arm/guile-*/COPYING \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.GPL3
+cp libs/arm/guile-*/COPYING.LESSER \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.LESSER
+cp libs/arm/gc-*/README.QUICK \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/gc.README
+cp libs/arm/libffi-*/LICENSE \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/libffi.LICENSE
+cp libs/arm/libtool-*/COPYING \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.GPL2
+cp libs/arm/libtool-*/libltdl/COPYING.LIB \
+   %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.LIB
 
 mv %{buildroot}%{_datadir}/applications/patience-deck.desktop \
    %{buildroot}%{_datadir}/applications/harbour-patience-deck.desktop

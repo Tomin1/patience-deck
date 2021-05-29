@@ -20,6 +20,74 @@ import Sailfish.Silica 1.0
 
 Page {
     id: page
+    /* This page is mostly untranslated on purpose */ 
+
+    readonly property var licenses: [
+        ({
+            "text": "Patience Deck code is licensed under <a href='#1'>%1</a>.",
+            "abbrs": { 0: "GNU GPLv3" },
+            "names": { 0: "GNU General Public License version 3" },
+            "links": { 0: "COPYING.GPL3" },
+            "count": 1,
+            "section": "main"
+        }),
+        ({
+            "text": "GNOME Aisleriot games and distributed artwork are licensed under <a href='#1'>%1</a> or later.",
+            "abbrs": { 0: "GNU GPLv3" },
+            "names": { 0: "GNU General Public License version 3" },
+            "links": { 0: "COPYING.GPL3" },
+            "count": 1,
+            "section": "main"
+        }),
+        ({
+            "text": "GNOME Aisleriot manual pages are licensed under <a href='#1'>%1</a> or later.",
+            "abbrs": { 0: "GFDL 1.3" },
+            "names": { 0: "GNU Free Documentation License version 1.3" },
+            "links": { 0: "COPYING.GFDL1.3" },
+            "count": 1,
+            "section": "main"
+        })
+    ]
+    readonly property var libLicenses: [
+        ({
+            "text": "Guile, GNU MP and libunistring libraries are distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
+            "abbrs": { 0: "GNU LGPLv3", 1: "GNU GPLv3" },
+            "names": {
+                0: "GNU Lesser General Public License version 3",
+                1: "GNU General Public License version 3"
+            },
+            "links": { 0: "lib/licenses/COPYING.LESSER", 1: "lib/licenses/COPYING.GPL3" },
+            "count": 2,
+            "section": "libs"
+        }),
+        ({
+            "text": "Gc library is permissively licensed. See <a href='#1'>%1</a> for more details.",
+            "abbrs": { 0: "README" },
+            "names": { 0: "gc readme file" },
+            "links": { 0: "lib/licenses/gc.README" },
+            "count": 1,
+            "section": "libs"
+        }),
+        ({
+            "text": "Libffi library is permissively licensed. See <a href='#1'>%1</a> for more details.",
+            "abbrs": { 0: "LICENSE" },
+            "names": { 0: "libffi license file" },
+            "links": { 0: "lib/licenses/libffi.LICENSE" },
+            "count": 1,
+            "section": "libs"
+        }),
+        ({
+            "text": "Libtldi library is distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
+            "abbrs": { 0: "GNU LGPLv2.1", 1: "GNU GPLv2" },
+            "names": {
+                0: "GNU Lesser General Public License version 2.1",
+                1: "GNU General Public License version 2"
+             },
+            "links": { 0: "lib/licenses/COPYING.LIB", 1: "lib/licenses/COPYING.GPL2" },
+            "count": 2,
+            "section": "libs"
+        })
+    ]
 
     allowedOrientations: Orientation.All
 
@@ -35,37 +103,55 @@ Page {
         }
 
         model: ListModel {
-            ListElement {
-                text: "Patience Deck code is licensed under <a href='#'>%1</a>."
-                abbr: "GNU GPLv3"
-                name: "GNU General Public License version 3"
-                full: "../../../COPYING.GPL3"
-            }
+            id: licenseModel
 
-            ListElement {
-                text: "GNOME Aisleriot games and distributed artwork are licensed under <a href='#'>%1</a> or later."
-                abbr: "GNU GPLv3"
-                name: "GNU General Public License version 3"
-                full: "../../../COPYING.GPL3"
-            }
-
-            ListElement {
-                text: "GNOME Aisleriot manual pages are licensed under <a href='#'>%1</a> or later."
-                abbr: "GFDL 1.3"
-                name: "GNU Free Documentation License version 1.3"
-                full: "../../../COPYING.GFDL1.3"
+            Component.onCompleted: {
+                for (var i = 0; i < page.licenses.length; i++) {
+                    licenseModel.append(page.licenses[i])
+                }
+                if (Qt.application.name.indexOf("harbour-") == 0) {
+                    for (var i = 0; i < page.libLicenses.length; i++) {
+                        licenseModel.append(page.libLicenses[i])
+                    }
+                }
             }
         }
 
         delegate: Component {
             Paragraph {
                 linkColor: Theme.primaryColor
-                text: model.text.arg(model.name)
-                onLinkActivated: pageStack.push(licensePage, {
-                    "contentFile": Qt.resolvedUrl(model.full),
-                    "title": model.abbr,
-                    "description": model.name
-                })
+                text: {
+                    var text = model.text
+                    for (var i = 0; i < model.count; i++) {
+                        text = text.arg(model.names[i])
+                    }
+                    return text
+                }
+                onLinkActivated: {
+                    var index = parseInt(link.slice(1))-1
+                    pageStack.push(licensePage, {
+                        "contentFile": Qt.resolvedUrl("../../../" + model.links[index]),
+                        "title": model.abbrs[index],
+                        "description": model.names[index]
+                    })
+                }
+                width: page.width - 2*Theme.horizontalPageMargin
+            }
+        }
+
+        section {
+            property: "section"
+            delegate: Paragraph {
+                color: Theme.secondaryHighlightColor
+                text: section === "libs"
+                    //% "Harbour distribution of Patience Deck bundles several libraries that have their own licenses."
+                    ? qsTrId("patience-la-harbour_distribution_bundles_libraries")
+                    //% "Patience Deck is free software, "
+                    //% "and you are welcome to redistribute it under certain conditions. "
+                    //% "This software comes with ABSOLUTELY NO WARRANTY. "
+                    //% "Patience Deck contains work licensed under multiple different licenses."
+                    : qsTrId("patience-la-free_software_and_redistribution_multiple_licenses")
+                height: implicitHeight + Theme.paddingLarge
                 width: page.width - 2*Theme.horizontalPageMargin
             }
         }
