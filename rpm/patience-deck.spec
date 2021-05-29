@@ -23,6 +23,7 @@ BuildRequires:  git-core
 BuildRequires:  python3-base
 
 %if %{with harbour}
+BuildRequires: automake autoconf libtool gettext-devel
 %define __provides_exclude_from ^%{_datadir}/.*$
 %define __requires_exclude ^libcrypt|libffi|libgc|libgmp|libguile|libltdl|libunistring.*$
 %endif
@@ -92,17 +93,17 @@ do
           %{buildroot}${path%/*}
 done
 mkdir -p %{buildroot}%{_datadir}/%{name}/lib/licenses
-cp libs/arm/guile-*/COPYING \
+cp libs/%{_arch}/guile-*/COPYING \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.GPL3
-cp libs/arm/guile-*/COPYING.LESSER \
+cp libs/%{_arch}/guile-*/COPYING.LESSER \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.LESSER
-cp libs/arm/gc-*/README.QUICK \
+cp libs/%{_arch}/gc-*/README.QUICK \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/gc.README
-cp libs/arm/libffi-*/LICENSE \
+cp libs/%{_arch}/libffi-*/LICENSE \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/libffi.LICENSE
-cp libs/arm/libtool-*/COPYING \
+cp libs/%{_arch}/libtool-*/COPYING \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.GPL2
-cp libs/arm/libtool-*/libltdl/COPYING.LIB \
+cp libs/%{_arch}/libtool-*/libltdl/COPYING.LIB \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.LIB
 
 mv %{buildroot}%{_datadir}/applications/patience-deck.desktop \
