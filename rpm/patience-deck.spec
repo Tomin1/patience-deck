@@ -1,7 +1,7 @@
 %bcond_with harbour
 Name:       %{?with_harbour:harbour-}patience-deck
 Summary:    Collection of patience games
-Version:    0.3.0
+Version:    0.5.0
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
 # Game documentation is GFDLv1.1+
