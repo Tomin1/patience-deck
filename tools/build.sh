@@ -22,10 +22,14 @@ usage() {
 clean() {
     git reset --hard HEAD
     sb2 make clean || :
-    find . \( \
+    rm -f Makefile *.list
+    find data/ qml/ src/ tools/ translations/ \( \
         -name Makefile -o \
         -name '*.list' -o \
         -name '*.o' -o \
+        -name '*patience-deck.qm' -o \
+        -name '*patience-deck.ts' -o \
+        -name '*patience-deck' -o \
         -name 'moc_*.cpp' \) -delete -print
     pushd aisleriot/
     git reset --hard HEAD
@@ -33,11 +37,12 @@ clean() {
 }
 
 build() {
-    mb2 -t "$1" build -p -d
+    mb2 -t "$1" build -p -d $2
 }
 
 DIR=""
 TAG=""
+HARBOUR=""
 
 while [[ "$1" == --* ]]
 do
@@ -49,6 +54,9 @@ do
     --tag)
         shift
         TAG="$1"
+        ;;
+    --harbour)
+        HARBOUR="--with harbour"
         ;;
     --help)
         usage
@@ -76,7 +84,7 @@ fi
 for target in $TARGETS
 do
     echo "Building for $target"
-    build "$target"
-    cp -v RPMS/patience-deck-[0-9]*.rpm "$DIR/"
+    build "$target" "$HARBOUR"
+    cp -v RPMS/*patience-deck-[0-9]*.rpm "$DIR/"
     clean
 done
