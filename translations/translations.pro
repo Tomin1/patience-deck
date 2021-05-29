@@ -3,7 +3,7 @@ TEMPLATE = aux
 TS_FILE = $$(NAME).ts
 EE_QM = $$(NAME).qm
 
-ts.commands += lupdate $$PWD/.. -ts $$TS_FILE
+ts.commands += lupdate $$PWD/../qml -ts $$TS_FILE
 ts.CONFIG += no_check_exist
 ts.output = $$TS_FILE
 ts.input = ..
