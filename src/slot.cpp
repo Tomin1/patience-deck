@@ -119,13 +119,13 @@ bool Slot::highlighted() const
 
 void Slot::insert(int index, Card *card)
 {
-    if (card)
-        card->setParentItem(this);
     auto it = m_cards.begin() + index;
     m_cards.insert(it, card);
     // TODO: Do adjustments once move ends
     if (!m_table->preparing())
         updateLocations();
+    if (card)
+        card->setParentItem(this);
     qCDebug(lcSlot) << "Inserted card to slot" << m_id << "and card count is now" << m_cards.count();
 }
 
@@ -136,11 +136,11 @@ void Slot::set(int index, Card *card)
     } else if (!card) {
         qCCritical(lcManager) << "Tried to replace with null card in slot" << *this << "at" << index;
     } else {
-        card->setParentItem(this);
         m_cards.replace(index, card);
         // TODO: Do adjustments once move ends
         if (!m_table->preparing())
             updateLocations();
+        card->setParentItem(this);
         qCDebug(lcSlot) << "Replaced card at slot" << m_id << "index" << index;
     }
 }
@@ -209,12 +209,12 @@ QList<Card *> Slot::take(Card *first)
 void Slot::put(const QList<Card *> &cards)
 {
     m_cards.append(cards);
+    if (!m_table->preparing())
+        updateLocations();
     for (Card *card : cards) {
         if (card)
             card->setParentItem(this);
     }
-    if (!m_table->preparing())
-        updateLocations();
     qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id
                     << "and card count is now" << m_cards.count();
 }
