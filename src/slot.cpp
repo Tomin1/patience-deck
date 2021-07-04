@@ -58,7 +58,8 @@ void Slot::updateDimensions()
     setWidth(cardSize.width());
     setHeight(cardSize.height());
     for (Card *card : m_cards)
-        card->setSize(cardSize);
+        if (card)
+            card->setSize(cardSize);
 
     updateLocations();
 }
@@ -75,16 +76,18 @@ void Slot::updateLocations(iterator first)
 
     for (auto it = first; it != end(); it++) {
         Card *card = *it;
-        card->setZ(it - begin());
-        if (expandedRight()) {
-            card->setX(round(delta(it)));
-            card->setY(0);
-        } else if (expandedDown()) {
-            card->setX(0);
-            card->setY(round(delta(it)));
-        } else {
-            card->setX(0);
-            card->setY(0);
+        if (card) {
+            card->setZ(it - begin());
+            if (expandedRight()) {
+                card->setX(round(delta(it)));
+                card->setY(0);
+            } else if (expandedDown()) {
+                card->setX(0);
+                card->setY(round(delta(it)));
+            } else {
+                card->setX(0);
+                card->setY(0);
+            }
         }
     }
 }
@@ -114,27 +117,32 @@ bool Slot::highlighted() const
     return m_highlighted;
 }
 
-void Slot::append(Card *card)
-{
-    card->setParentItem(this);
-    m_cards.append(card);
-    // TODO: Do adjustments once move ends
-    if (!m_table->preparing()) {
-        updateLocations(expanded() ? firstExpanded() : end()-1);
-    }
-    qCDebug(lcSlot) << "Added card to slot" << m_id << "and card count is now" << m_cards.count();
-}
-
 void Slot::insert(int index, Card *card)
 {
-    card->setParentItem(this);
+    if (card)
+        card->setParentItem(this);
     auto it = m_cards.begin() + index;
     m_cards.insert(it, card);
     // TODO: Do adjustments once move ends
-    if (!m_table->preparing()) {
+    if (!m_table->preparing())
         updateLocations();
-    }
     qCDebug(lcSlot) << "Inserted card to slot" << m_id << "and card count is now" << m_cards.count();
+}
+
+void Slot::set(int index, Card *card)
+{
+    if (m_cards[index]) {
+        qCCritical(lcManager) << "Tried to replace card in filled location in slot" << *this << "at" << index;
+    } else if (!card) {
+        qCCritical(lcManager) << "Tried to replace with null card in slot" << *this << "at" << index;
+    } else {
+        card->setParentItem(this);
+        m_cards.replace(index, card);
+        // TODO: Do adjustments once move ends
+        if (!m_table->preparing())
+            updateLocations();
+        qCDebug(lcSlot) << "Replaced card at slot" << m_id << "index" << index;
+    }
 }
 
 Card *Slot::takeAt(int index)
@@ -176,8 +184,12 @@ void Slot::removeHighlight()
 CardList Slot::asCardData(Card *first) const
 {
     CardList list;
-    for (auto it = constFind(first); it != constEnd(); it++)
-        list << (*it)->data();
+    for (auto it = constFind(first); it != constEnd(); it++) {
+        if (*it)
+            list << (*it)->data();
+        else
+            qCCritical(lcSlot) << "Tried to convert non-existing card to data";
+    }
     if (list.isEmpty())
         qCCritical(lcSlot) << "Returning an empty list of CardData";
     return list;
@@ -197,8 +209,10 @@ QList<Card *> Slot::take(Card *first)
 void Slot::put(const QList<Card *> &cards)
 {
     m_cards.append(cards);
-    for (Card *card : cards)
-        card->setParentItem(this);
+    for (Card *card : cards) {
+        if (card)
+            card->setParentItem(this);
+    }
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id

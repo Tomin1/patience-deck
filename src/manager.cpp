@@ -57,46 +57,100 @@ void Manager::handleNewSlot(int id, const CardList &dataList, int type,
             slot->put(cards);
         }
         m_table->addSlot(slot);
-        m_actions.insert(id, QLinkedList<Action>());
+        m_insertions.insert(id, QLinkedList<Insertion>());
     }
 }
 
 void Manager::handleAction(Engine::ActionType action, int slotId, int index, const CardData &data)
 {
-    if (m_preparing) {
-        Slot *slot = m_table->slot(slotId);
-        switch (action) {
-        case Engine::InsertionAction:
-            {
-                Card *card = new Card(data, m_table, slot, this);
-                slot->insert(index, card);
-                break;
+    Slot *slot = m_table->slot(slotId);
+    switch (action) {
+    case Engine::InsertionAction:
+        {
+            Card *card = nullptr;
+            if (m_preparing) {
+                card = new Card(data, m_table, slot, this);
+            } else {
+                for (auto &insertion : m_insertions[slotId]) {
+                    if (insertion.index >= index)
+                        insertion.index++;
+                }
+                card = m_cards.take(SuitAndRank(data.suit, data.rank));
+                if (card) {
+                    card->setShow(data.show);
+                    card->update();
+                    qCDebug(lcManager) << "Inserted" << *card << "to" << *slot << "at" << index;
+                } else {
+                    queue(slotId, index, data);
+                }
             }
-        case Engine::RemovalAction:
-            {
-                Card *card = slot->takeAt(index);
+            slot->insert(index, card);
+            break;
+        }
+    case Engine::RemovalAction:
+        {
+            Card *card = slot->takeAt(index);
+            if (m_preparing) {
                 card->setParentItem(nullptr);
                 card->deleteLater();
-                break;
-            }
-        case Engine::FlippingAction:
-            {
-                auto it = slot->begin() + index;
-                (*it)->setShow(data.show);
-                break;
-            }
-        case Engine::ClearingAction:
-            {
-                auto cards = slot->takeAll();
-                for (Card *card : cards) {
-                    card->setParentItem(nullptr);
-                    card->deleteLater();
+            } else {
+                for (auto it = m_insertions[slotId].begin(); it != m_insertions[slotId].end(); it++) {
+                    if (it->index == index)
+                        it = m_insertions[slotId].erase(it);
+                    else if (it->index > index)
+                        it->index--;
                 }
-                break;
+                if (card) {
+                    if (card->rank() != data.rank || card->suit() != data.suit)
+                        qCCritical(lcManager) << "Wrong card taken! Was" << *card << "should be" << data;
+                    store(card);
+                } else {
+                    qCDebug(lcManager) << "Removed null card from" << *slot << "at" << index;
+                }
             }
+            break;
         }
-    } else {
-        queue(action, slotId, index, data);
+    case Engine::FlippingAction:
+        {
+            auto it = slot->begin() + index;
+            Card *card = *it;
+            if (card) {
+                card->setShow(data.show);
+                if (card->rank() != data.rank || card->suit() != data.suit)
+                    qCCritical(lcManager) << "Rank or suit doesn't match to" << data
+                                          << "for card" << *card << "in slot" << slot
+                                          << "at index" << index;
+                card->update();
+            } else {
+                for (auto &insertion : m_insertions[slotId]) {
+                    if (insertion.index == index) {
+                        insertion.data.show = data.show;
+                        if (insertion.data.rank != data.rank || insertion.data.suit != data.suit)
+                                qCCritical(lcManager) << "Rank or suit doesn't match to" << data
+                                                      << "for insertion" << insertion << "in slot" << slot
+                                                      << "at index" << index;
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    case Engine::ClearingAction:
+        {
+            auto cards = slot->takeAll();
+            if (m_preparing) {
+                for (Card *card : cards) {
+                    if (card) {
+                        card->setParentItem(nullptr);
+                        card->deleteLater();
+                    }
+                }
+            } else {
+                m_insertions[slotId].clear();
+                store(cards);
+            }
+            break;
+        }
     }
 }
 
@@ -107,8 +161,10 @@ void Manager::handleClearData()
         Slot *slot = m_table->slot(slotId);
         auto cards = slot->takeAll();
         for (Card *card : cards) {
-            card->setParentItem(nullptr);
-            card->deleteLater();
+            if (card) {
+                card->setParentItem(nullptr);
+                card->deleteLater();
+            }
         }
         slot->setParentItem(nullptr);
         slot->deleteLater();
@@ -117,9 +173,9 @@ void Manager::handleClearData()
     for (Card *card : m_cards)
         card->deleteLater();
     m_cards.clear();
-    m_actions.clear();
+    m_insertions.clear();
     qCDebug(lcManager) << "Started preparing while storing" << m_cards.count()
-                       << "for" << actionCount() << "actions";
+                       << "for" << insertionCount() << "insertions";
 }
 
 void Manager::handleGameStarted()
@@ -127,25 +183,22 @@ void Manager::handleGameStarted()
     m_preparing = false;
     m_table->setDirtyCardSize();
     qCDebug(lcManager) << "Stopped preparing while storing" << m_cards.count()
-                       << "for" << actionCount() << "actions";
+                       << "for" << insertionCount() << "insertions";
 }
 
 void Manager::handleMoveEnded()
 {
     dequeue();
 
-    int count = 0;
-    for (const auto list : m_actions)
-        count += list.count();
+    int count = insertionCount();
 
     if (count > 0) {
-        qCWarning(lcManager) << "There were still" << count << "actions to be done"
+        qCWarning(lcManager) << "There were still" << count << "insertions to be done"
                              << "and" << m_cards.count() << "cards stored when move ended!";
         if (lcManager().isDebugEnabled()) {
-            for (const auto list : m_actions) {
-                for (const auto action : list) {
+            for (const auto list : m_insertions) {
+                for (const auto action : list)
                     qCDebug(lcManager) << action;
-                }
             }
         }
     }
@@ -161,137 +214,58 @@ void Manager::store(Card *card)
 void Manager::store(const QList<Card *> &cards)
 {
     for (Card *card : cards)
-        store(card);
+        if (card)
+            store(card);
 }
 
-void Manager::queue(Engine::ActionType type, int slotId, int index, const CardData &data)
+void Manager::queue(int slotId, int index, const CardData &data)
 {
-    Action action(type, slotId, index, data);
-    qCDebug(lcManager) << "Queueing" << action;
-    m_actions[slotId].append(action);
-}
-
-const Manager::Action *Manager::nextAction(int slot) const
-{
-    return m_actions[slot].isEmpty() ? nullptr : &m_actions[slot].first();
-}
-
-void Manager::discardAction(int slot)
-{
-    m_actions[slot].removeFirst();
+    Insertion insertion(slotId, index, data);
+    qCDebug(lcManager) << "Queueing" << insertion;
+    m_insertions[slotId].append(insertion);
 }
 
 void Manager::dequeue()
 {
-    const Action *action;
-    while (true) {
-        int changes = 0;
-        for (int slotId : *m_table) {
-            while ((action = nextAction(slotId))) {
-                Slot *slot = m_table->slot(slotId);
-                if (handle(slot, action)) {
-                    discardAction(slot->id());
-                    changes++;
-                } else {
-                    break;
-                }
+    for (auto it = m_insertions.begin(); it != m_insertions.end(); it++) {
+        Slot *slot = m_table->slot(it.key());
+        for (Insertion insertion : it.value()) {
+            Card *card = m_cards.take(insertion.suitAndRank());
+            if (!card) {
+                qCCritical(lcManager) << "No such card to insert" << insertion.suitAndRank();
+            } else {
+                card->setShow(insertion.data.show);
+                slot->set(insertion.index, card);
+                card->update();
             }
         }
-
-        qCDebug(lcManager) << changes << "on this round";
-
-        if (!changes)
-            break;
+        it.value().clear();
     }
 }
 
-bool Manager::handle(Slot *slot, const Action *action) {
-    bool handled = false;
-
-    qCDebug(lcManager) << "Dequeueing" << *action;
-    switch (action->type) {
-    case Engine::InsertionAction:
-        if (m_cards.contains(action->suitAndRank())) {
-            Card *card = m_cards.take(action->suitAndRank());
-            card->setShow(action->data.show);
-            if (action->index == -1)
-                slot->append(card);
-            else
-                slot->insert(action->index, card);
-            card->update();
-            handled = true;
-        }
-        break;
-    case Engine::RemovalAction:
-        {
-            Card *card = slot->takeAt(action->index);
-            if (card->rank() != action->data.rank || card->suit() != action->data.suit)
-                qCCritical(lcManager) << "Wrong card taken! Was" << *card << "should be" << action->data;
-            store(card);
-            handled = true;
-            break;
-        }
-    case Engine::FlippingAction:
-        {
-            Slot *slot = m_table->slot(action->slot);
-            auto it = slot->begin() + action->index;
-            Card *card = *it;
-            card->setShow(action->data.show);
-            if (card->rank() != action->data.rank || card->suit() != action->data.suit)
-                qCCritical(lcManager) << "Rank or suit doesn't match to" << action->data
-                                      << "for card" << *card << "in slot" << action->slot
-                                      << "at index" << action->index;
-            card->update();
-            handled = true;
-            break;
-        }
-    case Engine::ClearingAction:
-        {
-            Slot *slot = m_table->slot(action->slot);
-            store(slot->takeAll());
-            handled = true;
-            break;
-        }
-    }
-
-    return handled;
-}
-
-int Manager::actionCount() const
+int Manager::insertionCount() const
 {
     int count = 0;
-    for (const auto list : m_actions)
+    for (const auto list : m_insertions)
         count += list.count();
     return count;
 }
 
-Manager::Action::Action(Engine::ActionType type, int slot, int index, const CardData &data)
-    : type(type)
-    , slot(slot)
+Manager::Insertion::Insertion(int slot, int index, const CardData &data)
+    : slot(slot)
     , index(index)
     , data(data)
 {
 }
 
-Manager::SuitAndRank Manager::Action::suitAndRank() const
+Manager::SuitAndRank Manager::Insertion::suitAndRank() const
 {
     return SuitAndRank(data.suit, data.rank);
 }
 
-QDebug operator<<(QDebug debug, const Manager::Action &action)
+QDebug operator<<(QDebug debug, const Manager::Insertion &insertion)
 {
-    switch (action.type) {
-    case Engine::InsertionAction:
-        debug.nospace() << "insertion of " << action.data << " to " << action.slot << " at " << action.index;
-        break;
-    case Engine::RemovalAction:
-        debug.nospace() << "removal of " << action.data << " from " << action.slot << " at " << action.index;
-        break;
-    case Engine::FlippingAction:
-        debug.nospace() << "flipping of " << action.data << " in " << action.slot << " at " << action.index;
-        break;
-    case Engine::ClearingAction:
-        debug.nospace() << "clearing slot " << action.slot;
-    }
+    debug.nospace() << "insertion of " << insertion.data << " to " << insertion.slot
+                    << " at " << insertion.index;
     return debug.space();
 }

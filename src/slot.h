@@ -64,8 +64,8 @@ public:
     bool isEmpty() const;
     bool highlighted() const;
 
-    void append(Card *card);
     void insert(int index, Card *card);
+    void set(int index, Card *card);
     Card *takeAt(int index);
     QList<Card *> takeAll();
     void highlight();

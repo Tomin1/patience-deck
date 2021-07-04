@@ -49,32 +49,28 @@ private slots:
 private:
     typedef QPair<Suit, Rank> SuitAndRank;
 
-    struct Action {
-        Engine::ActionType type;
+    struct Insertion {
         int slot;
         int index;
         CardData data;
 
-        Action(Engine::ActionType type, int slot, int index, const CardData &data);
+        Insertion(int slot, int index, const CardData &data);
 
         SuitAndRank suitAndRank() const;
     };
 
-    friend QDebug operator<<(QDebug debug, const Manager::Action &action);
+    friend QDebug operator<<(QDebug debug, const Manager::Insertion &insertion);
 
     void store(Card *card);
-    void queue(Engine::ActionType type, int slotId, int index, const CardData &data);
-    const Action *nextAction(int slot) const;
-    void discardAction(int slot);
+    void queue(int slotId, int index, const CardData &data);
     void dequeue();
-    bool handle(Slot *slot, const Action *action);
-    int actionCount() const;
+    int insertionCount() const;
 
     Engine *m_engine;
     Table *m_table;
     bool m_preparing;
     QHash<SuitAndRank, Card *> m_cards;
-    QHash<int, QLinkedList<Action>> m_actions;
+    QHash<int, QLinkedList<Insertion>> m_insertions;
 };
 
 #endif // ENGINERELAY_H

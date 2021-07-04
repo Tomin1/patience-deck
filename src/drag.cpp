@@ -30,8 +30,12 @@ namespace {
 CardList toCardData(const QList<Card *> &cards)
 {
     CardList list;
-    for (const Card *card : cards)
-        list << card->data();
+    for (const Card *card : cards) {
+        if (card)
+            list << card->data();
+        else
+            qCCritical(lcDrag) << "Tried to convert non-existing card to data";
+    }
     if (list.isEmpty())
         qCCritical(lcDrag) << "Returning an empty list of CardData";
     return list;
@@ -209,8 +213,12 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
     if (could) {
         m_state = Dragging;
         m_cards = m_source->take(m_card);
-        for (Card *card : m_cards)
-            card->setParentItem(this);
+        for (Card *card : m_cards) {
+            if (card)
+                card->setParentItem(this);
+            else
+                qCCritical(lcDrag) << "Tried to drag non-existing card";
+        }
 
         checkTargets();
     }
