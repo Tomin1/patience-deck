@@ -74,7 +74,7 @@ void Slot::updateLocations(iterator first)
     if (reevaluateDelta())
         first = begin();
 
-    for (auto it = first; it != end(); it++) {
+    for (auto it = first; it != end(); ++it) {
         Card *card = *it;
         if (card) {
             card->setZ(it - begin());
@@ -131,7 +131,7 @@ void Slot::insert(int index, Card *card)
 
 void Slot::set(int index, Card *card)
 {
-    if (m_cards[index]) {
+    if (m_cards.at(index)) {
         qCCritical(lcManager) << "Tried to replace card in filled location in slot" << *this << "at" << index;
     } else if (!card) {
         qCCritical(lcManager) << "Tried to replace with null card in slot" << *this << "at" << index;
@@ -184,7 +184,7 @@ void Slot::removeHighlight()
 CardList Slot::asCardData(Card *first) const
 {
     CardList list;
-    for (auto it = constFind(first); it != constEnd(); it++) {
+    for (auto it = constFind(first); it != constEnd(); ++it) {
         if (*it)
             list << (*it)->data();
         else

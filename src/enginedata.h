@@ -67,15 +67,25 @@ enum Expansion : int {
     None = 0
 };
 
+typedef QPair<Suit, Rank> SuitAndRank;
+
 struct CardData {
     Suit suit;
     Rank rank;
     bool show;
 
+    CardData();
+    CardData(Suit suit, Rank rank, bool show);
+    CardData(const CardData &other) = default;
+
     bool equalValue(const CardData &other) const;
     bool operator==(const CardData &other) const;
     bool operator!=(const CardData &other) const;
-    operator QString() const;
+    operator bool() const;
+
+    SuitAndRank value() const;
+
+    friend QDebug operator<<(QDebug debug, const CardData &data);
 };
 
 typedef QList<CardData> CardList;

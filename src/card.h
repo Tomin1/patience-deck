@@ -47,6 +47,7 @@ public:
 
     Slot *slot() const;
     CardData data() const;
+    SuitAndRank value() const;
 
     bool operator==(const Card &other) const;
 

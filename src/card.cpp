@@ -143,6 +143,11 @@ CardData Card::data() const
     return m_data;
 }
 
+SuitAndRank Card::value() const
+{
+    return m_data.value();
+}
+
 void Card::setShow(bool show)
 {
     if (m_data.show != show) {

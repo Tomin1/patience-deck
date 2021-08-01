@@ -28,6 +28,20 @@
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 const QString StateConf = QStringLiteral("/state");
 
+CardData::CardData()
+    : suit(static_cast<Suit>(-1))
+    , rank(static_cast<Rank>(-1))
+    , show(false)
+{
+}
+
+CardData::CardData(Suit suit, Rank rank, bool show)
+    : suit(suit)
+    , rank(rank)
+    , show(show)
+{
+}
+
 bool CardData::equalValue(const CardData &other) const
 {
     return suit == other.suit && rank == other.rank;
@@ -43,12 +57,22 @@ bool CardData::operator!=(const CardData &other) const
     return !(*this == other);
 }
 
-CardData::operator QString() const
+CardData::operator bool() const
 {
-    return QStringLiteral("Rank %1 of %2%3")
-        .arg(QString::number(rank))
-        .arg(QString::number(suit))
-        .arg(!show ? QStringLiteral(" from behind") : QString());
+    return suit != -1 && rank != -1;
+}
+
+SuitAndRank CardData::value() const
+{
+    return SuitAndRank(suit, rank);
+}
+
+QDebug operator<<(QDebug debug, const CardData &data)
+{
+    debug.nospace() << "Rank " << data.rank << " of suit " << data.suit;
+    if (!data.show)
+        debug.nospace() << " from behind";
+    return debug.space();
 }
 
 EnginePrivate::EnginePrivate(QObject *parent)
@@ -763,14 +787,14 @@ void EnginePrivate::setCards(int id, const CardList &cards)
         } else {
             qCDebug(lcEngine) << "Removing" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
             emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
-            i--; it++;
+            i--; ++it;
         }
     }
     for (; i >= 0; i--) {
         qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
         emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
     }
-    it++;
+    ++it;
     while (it-- != cards.constBegin()) {
         qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << "to index 0";
         emit engine()->action(Engine::InsertionAction, id, 0, *it);
