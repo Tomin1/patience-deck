@@ -24,14 +24,30 @@ Column {
 
     property string query: "%1child::*[%2]/varlistentry".arg(model.parent).arg(model.position)
 
+    spacing: Theme.paddingMedium
+
     Repeater {
         model: VariableListModel {
             query: variableList.query
         }
 
-        DetailItem {
-            label: model.label
-            value: model.value
+        Row {
+            height: Math.max(labelText.height, valueText.height)
+            spacing: Theme.paddingMedium
+
+            Para {
+                id: labelText
+                horizontalAlignment: Text.AlignRight
+                text: model.label
+                width: (variableList.width - Theme.paddingMedium) / 2
+            }
+
+            Para {
+                id: valueText
+                color: Theme.highlightColor
+                text: model.value
+                width: (variableList.width - Theme.paddingMedium) / 2
+            }
         }
     }
 }
