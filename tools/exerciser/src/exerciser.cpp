@@ -18,6 +18,7 @@
 #include <QCoreApplication>
 #include <QQmlApplicationEngine>
 #include "engine.h"
+#include "checker.h"
 #include "helper.h"
 
 int main(int argc, char *argv[])
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     qmlRegisterUncreatableType<Engine>("Patience", 1, 0, "Engine", QStringLiteral("Use EngineHelper.engine"));
     qmlRegisterType<EngineHelper>("Patience", 1, 0, "EngineHelper");
+    qmlRegisterType<EngineChecker>("Patience", 1, 0, "EngineChecker");
     QQmlApplicationEngine qmlEngine("exerciser.qml");
     QObject::connect(&qmlEngine, &QQmlApplicationEngine::quit, &app, &QCoreApplication::quit);
     return app.exec();

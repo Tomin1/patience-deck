@@ -99,6 +99,20 @@ Item {
 
     EngineHelper {
         id: helper
+
+        checker: EngineChecker {
+            id: checker
+
+            onQueueFinished: {
+                if (checker.failed) {
+                    console.log("Checker detected errors in queueing")
+                    checker.dump()
+                    quit()
+                } else {
+                    newMove.start()
+                }
+            }
+        }
     }
 
     Timer {
@@ -131,10 +145,6 @@ Item {
 
         function onHint(hint) {
             parseAndActOnHint(hint)
-        }
-
-        function onMoveEnded() {
-            newMove.start()
         }
 
         function onGameOver(won) {

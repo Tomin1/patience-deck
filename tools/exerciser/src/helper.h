@@ -17,20 +17,23 @@
 
 #include <QHash>
 #include <QObject>
-#include <QVariant>
 #include "enginedata.h"
 
 class Engine;
+class EngineChecker;
 class EngineHelper : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Engine *engine READ engine CONSTANT)
+    Q_PROPERTY(EngineChecker *checker READ checker WRITE setChecker NOTIFY checkerChanged)
 
 public:
-    EngineHelper();
+    explicit EngineHelper(QObject *parent = nullptr);
     ~EngineHelper();
 
     Engine *engine() const;
+    EngineChecker *checker() const;
+    void setChecker(EngineChecker *checker);
     Q_INVOKABLE bool parseArgs();
     Q_INVOKABLE quint32 getSeed() const;
     Q_INVOKABLE void move(const QVariantMap &from, const QVariantMap &to);
@@ -47,6 +50,9 @@ public:
     };
     Q_ENUM(Slots)
 
+signals:
+    void checkerChanged();
+
 private slots:
     void handleClearData();
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
@@ -60,4 +66,5 @@ private:
     CardList getCards(int slot, const CardData &first);
 
     QHash<int, Slots> m_slotTypes;
+    EngineChecker *m_checker;
 };

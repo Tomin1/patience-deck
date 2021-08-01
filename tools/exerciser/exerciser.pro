@@ -16,17 +16,21 @@ DISTFILES += \
 
 SOURCES += \
     src/exerciser.cpp \
+    src/checker.cpp \
     src/helper.cpp \
     ../../src/engine.cpp \
     ../../src/interface.cpp \
+    ../../src/queue.cpp \
     ../../src/logging.cpp
 
 HEADERS += \
+    src/checker.h \
     src/helper.h \
     ../../src/engine.h \
     ../../src/engine_p.h \
     ../../src/enginedata.h \
     ../../src/interface.h \
+    ../../src/queue.h \
     ../../src/logging.h
 
 games.files = $$files(../../aisleriot/games/*.scm)

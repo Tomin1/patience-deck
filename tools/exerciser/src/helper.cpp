@@ -20,11 +20,13 @@
 #include <QDebug>
 #include <QDir>
 #include "helper.h"
+#include "checker.h"
 #include "engine.h"
 #include "engine_p.h"
 
-EngineHelper::EngineHelper()
-    : QObject(nullptr)
+EngineHelper::EngineHelper(QObject *parent)
+    : QObject(parent)
+    , m_checker(nullptr)
 {
     auto engine = Engine::instance();
     connect(engine, &Engine::clearData, this, &EngineHelper::handleClearData);
@@ -66,13 +68,26 @@ Engine *EngineHelper::engine() const
     return Engine::instance();
 }
 
+EngineChecker *EngineHelper::checker() const
+{
+    return m_checker;
+}
+
+void EngineHelper::setChecker(EngineChecker *checker)
+{
+    if (m_checker != checker) {
+        m_checker = checker;
+        emit checkerChanged();
+    }
+}
+
 void EngineHelper::handleClearData()
 {
     m_slotTypes.clear();
 }
 
 void EngineHelper::handleNewSlot(int id, const CardList &cards, int type, double x, double y,
-                   int expansionDepth, bool expandedDown, bool expandedRight)
+                                 int expansionDepth, bool expandedDown, bool expandedRight)
 {
     Q_UNUSED(cards)
     Q_UNUSED(x)
@@ -110,8 +125,10 @@ void EngineHelper::move(const QVariantMap &from, const QVariantMap &to)
                     qDebug() << "Moving" << card << "from slot" << slot
                              << "to slot" << target;
                 }
-                if (target != -1)
+                if (target != -1) {
+                    m_checker->removeCards(slot, cards);
                     engine->drop(-1, slot, target, cards);
+                }
             }
         }
     }
@@ -148,7 +165,7 @@ int EngineHelper::findSlot(const CardData &needle)
 {
     auto engine = EnginePrivate::instance();
     for (auto it = engine->m_cardSlots.constBegin(); it != engine->m_cardSlots.constEnd(); it++) {
-        for (const auto card: it.value()) {
+        for (const auto &card : it.value()) {
             if (needle.equalValue(card))
                 return it.key();
         }
