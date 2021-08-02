@@ -85,6 +85,7 @@ build_libunistring() {
     then
         echo "Building libunistring..."
         pushd ${LIBUNISTRING}/
+        LD_LIBRARY_PATH=/usr/bin/gconv
         ./configure \
                 --disable-rpath \
                 --disable-static \
@@ -191,8 +192,10 @@ build_guile() {
  # When compiling with GCC on some OSs (Solaris, AIX), _Complex_I doesn't
  # work; in the reported cases so far, 1.0fi works well instead.  According
 EOF
-        autoreconf -i -f
         LD_LIBRARY_PATH=${_LIBDIR}
+        PKG_CONFIG_PATH=${_LIBDIR}/pkgconfig
+        autoreconf -i -f
+        sed '/^\s*acl_libdirstem2=/s/=/=lib/' -i configure
         ./configure \
                 --disable-static \
                 --disable-networking \
@@ -204,6 +207,8 @@ EOF
                 --with-modules=ice-9 \
                 --prefix="/usr/share/harbour-patience-deck/"
         sed '/HAVE_CRYPT/s/1/0/' -i config.h
+        echo '#define HAVE_GC_IS_HEAP_PTR 1' >> config.h
+        echo '#define HAVE_GC_MOVE_DISAPPEARING_LINK 1' >> config.h
         make $@
         make DESTDIR=${_PREFIX}/ install
         popd

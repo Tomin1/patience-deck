@@ -18,8 +18,6 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
-# TODO: Use headers from downloaded guile
-BuildRequires:  guile22-devel
 BuildRequires:  git-core
 BuildRequires:  python3-base
 BuildRequires:  librsvg-tools
@@ -28,6 +26,8 @@ BuildRequires:  librsvg-tools
 BuildRequires: automake autoconf libtool gettext-devel
 %define __provides_exclude_from ^%{_datadir}/.*$
 %define __requires_exclude ^libcrypt|libffi|libgc|libgmp|libguile|libltdl|libunistring.*$
+%else
+BuildRequires:  guile22-devel
 %endif
 
 %description
@@ -52,6 +52,9 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 
+%if %{with harbour}
+export CACHE=%{_builddir}/libs/%{_arch}
+%endif
 export NAME="%{name}"
 
 %qmake5_install

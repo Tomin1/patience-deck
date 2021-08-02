@@ -28,5 +28,4 @@ application.
 [Harbour](https://harbour.jolla.com/) compatible packaging can be built
 using "--with harbour" arguments. It builds all necessary libraries for
 guile and bundles them in single package. It may take tens of minutes to
-build from scratch. You also need guile22-devel package installed on
-your target so build that first.
+build from scratch.
