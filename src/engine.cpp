@@ -115,6 +115,7 @@ Engine *Engine::instance()
 Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EnginePrivate(this))
+    , m_action(0)
 #ifndef ENGINE_EXERCISER
     , m_stateConf(Constants::ConfPath + StateConf)
 #endif // ENGINE_EXERCISER
@@ -299,7 +300,17 @@ void Engine::getHint()
 
 bool Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
-    if (cards.isEmpty()) {
+    bool could = false;
+    if (m_action != 0)
+        qCWarning(lcEngine) << "Tried to start dragging while action was ongoing";
+    else if (d_ptr->m_delayedCallTimer)
+        qCWarning(lcEngine) << "Tried to start dragging while a delayed call was ongoing";
+    else if (cards.isEmpty())
+        qCWarning(lcEngine) << "Tried to drag empty stack of cards";
+    else
+        could = true;
+
+    if (!could) {
         emit couldDrag(id, slotId, false);
         return false;
     }
@@ -324,21 +335,40 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
             d_ptr->m_cardSlots[slotId].removeLast();
     }
 
-    emit couldDrag(id, slotId, scm_is_true(rv));
-    return scm_is_true(rv);
+    could = scm_is_true(rv);
+    if (could)
+        m_action = id;
+    emit couldDrag(id, slotId, could);
+    return could;
 }
 
 void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
 {
+    if (m_action != id) {
+        qCWarning(lcEngine) << "Tried to cancel drag for wrong action" << id << ", current" << m_action;
+        return;
+    }
+
     Q_UNUSED(id) // There is no signal to send back
     qCDebug(lcEngine) << "Canceling move, putting back" << cards.count() << "cards to slot" << slotId;
     d_ptr->m_cardSlots[slotId].append(cards); // Put the cards back
     d_ptr->discardMove();
+    m_action = 0;
 }
 
 bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
-    if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable) || cards.isEmpty()) {
+    bool could = false;
+    if (m_action != id)
+        qCWarning(lcEngine) << "Tried to check drop for a non-current action" << id << ", current" << m_action;
+    else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
+        qCDebug(lcEngine) << "No droppable feature";
+    else if (cards.isEmpty())
+        qCWarning(lcEngine) << "Tried to drop empty stack of cards";
+    else
+        could = true;
+
+    if (!could) {
         emit couldDrop(id, endSlotId, false);
         return false;
     }
@@ -362,9 +392,20 @@ bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
 
 bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &cards)
 {
-    if (cards.isEmpty()) {
+    bool could = false;
+    if (m_action != id)
+        qCWarning(lcEngine) << "Tried to drop cards for a non-current action" << id << ", current" << m_action;
+    else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
+        qCDebug(lcEngine) << "No droppable feature";
+    else if (cards.isEmpty())
+        qCWarning(lcEngine) << "Tried to drop empty stack of cards";
+    else
+        could = true;
+
+    if (!could) {
         emit dropped(id, endSlotId, false);
-        d_ptr->discardMove();
+        if (m_action == id)
+            d_ptr->discardMove();
         return false;
     }
 
@@ -381,17 +422,26 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
     scm_remember_upto_here(args[0], args[1], args[2]);
 
-    emit dropped(id, endSlotId, scm_is_true(rv));
+    could = scm_is_true(rv);
 
-    if (scm_is_true(rv))
+    emit dropped(id, endSlotId, could);
+
+    if (could)
         d_ptr->endMove();
     else
         d_ptr->discardMove();
-    return scm_is_true(rv);
+
+    m_action = 0;
+    return could;
 }
 
 bool Engine::click(quint32 id, int slotId)
 {
+    if (m_action != 0 || d_ptr->m_delayedCallTimer) {
+        qCWarning(lcEngine) << "Tried to click while an action or a delayed call was ongoing";
+        return false;
+    }
+
     d_ptr->recordMove(-1);
 
     SCM args[1];
@@ -416,6 +466,11 @@ bool Engine::click(quint32 id, int slotId)
 
 bool Engine::doubleClick(quint32 id, int slotId)
 {
+    if (m_action != 0 || d_ptr->m_delayedCallTimer) {
+        qCWarning(lcEngine) << "Tried to double click while an action or a delayed call was ongoing";
+        return false;
+    }
+
     d_ptr->recordMove(-1);
 
     SCM args[1];

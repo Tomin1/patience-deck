@@ -80,6 +80,7 @@ private:
     void checkTargets(bool force = false);
     void highlightOrDrop();
     static bool couldBeDoubleClick(const Card *card);
+    static quint32 nextId();
 
     static quint32 s_count;
     static QElapsedTimer s_doubleClickTimer;

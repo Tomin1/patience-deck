@@ -52,7 +52,7 @@ const Card *Drag::s_lastCard = nullptr;
 Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     : QQuickItem(card)
     , m_state(NoDrag)
-    , m_id(s_count++)
+    , m_id(nextId())
     , m_mayBeADoubleClick(false)
     , m_table(table)
     , m_card(card)
@@ -293,4 +293,12 @@ bool Drag::couldBeDoubleClick(const Card *card)
         s_doubleClickTimer.start();
         return false;
     }
+}
+
+quint32 Drag::nextId()
+{
+    quint32 id = ++s_count;
+    if (id == 0) // We wrapped around, 0 is not an acceptable value
+        id = ++s_count;
+    return id;
 }

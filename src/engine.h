@@ -117,6 +117,7 @@ private:
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
     EnginePrivate *d_ptr;
+    quint32 m_action;
 #ifndef ENGINE_EXERCISER
     MGConfItem m_stateConf;
 #endif // ENGINE_EXERCISER

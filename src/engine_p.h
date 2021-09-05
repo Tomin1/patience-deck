@@ -133,6 +133,7 @@ private:
     uint_fast32_t m_seed;
     std::mt19937 m_generator;
     bool m_recordingMove;
+    quint32 m_action;
 
     Engine *engine();
 };
