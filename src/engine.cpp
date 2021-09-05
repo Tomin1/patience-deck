@@ -404,8 +404,10 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
     if (!could) {
         emit dropped(id, endSlotId, false);
-        if (m_action == id)
+        if (m_action == id) {
             d_ptr->discardMove();
+            m_action = 0;
+        }
         return false;
     }
 
