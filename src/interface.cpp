@@ -439,25 +439,16 @@ SCM Interface::delayedCall(SCM callback)
 {
     auto *engine = EnginePrivate::instance();
     qCDebug(lcScheme) << "Creating delayed call";
-    if (engine->m_delayedCallTimer) {
+    if (engine->hasDelayedCall()) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
                          scm_list_1(scm_from_utf8_string("Already have a delayed callback pending.")));
     }
 
     scm_gc_protect_object(callback);
-    engine->m_delayedCallTimer = new QTimer();
-    QObject::connect(engine->m_delayedCallTimer, &QTimer::timeout, engine, [engine, callback] {
-        // The callback may setup another delayed call, set the current one to null already
-        engine->m_delayedCallTimer->deleteLater();
-        engine->m_delayedCallTimer = nullptr;
-
+    engine->setupDelayedCall([engine, callback] {
         if (engine->makeSCMCall(callback, nullptr, 0, nullptr))
             engine->endMove(true);
-    });
-    QObject::connect(engine->m_delayedCallTimer, &QObject::destroyed, engine, [callback] {
-        scm_gc_unprotect_object(callback);
-    });
-    engine->m_delayedCallTimer->start(DelayedCallDelay);
+    }, [callback] { scm_gc_unprotect_object(callback); });
     return SCM_EOL;
 }
 

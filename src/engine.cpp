@@ -23,8 +23,8 @@
 #include "interface.h"
 #include "logging.h"
 
-#define MAX_RETRIES 10
-
+const int MaxRetries = 10;
+const int DelayedCallDelay = 50;
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 const QString StateConf = QStringLiteral("/state");
 
@@ -214,7 +214,7 @@ void Engine::startEngine(bool newSeed)
         }
 
         newSeed = true; // If we need to try again, use a new seed anyway
-    } while (d_ptr->isGameOver() && count++ < MAX_RETRIES);
+    } while (d_ptr->isGameOver() && count++ < MaxRetries);
 
     d_ptr->m_state = EnginePrivate::RunningState;
     emit gameStarted();
@@ -304,7 +304,7 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
     bool could = false;
     if (m_action != 0)
         qCWarning(lcEngine) << "Tried to start dragging while action was ongoing";
-    else if (d_ptr->m_delayedCallTimer)
+    else if (d_ptr->hasDelayedCall())
         qCWarning(lcEngine) << "Tried to start dragging while a delayed call was ongoing";
     else if (cards.isEmpty())
         qCWarning(lcEngine) << "Tried to drag empty stack of cards";
@@ -440,7 +440,7 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
 bool Engine::click(quint32 id, int slotId)
 {
-    if (m_action != 0 || d_ptr->m_delayedCallTimer) {
+    if (m_action != 0 || d_ptr->hasDelayedCall()) {
         qCWarning(lcEngine) << "Tried to click while an action or a delayed call was ongoing";
         return false;
     }
@@ -469,7 +469,7 @@ bool Engine::click(quint32 id, int slotId)
 
 bool Engine::doubleClick(quint32 id, int slotId)
 {
-    if (m_action != 0 || d_ptr->m_delayedCallTimer) {
+    if (m_action != 0 || d_ptr->hasDelayedCall()) {
         qCWarning(lcEngine) << "Tried to double click while an action or a delayed call was ongoing";
         return false;
     }
@@ -752,6 +752,7 @@ void EnginePrivate::clear(bool resetData)
         setCanDeal(false);
     }
     m_cardSlots.clear();
+    clearDelayedCall();
     emit engine()->clearData();
 }
 
@@ -906,6 +907,40 @@ void EnginePrivate::setTimeout(int timeout)
     if (m_timeout != timeout) {
         m_timeout = timeout;
         // TODO: Emit timeout changed signal
+    }
+}
+
+bool EnginePrivate::hasDelayedCall() const
+{
+    return m_delayedCallTimer;
+}
+
+bool EnginePrivate::setupDelayedCall(std::function<void()> callback, std::function<void()> destructCallback)
+{
+    if (m_delayedCallTimer)
+        return false;
+
+    m_delayedCallTimer = new QTimer();
+    QObject::connect(m_delayedCallTimer, &QTimer::timeout, this, [this, callback] {
+        // The callback may setup another delayed call, set the current one to null already
+        m_delayedCallTimer->deleteLater();
+        m_delayedCallTimer = nullptr;
+
+        callback();
+    });
+
+    QObject::connect(m_delayedCallTimer, &QObject::destroyed, this, destructCallback);
+
+    m_delayedCallTimer->start(DelayedCallDelay);
+    return true;
+}
+
+void EnginePrivate::clearDelayedCall()
+{
+    if (m_delayedCallTimer) {
+        m_delayedCallTimer->stop();
+        m_delayedCallTimer->deleteLater();
+        m_delayedCallTimer = nullptr;
     }
 }
 

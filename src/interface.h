@@ -53,8 +53,6 @@ void init_module(void *data);
 void *init(void *data);
 
 // Data
-const int DelayedCallDelay = 50;
-
 struct Call {
     SCM lambda;
     SCM *args;

@@ -18,6 +18,7 @@
 #ifndef ENGINE_P_H
 #define ENGINE_P_H
 
+#include <functional>
 #include <libguile.h>
 #include <QHash>
 #include <QList>
@@ -107,6 +108,9 @@ public:
     bool hasFeature(GameFeature feature);
     int getTimeout();
     void setTimeout(int timeout);
+    bool hasDelayedCall() const;
+    bool setupDelayedCall(std::function<void()> callback, std::function<void()> destructCallback);
+    void clearDelayedCall();
     quint32 getRandomValue(quint32 first, quint32 last);
     void resetGenerator(bool generateNewSeed);
     void die(const char *message);
@@ -115,15 +119,13 @@ public:
     bool makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval);
     bool makeSCMCall(QString name, SCM *args, size_t n, SCM *retval);
 
-    // TODO: Make private
-    QTimer *m_delayedCallTimer;
-
 private:
     friend Engine;
 #ifdef ENGINE_EXERCISER
     friend EngineHelper;
 #endif
 
+    QTimer *m_delayedCallTimer;
     QHash<int, CardList> m_cardSlots;
     SCM m_lambdas[LambdaCount];
     GameFeatures m_features;
