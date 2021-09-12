@@ -131,6 +131,7 @@ Engine::Engine(QObject *parent)
                               ? "Saved engine state" : "Reset saved state");
     });
 #endif // ENGINE_EXERCISER
+    connect(this, &Engine::clearData, this, [this] { m_action = 0; });
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
