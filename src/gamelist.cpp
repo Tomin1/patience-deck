@@ -37,6 +37,7 @@ QSet<QString> GameList::s_allowlist = {
     // Klondike and its variations
     QStringLiteral("aunt-mary"),
     QStringLiteral("athena"),
+    QStringLiteral("gold-mine"),
     QStringLiteral("klondike"),
     QStringLiteral("saratoga"),
     QStringLiteral("thumb-and-pouch"),
@@ -64,6 +65,15 @@ QSet<QString> GameList::s_allowlist = {
     // Auld Lang Syne and Scuffle
     QStringLiteral("auld-lang-syne"),
     QStringLiteral("scuffle"),
+    // First law, Fortunes
+    QStringLiteral("first-law"),
+    QStringLiteral("fortunes"),
+    // Yukon, Odessa
+    QStringLiteral("odessa"),
+    QStringLiteral("yukon"),
+    // Osmosis, Peek
+    QStringLiteral("osmosis"),
+    QStringLiteral("peek"),
     // Other
     QStringLiteral("bear-river"),
     QStringLiteral("beleaguered-castle"),
@@ -74,6 +84,7 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("easthaven"),
     QStringLiteral("eliminator"),
     QStringLiteral("forty-thieves"),
+    QStringLiteral("gaps"),
     QStringLiteral("giant"),
     QStringLiteral("helsinki"),
     QStringLiteral("isabel"),
@@ -81,10 +92,11 @@ QSet<QString> GameList::s_allowlist = {
     QStringLiteral("napoleons-tomb"),
     QStringLiteral("poker"),
     QStringLiteral("ten-across"),
+    QStringLiteral("terrace"),
+    QStringLiteral("thieves"),
     QStringLiteral("triple-peaks"),
     QStringLiteral("valentine"),
     QStringLiteral("westhaven"),
-    QStringLiteral("yukon"),
     QStringLiteral("zebra"),
 };
 
