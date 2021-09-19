@@ -128,12 +128,12 @@ void Queue<C>::decrementQueued(int slot, int index)
 template<class C>
 void Queue<C>::flipQueued(int slot, int index, const CardData &data)
 {
-    for (auto it = m_laterActions[slot].begin(); it != m_laterActions[slot].end(); ++it) {
-        if (it->index == index) {
-            it->data.suit = data.suit;
-            if (it->data.rank != data.rank || it->data.suit != data.suit)
+    for (auto &action : m_laterActions[slot]) {
+        if (action.index == index) {
+            action.data.show = data.show;
+            if (action.data.rank != data.rank || action.data.suit != data.suit)
                 qCCritical(lcQueue) << "Rank or suit doesn't match to" << data
-                                    << "for queued" << it->data << "in slot" << slot
+                                    << "for queued" << action.data << "in slot" << slot
                                     << "at index" << index;
             break;
         }
