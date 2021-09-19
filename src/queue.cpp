@@ -247,7 +247,7 @@ bool Queue<C>::iterator::requeue()
     }
 
     if (iter->type != Engine::InsertionAction) {
-        qCWarning(lcQueue) << "Trying to queue non-insertion of action";
+        qCWarning(lcQueue) << "Trying to queue non-insertion action";
         qCCritical(lcQueue) << "Discarding" << *iter;
         return false;
     }
