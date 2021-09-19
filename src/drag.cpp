@@ -37,7 +37,7 @@ CardList toCardData(const QList<Card *> &cards)
             qCCritical(lcDrag) << "Tried to convert non-existing card to data";
     }
     if (list.isEmpty())
-        qCCritical(lcDrag) << "Returning an empty list of CardData";
+        qCCritical(lcDrag) << "Returning an empty list of CardData from list of cards";
     return list;
 }
 
