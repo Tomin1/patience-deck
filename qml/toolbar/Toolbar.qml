@@ -89,7 +89,7 @@ Item {
         ToolbarButton {
             //% "Undo"
             text: qsTrId("patience-bt-undo")
-            imageSource: "../images/icon-m-undo.svg"
+            imageSource: "../../buttons/icon-m-undo.svg"
             showText: vertical && (expanded || animating)
             enabled: Patience.canUndo
             onClicked: Patience.undoMove()
@@ -98,7 +98,7 @@ Item {
         ToolbarButton {
             //% "Redo"
             text: qsTrId("patience-bt-redo")
-            imageSource: "../images/icon-m-redo.svg"
+            imageSource: "../../buttons/icon-m-redo.svg"
             showText: vertical && (expanded || animating)
             enabled: Patience.canRedo
             onClicked: Patience.redoMove()
@@ -108,9 +108,9 @@ Item {
             id: expandButton
 
             enabled: !overlayLoader.active
-            icon.source: "../images/icon-m-expand.svg"
-            icon.sourceSize.height: Theme.iconSizeLarge
-            icon.sourceSize.width: Theme.iconSizeLarge
+            icon.source: "../../buttons/icon-m-expand.svg"
+            icon.sourceSize.height: Theme.itemSizeLarge
+            icon.sourceSize.width: Theme.itemSizeLarge
             parent: vertical ? toolbar : mainButtons
             x: vertical ? 0 : 0
             y: vertical ? toolbar.height - height : 0
@@ -135,7 +135,7 @@ Item {
             id: hintButton
             //% "Hint"
             text: qsTrId("patience-bt-hint")
-            imageSource: "../images/icon-m-hint.svg"
+            imageSource: "../../buttons/icon-m-hint.svg"
             parent: vertical && buttonCount >= 4 ? mainButtons : extraButtons
             showText: !vertical || expanded || animating
             enabled: Patience.state === Patience.StartingState || Patience.state === Patience.RunningState
@@ -156,7 +156,7 @@ Item {
             id: restartButton
             //% "Restart"
             text: qsTrId("patience-bt-restart")
-            imageSource: "../images/icon-m-restart.svg"
+            imageSource: "../../buttons/icon-m-restart.svg"
             onClicked: {
                 expanded = false
                 Patience.restartGame()
@@ -167,7 +167,7 @@ Item {
             id: dealButton
             //% "Deal"
             text: qsTrId("patience-bt-deal")
-            imageSource: "../images/icon-m-deal.svg"
+            imageSource: "../../buttons/icon-m-deal.svg"
             enabled: Patience.canDeal
             visible: Patience.showDeal
             onClicked: Patience.dealCard()

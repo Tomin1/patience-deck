@@ -35,10 +35,14 @@ data.files = aisleriot/cards/anglo.svg
 data.path = /usr/share/$$(NAME)/data/
 data.path = /usr/share/$$(NAME)/data/
 
+buttons.files = $$files(data/buttons/*.svg)
+buttons.files -= data/buttons/icon-m-blank.svg
+buttons.path = /usr/share/$$(NAME)/buttons/
+
 copying.files = COPYING.GPL3 \
     aisleriot/COPYING.GFDL \
     aisleriot/COPYING.GFDL1.3 \
     data/COPYING.README
 copying.path = /usr/share/$$(NAME)/
 
-INSTALLS += games api data manual figures copying
+INSTALLS += games api data buttons manual figures copying

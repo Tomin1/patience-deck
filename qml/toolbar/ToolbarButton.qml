@@ -32,20 +32,19 @@ MouseArea {
         highlighted: parent.down
         opacity: parent.enabled ? 1.0 : Theme.opacityLow
 
-        HighlightImage {
+        Icon {
             id: image
             highlighted: parent.highlighted
             x: (parent.height - width) / 2
             y: (parent.height - height) / 2
-            sourceSize.height: Theme.iconSizeLarge
-            sourceSize.width: Theme.iconSizeLarge
+            sourceSize.height: Theme.itemSizeLarge
+            sourceSize.width: Theme.itemSizeLarge
         }
 
         Label {
             id: label
             anchors {
                 left: image.right
-                leftMargin: (parent.height - image.width) / 2
             }
             color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
             verticalAlignment: Text.AlignVCenter
