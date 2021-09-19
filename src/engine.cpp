@@ -232,6 +232,10 @@ void Engine::restart()
 
 void Engine::undoMove()
 {
+    if (m_action || d_ptr->hasDelayedCall()) {
+        qCWarning(lcEngine) << "Can not undo move while an action or a delayed call is ongoing";
+        return;
+    }
     if (d_ptr->m_state == EnginePrivate::GameOverState) {
         d_ptr->m_state = EnginePrivate::RunningState;
         emit gameContinued();
@@ -248,6 +252,10 @@ void Engine::undoMove()
 
 void Engine::redoMove()
 {
+    if (m_action || d_ptr->hasDelayedCall()) {
+        qCWarning(lcEngine) << "Can not redo move while an action or a delayed call is ongoing";
+        return;
+    }
     if (!d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr)) {
         d_ptr->die("Can not redo move");
     } else {
@@ -259,6 +267,10 @@ void Engine::redoMove()
 
 void Engine::dealCard()
 {
+    if (m_action || d_ptr->hasDelayedCall()) {
+        qCWarning(lcEngine) << "Can not deal a card while an action or a delayed call is ongoing";
+        return;
+    }
     d_ptr->recordMove(-1);
     if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
         d_ptr->die("Can not deal card");
