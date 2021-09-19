@@ -195,7 +195,7 @@ void Drag::cancel()
 {
     qCDebug(lcDrag) << "Canceling drag of" << *m_card << "at state" << m_state;
 
-    if (m_state == Dragging || m_state == Dropping) {
+    if (m_state >= StartingDrag && m_state <= Dropping) {
         emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
         this->setParentItem(nullptr);
         m_source->put(m_cards);
