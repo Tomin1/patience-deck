@@ -314,8 +314,8 @@ void Engine::getHint()
 bool Engine::drag(quint32 id, int slotId, const CardList &cards)
 {
     bool could = false;
-    if (m_action != 0)
-        qCWarning(lcEngine) << "Tried to start dragging while action was ongoing";
+    if (m_action)
+        qCWarning(lcEngine) << "Tried to start dragging while an action was ongoing";
     else if (d_ptr->hasDelayedCall())
         qCWarning(lcEngine) << "Tried to start dragging while a delayed call was ongoing";
     else if (cards.isEmpty())
@@ -373,7 +373,7 @@ bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
 {
     bool could = false;
     if (m_action != id)
-        qCWarning(lcEngine) << "Tried to check drop for a non-current action" << id << ", current" << m_action;
+        qCWarning(lcEngine) << "Tried to check drop for wrong action" << id << ", current" << m_action;
     else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
         qCDebug(lcEngine) << "No droppable feature";
     else if (cards.isEmpty())
@@ -407,7 +407,7 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 {
     bool could = false;
     if (m_action != id)
-        qCWarning(lcEngine) << "Tried to drop cards for a non-current action" << id << ", current" << m_action;
+        qCWarning(lcEngine) << "Tried to drop cards for wrong action" << id << ", current" << m_action;
     else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
         qCDebug(lcEngine) << "No droppable feature";
     else if (cards.isEmpty())
@@ -452,8 +452,13 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
 bool Engine::click(quint32 id, int slotId)
 {
-    if (m_action != 0 || d_ptr->hasDelayedCall()) {
-        qCWarning(lcEngine) << "Tried to click while an action or a delayed call was ongoing";
+    if (m_action) {
+        qCWarning(lcEngine) << "Tried to click while an action was ongoing";
+        return false;
+    }
+
+    if (d_ptr->hasDelayedCall()) {
+        qCWarning(lcEngine) << "Tried to click while a delayed call was ongoing";
         return false;
     }
 
@@ -481,8 +486,13 @@ bool Engine::click(quint32 id, int slotId)
 
 bool Engine::doubleClick(quint32 id, int slotId)
 {
-    if (m_action != 0 || d_ptr->hasDelayedCall()) {
-        qCWarning(lcEngine) << "Tried to double click while an action or a delayed call was ongoing";
+    if (m_action) {
+        qCWarning(lcEngine) << "Tried to double click while an action was ongoing";
+        return false;
+    }
+
+    if (d_ptr->hasDelayedCall()) {
+        qCWarning(lcEngine) << "Tried to double click while a delayed call was ongoing";
         return false;
     }
 
