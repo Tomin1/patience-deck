@@ -117,11 +117,14 @@ void Queue<C>::incrementQueued(int slot, int index)
 template<class C>
 void Queue<C>::decrementQueued(int slot, int index)
 {
-    for (auto it = m_laterActions[slot].begin(); it != m_laterActions[slot].end(); ++it) {
-        if (it->index == index)
+    for (auto it = m_laterActions[slot].begin(); it != m_laterActions[slot].end();) {
+        if (it->index == index) {
             it = m_laterActions[slot].erase(it);
-        else if (it->index > index)
-            it->index--;
+        } else {
+            if (it->index > index)
+                it->index--;
+            ++it;
+        }
     }
 }
 
