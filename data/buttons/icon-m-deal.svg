@@ -40,13 +40,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#ffffff;fill-opacity:0.32002667;fill-rule:evenodd;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:round"
+       style="fill:#ffffff;fill-opacity:0.2;fill-rule:evenodd;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:round"
        id="path286"
        cx="64"
        cy="64"
        r="50" />
     <rect
-       style="fill:none;fill-opacity:0.320027;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
        id="rect6265"
        width="29.652124"
        height="47.665031"
@@ -56,19 +56,19 @@
        id="g9550">
       <path
          id="rect6265-3"
-         style="fill:none;fill-opacity:0.320027;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.64081895"
+         style="fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
          d="M 70.831981,57.030582 95.121585,65.417853 67.782046,84.672601 43.492442,76.28533 Z" />
       <path
          id="rect6265-3-6"
-         style="fill:none;fill-opacity:0.320027;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.64081895"
+         style="fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
          d="M 95.121586,73.918695 67.782047,93.173444 43.492443,84.786173"
          sodipodi:nodetypes="ccc" />
       <path
-         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.64081895"
+         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none"
          d="m 95.121586,65.417852 v 8.500843"
          id="path7050" />
       <path
-         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.64081895"
+         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none"
          d="m 43.492443,76.28533 v 8.500843"
          id="path7050-7" />
     </g>

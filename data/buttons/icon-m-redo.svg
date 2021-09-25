@@ -40,13 +40,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#ffffff;fill-opacity:0.32002667;fill-rule:evenodd;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:round"
+       style="fill:#ffffff;fill-opacity:0.2;fill-rule:evenodd;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:round"
        id="path286"
        cx="64"
        cy="64"
        r="50" />
     <path
-       style="fill:none;fill-opacity:0.320027;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.63999999"
+       style="fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
        id="path1949"
        sodipodi:type="arc"
        sodipodi:cx="0.5912286"
