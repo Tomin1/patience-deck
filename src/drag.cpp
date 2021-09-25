@@ -147,6 +147,9 @@ void Drag::checkTargets(bool force)
 
 void Drag::highlightOrDrop()
 {
+    if (m_state > Dropping)
+        return;
+
     m_target++;
     if (m_target < m_targets.count()) {
         Slot *target = m_targets.at(m_target);
