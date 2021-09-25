@@ -115,10 +115,14 @@ void Queue<C>::incrementQueued(int slot, int index)
 }
 
 template<class C>
-void Queue<C>::decrementQueued(int slot, int index)
+void Queue<C>::decrementQueued(int slot, int index, const CardData &data)
 {
     for (auto it = m_laterActions[slot].begin(); it != m_laterActions[slot].end();) {
         if (it->index == index) {
+            if (it->data.rank != data.rank || it->data.suit != data.suit)
+                qCCritical(lcQueue) << "Rank or suit doesn't match to" << data
+                                    << "for queued" << it->data << "in slot" << slot
+                                    << "at index" << index << "while decrementing";
             it = m_laterActions[slot].erase(it);
         } else {
             if (it->index > index)
@@ -137,7 +141,7 @@ void Queue<C>::flipQueued(int slot, int index, const CardData &data)
             if (action.data.rank != data.rank || action.data.suit != data.suit)
                 qCCritical(lcQueue) << "Rank or suit doesn't match to" << data
                                     << "for queued" << action.data << "in slot" << slot
-                                    << "at index" << index;
+                                    << "at index" << index << "while flipping";
             break;
         }
     }

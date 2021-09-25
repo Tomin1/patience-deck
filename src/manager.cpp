@@ -134,7 +134,7 @@ bool Manager::handleQueued(const Action &action) {
     case Engine::RemovalAction:
         {
             Card *card = slot->takeAt(action.index);
-            m_queue.decrementQueued(slot->id(), action.index);
+            m_queue.decrementQueued(slot->id(), action.index, action.data);
             if (card) {
                 if (card->rank() != action.data.rank || card->suit() != action.data.suit)
                     qCCritical(lcManager) << "Wrong card taken! Was" << *card << "should be" << action.data;

@@ -80,7 +80,7 @@ public:
     QList<C> takeAll();
 
     void incrementQueued(int slot, int index);
-    void decrementQueued(int slot, int index);
+    void decrementQueued(int slot, int index, const CardData &data);
     void flipQueued(int slot, int index, const CardData &data);
     void clearQueued(int slot);
 
