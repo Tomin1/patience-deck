@@ -85,6 +85,8 @@ Table::~Table()
 {
     m_textureThread.quit();
     m_textureThread.wait();
+    if (m_cardTexture)
+        delete m_cardTexture;
 }
 
 void Table::updatePolish()
@@ -478,7 +480,7 @@ QSGTexture *Table::cardTexture()
 {
     if (!m_cardTexture && !m_cardImage.isNull()) {
         setCardTexture(window()->createTextureFromImage(m_cardImage));
-        connect(window(), &QQuickWindow::sceneGraphInvalidated, this, [this] {
+        connect(window(), &QQuickWindow::sceneGraphInvalidated, m_cardTexture, [this] {
             setCardTexture(nullptr);
         });
     }
