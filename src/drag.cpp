@@ -84,7 +84,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
 
 Drag::~Drag()
 {
-    if (m_state < Dropped)
+    if (m_state < Finished)
         qCWarning(lcDrag) << "Drag was not finished or canceled when it was destroyed";
 }
 
@@ -191,22 +191,25 @@ void Drag::highlightOrDrop()
 void Drag::drop(Slot *slot)
 {
     qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << slot->id();
+    m_state = Dropped;
     emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards));
 }
 
-void Drag::cancel()
+void Drag::cancel(bool force)
 {
     qCDebug(lcDrag) << "Canceling drag of" << *m_card << "at state" << m_state;
 
-    if (m_state >= StartingDrag && m_state <= Dropping) {
-        emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
-        this->setParentItem(nullptr);
-        m_source->put(m_cards);
-        m_cards.clear();
-    }
+    if (force || m_state < Dropped) {
+        if (m_state >= StartingDrag) { 
+            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
+            this->setParentItem(nullptr);
+            m_source->put(m_cards);
+            m_cards.clear();
+        }
 
-    m_state = Canceled;
-    deleteLater();
+        m_state = Canceled;
+        deleteLater();
+    }
 }
 
 void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
@@ -245,12 +248,12 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
         return;
 
     if (could) {
-        m_state = Dropped;
+        m_state = Finished;
         m_table->store(m_cards);
         m_cards.clear();
         deleteLater();
     } else {
-        cancel();
+        cancel(true);
     }
 }
 

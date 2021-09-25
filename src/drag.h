@@ -41,7 +41,7 @@ public:
     void update(QMouseEvent *event);
     void finish(QMouseEvent *event);
     void drop(Slot *slot);
-    void cancel();
+    void cancel(bool force = false);
 
 signals:
     void doDrag(quint32 id, int slotId, const CardList &cards);
@@ -65,6 +65,7 @@ private:
         Dragging,
         Dropping,
         Dropped,
+        Finished,
         Canceled,
         Clicked,
     };
