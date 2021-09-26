@@ -22,6 +22,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  guile22-devel
 BuildRequires:  git-core
 BuildRequires:  python3-base
+BuildRequires:  librsvg-tools
 
 %if %{with harbour}
 BuildRequires: automake autoconf libtool gettext-devel
@@ -48,9 +49,6 @@ touch src/patience-deck.cpp
 %qmake5
 make %{?_smp_mflags}
 
-g++ -o tools/convert tools/convert.cpp -fPIC \
-    $(pkg-config --cflags --libs Qt5Core Qt5Gui Qt5Svg)
-
 %install
 rm -rf %{buildroot}
 
@@ -68,9 +66,13 @@ desktop-file-install \
 %endif
      patience-deck.desktop
 
-tools/convert data/patience-deck.svg \
-    %{buildroot}%{_datadir}/icons/hicolor/%1/apps/%{name}.png \
-    86x86 108x108 128x128 172x172
+for size in 86 108 128 172
+do
+    mkdir -p %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/
+    rsvg-convert --width=$size --height=$size --output \
+        %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/%{name}.png \
+        data/patience-deck.svg
+done
 
 %if %{with harbour}
 mkdir -p %{buildroot}%{_datadir}/%{name}/lib/
