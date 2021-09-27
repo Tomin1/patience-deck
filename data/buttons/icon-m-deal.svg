@@ -46,7 +46,7 @@
        cy="64"
        r="50" />
     <rect
-       style="fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
+       style="fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect6265"
        width="29.652124"
        height="47.665031"
@@ -64,11 +64,11 @@
          d="M 95.121586,73.918695 67.782047,93.173444 43.492443,84.786173"
          sodipodi:nodetypes="ccc" />
       <path
-         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none"
+         style="fill:none;fill-opacity:0.6;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
          d="m 95.121586,65.417852 v 8.500843"
          id="path7050" />
       <path
-         style="fill:none;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none"
+         style="fill:none;fill-opacity:0.6;stroke:#ffffff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.6"
          d="m 43.492443,76.28533 v 8.500843"
          id="path7050-7" />
     </g>
