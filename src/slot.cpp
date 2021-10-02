@@ -132,9 +132,9 @@ void Slot::insert(int index, Card *card)
 void Slot::set(int index, Card *card)
 {
     if (m_cards.at(index)) {
-        qCCritical(lcManager) << "Tried to replace card in filled location in slot" << *this << "at" << index;
+        qCCritical(lcSlot) << "Tried to replace card in filled location in slot" << *this << "at" << index;
     } else if (!card) {
-        qCCritical(lcManager) << "Tried to replace with null card in slot" << *this << "at" << index;
+        qCCritical(lcSlot) << "Tried to replace with null card in slot" << *this << "at" << index;
     } else {
         m_cards.replace(index, card);
         // TODO: Do adjustments once move ends
