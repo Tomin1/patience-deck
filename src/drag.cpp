@@ -79,7 +79,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 
-    qCDebug(lcDrag) << "Started drag of" << *card << "for" << *slot;
+    qCDebug(lcDrag) << "Started drag of" << card << "for" << slot;
 }
 
 Drag::~Drag()
@@ -120,11 +120,11 @@ void Drag::finish(QMouseEvent *event)
     if (mayBeAClick(event)) {
         m_state = Clicked;
         if (m_mayBeADoubleClick) {
-            qCDebug(lcDrag) << "Detected double click on" << *m_card;
+            qCDebug(lcDrag) << "Detected double click on" << m_card;
             emit doDoubleClick(m_id, m_source->id());
             deleteLater();
         } else {
-            qCDebug(lcDrag) << "Detected click on" << *m_card;
+            qCDebug(lcDrag) << "Detected click on" << m_card;
             emit doClick(m_id, m_source->id());
         }
     } else if (m_state == Dragging) {
@@ -157,7 +157,7 @@ void Drag::highlightOrDrop()
         case Unknown:
             // Cache miss, check
             m_couldDrop.insert(target->id(), Checking);
-            qCDebug(lcDrag) << "Testing move from" << m_source->id() << "to" << target->id();
+            qCDebug(lcDrag) << "Testing move from" << m_source << "to" << target;
             emit doCheckDrop(m_id, m_source->id(), target->id(), toCardData(m_cards));
             [[fallthrough]];
         case Checking: // Signal for the same slot received twice, the correct signal should still arrive
@@ -166,7 +166,7 @@ void Drag::highlightOrDrop()
         case CanDrop:
             // Found target to highlight or drop to
             if (m_state < Dropping) {
-                qCDebug(lcDrag) << "Highlighting" << target->id();
+                qCDebug(lcDrag) << "Highlighting" << target;
                 m_table->highlight(target);
             } else {
                 m_table->highlight(nullptr);
@@ -190,14 +190,14 @@ void Drag::highlightOrDrop()
 
 void Drag::drop(Slot *slot)
 {
-    qCDebug(lcDrag) << "Moving from" << m_source->id() << "to" << slot->id();
+    qCDebug(lcDrag) << "Moving from" << m_source << "to" << slot;
     m_state = Dropped;
     emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards));
 }
 
 void Drag::cancel(bool force)
 {
-    qCDebug(lcDrag) << "Canceling drag of" << *m_card << "at state" << m_state;
+    qCDebug(lcDrag) << "Canceling drag of" << m_card << "at state" << m_state;
 
     if (force || m_state < Dropped) {
         if (m_state >= StartingDrag) { 

@@ -121,9 +121,9 @@ bool Manager::handleQueued(const Action &action) {
                 handled = true;
                 card->setShow(action.data.show);
                 card->update();
-                qCDebug(lcManager) << "Inserted" << *card << "to" << *slot << "at" << action.index;
+                qCDebug(lcManager) << "Inserted" << card << "to" << slot << "at" << action.index;
             } else {
-                qCDebug(lcManager) << "Inserted placeholder for" << action.data << "to" << *slot << "at" << action.index;
+                qCDebug(lcManager) << "Inserted placeholder for" << action.data << "to" << slot << "at" << action.index;
             }
             if (action.replaces)
                 slot->set(action.index, card);
@@ -137,11 +137,11 @@ bool Manager::handleQueued(const Action &action) {
             m_queue.decrementQueued(slot->id(), action.index, action.data);
             if (card) {
                 if (card->rank() != action.data.rank || card->suit() != action.data.suit)
-                    qCCritical(lcManager) << "Wrong card taken! Was" << *card << "should be" << action.data;
+                    qCCritical(lcManager) << "Wrong card taken! Was" << card << "should be" << action.data;
                 card->setParentItem(nullptr);
                 m_queue.store(card);
             } else {
-                qCDebug(lcManager) << "Removed placeholder from" << *slot << "at" << action.index;
+                qCDebug(lcManager) << "Removed placeholder from" << slot << "at" << action.index;
             }
             handled = true;
             break;
@@ -154,8 +154,7 @@ bool Manager::handleQueued(const Action &action) {
                 card->setShow(action.data.show);
                 if (card->rank() != action.data.rank || card->suit() != action.data.suit)
                     qCCritical(lcManager) << "Rank or suit doesn't match to" << action.data
-                                          << "for card" << *card << "in slot" << action.slot
-                                          << "at index" << action.index;
+                                          << "for" << card << "in" << slot << "at index" << action.index;
                 card->update();
             } else {
                 m_queue.flipQueued(slot->id(), action.index, action.data);

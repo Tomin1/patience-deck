@@ -422,10 +422,10 @@ void Table::updateCardSize()
         return;
 
     qCDebug(lcTable).nospace() << "Drawing to " << QSize(width(), height())
-                                  << " area with margin of " << m_margin
-                                  << ", maximum margin of " << m_maximumMargin
-                                  << ", minimum side margin of " << m_minimumSideMargin
-                                  << "and table size of " << m_tableSize;
+                               << " area with margin of " << m_margin
+                               << ", maximum margin of " << m_maximumMargin
+                               << ", minimum side margin of " << m_minimumSideMargin
+                               << "and table size of " << m_tableSize;
 
     qreal verticalSpace = width() - m_minimumSideMargin*2.0;
     qreal horizontalSpace = height() - m_margin.height()*2.0;
@@ -448,7 +448,7 @@ void Table::updateCardSize()
     }
 
     qCDebug(lcTable) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
-                        << "and card margin of" << m_cardMargin;
+                     << "and card margin of" << m_cardMargin;
 
     if (m_maximumMargin.width() > 0 && m_cardMargin.width() + m_margin.width() > m_maximumMargin.width())
         m_cardMargin.setWidth(std::max(m_maximumMargin.width() - m_margin.width(), (qreal)0.0F));
@@ -459,11 +459,10 @@ void Table::updateCardSize()
     m_sideMargin = ceil((width() - (m_cardSpace.width()+m_margin.width())*m_tableSize.width() + m_margin.width()) / 2.0);
     if (m_sideMargin < m_minimumSideMargin)
         qCWarning(lcTable) << "Miscalculated side margin! Current is" << m_sideMargin
-                              << "but it should be" << m_minimumSideMargin;
+                           << "but it should be" << m_minimumSideMargin;
 
-    qCInfo(lcTable) << "Set card dimensions to" << m_cardSize
-                       << "with space of" << m_cardSpace
-                       << "and margin of" << m_cardMargin;
+    qCInfo(lcTable) << "Set card dimensions to" << m_cardSize << "with space of" << m_cardSpace
+                    << "and margin of" << m_cardMargin;
     qCDebug(lcTable) << "Side margin is" << m_sideMargin;
 
     m_dirtyCardSize = false;
@@ -523,12 +522,12 @@ Table::iterator Table::end()
 
 void Table::mousePressEvent(QMouseEvent *event)
 {
-    qCDebug(lcMouse) << event << "for" << *this;
+    qCDebug(lcMouse) << event << "for" << this;
 
     for (Slot *slot : m_slots) {
         QPointF point = mapToItem(slot, event->pos());
         if (slot->contains(point)) {
-            qCDebug(lcMouse) << "Found slot" << *slot << "on click position";
+            qCDebug(lcMouse) << "Found" << slot << "on click position";
             m_timer.start();
             m_startPoint = event->pos();
         }
@@ -537,7 +536,7 @@ void Table::mousePressEvent(QMouseEvent *event)
 
 void Table::mouseReleaseEvent(QMouseEvent *event)
 {
-    qCDebug(lcMouse) << event << "for" << *this;
+    qCDebug(lcMouse) << event << "for" << this;
 
     auto styleHints = QGuiApplication::styleHints();
     if (!m_timer.hasExpired(styleHints->startDragTime())
@@ -545,15 +544,18 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
         for (Slot *slot : m_slots) {
             QPointF point = mapToItem(slot, event->pos());
             if (slot->contains(point)) {
-                qCDebug(lcTable) << "Detected click on" << *slot;
+                qCDebug(lcTable) << "Detected click on" << slot;
                 emit doClick(-1, slot->id());
             }
         }
     }
 }
 
-QDebug operator<<(QDebug debug, const Table &)
+QDebug operator<<(QDebug debug, const Table *table)
 {
-    debug.nospace() << "Table()";
+    if (table)
+        debug.nospace() << "invalid table";
+    else
+        debug.nospace() << "Table()";
     return debug.space();
 }

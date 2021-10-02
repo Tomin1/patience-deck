@@ -73,7 +73,7 @@ void Queue<C>::requeue(Action action)
 template<class C>
 void Queue<C>::store(C card)
 {
-    qCDebug(lcQueue) << "Storing" << *card;
+    qCDebug(lcQueue) << "Storing" << card;
     m_cards.insert(card->value(), card);
 }
 
@@ -121,7 +121,7 @@ void Queue<C>::decrementQueued(int slot, int index, const CardData &data)
         if (it->index == index) {
             if (it->data.rank != data.rank || it->data.suit != data.suit)
                 qCCritical(lcQueue) << "Rank or suit doesn't match to" << data
-                                    << "for queued" << it->data << "in slot" << slot
+                                    << "for queued" << it->data << "in" << slot
                                     << "at index" << index << "while decrementing";
             it = m_laterActions[slot].erase(it);
         } else {
@@ -140,7 +140,7 @@ void Queue<C>::flipQueued(int slot, int index, const CardData &data)
             action.data.show = data.show;
             if (action.data.rank != data.rank || action.data.suit != data.suit)
                 qCCritical(lcQueue) << "Rank or suit doesn't match to" << data
-                                    << "for queued" << action.data << "in slot" << slot
+                                    << "for queued" << action.data << "in" << slot
                                     << "at index" << index << "while flipping";
             break;
         }

@@ -169,7 +169,7 @@ void Card::handleCardTextureUpdated()
 
 void Card::mousePressEvent(QMouseEvent *event)
 {
-    qCDebug(lcMouse) << event << "for" << *this;
+    qCDebug(lcMouse) << event << "for" << this;
 
     m_table->drag(event, this);
 
@@ -178,7 +178,7 @@ void Card::mousePressEvent(QMouseEvent *event)
 
 void Card::mouseReleaseEvent(QMouseEvent *event)
 {
-    qCDebug(lcMouse) << event << "for" << *this;
+    qCDebug(lcMouse) << event << "for" << this;
 
     auto drag = m_table->drag(event, this);
 
@@ -194,7 +194,7 @@ void Card::mouseReleaseEvent(QMouseEvent *event)
 
 void Card::mouseMoveEvent(QMouseEvent *event)
 {
-    qCDebug(lcMouse) << event << "for" << *this;
+    qCDebug(lcMouse) << event << "for" << this;
 
     auto drag = m_table->drag(event, this);
 
@@ -217,14 +217,18 @@ bool Card::highlighted() const
     return slot && slot->highlighted() && slot->top() == this;
 }
 
-QDebug operator<<(QDebug debug, const Card &card)
+QDebug operator<<(QDebug debug, const Card *card)
 {
-    debug.nospace() << "Card(rank=";
-    debug.nospace() << card.rank();
-    debug.nospace() << ", suit=";
-    debug.nospace() << card.suit();
-    debug.nospace() << ", show=";
-    debug.nospace() << card.show();
-    debug.nospace() << ")";
+    if (card) {
+        debug.nospace() << "Card(rank=";
+        debug.nospace() << card->rank();
+        debug.nospace() << ", suit=";
+        debug.nospace() << card->suit();
+        debug.nospace() << ", show=";
+        debug.nospace() << card->show();
+        debug.nospace() << ")";
+    } else {
+        debug.nospace() << "invalid card";
+    }
     return debug.space();
 }

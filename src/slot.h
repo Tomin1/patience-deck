@@ -104,6 +104,6 @@ private:
     bool m_highlighted;
 };
 
-QDebug operator<<(QDebug debug, const Slot &slot);
+QDebug operator<<(QDebug debug, const Slot *slot);
 
 #endif // SLOT_H

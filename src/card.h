@@ -66,6 +66,6 @@ private:
     bool m_dirty;
 };
 
-QDebug operator<<(QDebug debug, const Card &card);
+QDebug operator<<(QDebug debug, const Card *card);
 
 #endif // CARD_H

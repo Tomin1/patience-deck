@@ -86,6 +86,7 @@ struct CardData {
     SuitAndRank value() const;
 
     friend QDebug operator<<(QDebug debug, const CardData &data);
+    friend QDebug operator<<(QDebug debug, const CardData *data);
 };
 
 typedef QList<CardData> CardList;

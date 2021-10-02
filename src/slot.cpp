@@ -126,22 +126,22 @@ void Slot::insert(int index, Card *card)
         updateLocations();
     if (card)
         card->setParentItem(this);
-    qCDebug(lcSlot) << "Inserted card to slot" << m_id << "and card count is now" << m_cards.count();
+    qCDebug(lcSlot) << "Inserted card to" << this;
 }
 
 void Slot::set(int index, Card *card)
 {
     if (m_cards.at(index)) {
-        qCCritical(lcSlot) << "Tried to replace card in filled location in slot" << *this << "at" << index;
+        qCCritical(lcSlot) << "Tried to replace card in filled location in" << this << "at" << index;
     } else if (!card) {
-        qCCritical(lcSlot) << "Tried to replace with null card in slot" << *this << "at" << index;
+        qCCritical(lcSlot) << "Tried to replace with null card in" << this << "at" << index;
     } else {
         m_cards.replace(index, card);
         // TODO: Do adjustments once move ends
         if (!m_table->preparing())
             updateLocations();
         card->setParentItem(this);
-        qCDebug(lcSlot) << "Replaced card at slot" << m_id << "index" << index;
+        qCDebug(lcSlot) << "Replaced card at" << this << "index" << index;
     }
 }
 
@@ -150,7 +150,7 @@ Card *Slot::takeAt(int index)
     Card *card = m_cards.takeAt(index);
     if (!m_table->preparing())
         updateLocations();
-    qCDebug(lcSlot) << "Removed card from slot" << m_id << "and card count is now" << m_cards.count();
+    qCDebug(lcSlot) << "Removed card from" << this;
     if (isEmpty())
         emit slotEmptied();
     return card;
@@ -160,7 +160,7 @@ QList<Card *> Slot::takeAll()
 {
     QList<Card *> cards;
     m_cards.swap(cards);
-    qCDebug(lcSlot) << "Removed all cards from slot" << m_id;
+    qCDebug(lcSlot) << "Removed all cards from" << this;
     emit slotEmptied();
     return cards;
 }
@@ -170,7 +170,7 @@ void Slot::highlight()
     m_highlighted = true;
     if (!isEmpty())
         top()->update();
-    qCDebug(lcSlot) << "Slot" << m_id << "is now highlighted";
+    qCDebug(lcSlot) << this << "is now highlighted";
 }
 
 void Slot::removeHighlight()
@@ -178,7 +178,7 @@ void Slot::removeHighlight()
     m_highlighted = false;
     if (!isEmpty())
         top()->update();
-    qCDebug(lcSlot) << "Slot" << m_id << "is no longer highlighted";
+    qCDebug(lcSlot) << this << "is no longer highlighted";
 }
 
 CardList Slot::asCardData(Card *first) const
@@ -198,7 +198,7 @@ CardList Slot::asCardData(Card *first) const
 QList<Card *> Slot::take(Card *first)
 {
     if (!first) {
-        qCCritical(lcSlot) << "Tried to take cards with nullptr from slot" << *this;
+        qCCritical(lcSlot) << "Tried to take cards with nullptr from" << this;
         return QList<Card *>();
     }
 
@@ -209,8 +209,7 @@ QList<Card *> Slot::take(Card *first)
     m_cards.erase(it, end());
     if (expanded() && !m_table->preparing())
         updateLocations();
-    qCDebug(lcSlot) << "Removed" << tail.count() << "cards from slot" << m_id
-                    << "and card count is now" << m_cards.count();
+    qCDebug(lcSlot) << "Removed" << tail.count() << "cards from" << this;
     return tail;
 }
 
@@ -223,8 +222,7 @@ void Slot::put(const QList<Card *> &cards)
         if (card)
             card->setParentItem(this);
     }
-    qCDebug(lcSlot) << "Added" << cards.count() << "cards to slot" << m_id
-                    << "and card count is now" << m_cards.count();
+    qCDebug(lcSlot) << "Added" << cards.count() << "cards to" << this;
 }
 
 Card *Slot::top() const
@@ -299,7 +297,7 @@ Slot::const_iterator Slot::constFind(Card *card) const
         if (*it == card)
             return it;
     }
-    qCWarning(lcSlot) << "Slot" << m_id << "did not contain" << *card;
+    qCWarning(lcSlot) << this << "did not contain" << card;
     return constEnd();
 }
 
@@ -322,7 +320,7 @@ Slot::iterator Slot::find(Card *card)
         if (*it == card)
             return it;
     }
-    qCWarning(lcSlot) << "Slot" << m_id << "did not contain" << *card;
+    qCWarning(lcSlot) << this << "did not contain" << card;
     return end();
 }
 
@@ -348,12 +346,16 @@ bool Slot::reevaluateDelta()
     return oldDelta != m_calculatedDelta;
 }
 
-QDebug operator<<(QDebug debug, const Slot &slot)
+QDebug operator<<(QDebug debug, const Slot *slot)
 {
-    debug.nospace() << "Slot(id=";
-    debug.nospace() << slot.id();
-    debug.nospace() << ", #cards=";
-    debug.nospace() << slot.count();
-    debug.nospace() << ")";
+    if (slot) {
+        debug.nospace() << "Slot(id=";
+        debug.nospace() << slot->id();
+        debug.nospace() << ", #cards=";
+        debug.nospace() << slot->count();
+        debug.nospace() << ")";
+    } else {
+        debug.nospace() << "invalid slot";
+    }
     return debug.space();
 }

@@ -75,6 +75,18 @@ QDebug operator<<(QDebug debug, const CardData &data)
     return debug.space();
 }
 
+QDebug operator<<(QDebug debug, const CardData *data)
+{
+    if (data) {
+        debug.nospace() << "Rank " << data->rank << " of suit " << data->suit;
+        if (!data->show)
+            debug.nospace() << " from behind";
+    } else {
+        debug.nospace() << "invalid card data";
+    }
+    return debug.space();
+}
+
 EnginePrivate::EnginePrivate(QObject *parent)
     : QObject(parent)
     , m_delayedCallTimer(nullptr)

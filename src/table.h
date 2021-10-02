@@ -153,6 +153,6 @@ private:
     QImage m_cardImage;
 };
 
-QDebug operator<<(QDebug debug, const Table &);
+QDebug operator<<(QDebug debug, const Table *table);
 
 #endif // TABLE_H
