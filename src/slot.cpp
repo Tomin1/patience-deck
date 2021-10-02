@@ -197,8 +197,16 @@ CardList Slot::asCardData(Card *first) const
 
 QList<Card *> Slot::take(Card *first)
 {
-    QList<Card *> tail = m_cards.mid(m_cards.indexOf(first));
-    m_cards.erase(find(first), end());
+    if (!first) {
+        qCCritical(lcSlot) << "Tried to take cards with nullptr from slot" << *this;
+        return QList<Card *>();
+    }
+
+    auto it = find(first);
+    QList<Card *> tail;
+    for (auto it2 = it; it2 != end(); ++it2)
+        tail.append(*it2);
+    m_cards.erase(it, end());
     if (expanded() && !m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed" << tail.count() << "cards from slot" << m_id
