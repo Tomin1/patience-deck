@@ -220,6 +220,9 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
     if (could) {
         m_state = Dragging;
         m_cards = m_source->take(m_card);
+        if (m_cards.empty())
+            qCCritical(lcDrag) << "Tried to drag empty stack of cards from slot" << m_source
+                               << "starting from" << m_card;
         for (Card *card : m_cards) {
             if (card)
                 card->setParentItem(this);
@@ -246,6 +249,11 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
 
     if (id != m_id)
         return;
+
+    if (m_state >= Finished) {
+        qCWarning(lcDrag) << "This drag has already handled dropping";
+        return;
+    }
 
     if (could) {
         m_state = Finished;
