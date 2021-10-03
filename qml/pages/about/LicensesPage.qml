@@ -77,7 +77,7 @@ Page {
             "section": "libs"
         }),
         ({
-            "text": "Libtldi library is distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
+            "text": "Libltdl library is distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
             "abbrs": { 0: "GNU LGPLv2.1", 1: "GNU GPLv2" },
             "names": {
                 0: "GNU Lesser General Public License version 2.1",
