@@ -93,6 +93,7 @@ Page {
 
     SilicaListView {
         anchors.fill: parent
+        bottomMargin: Theme.paddingLarge
         spacing: Theme.paddingLarge
 
         header: Component {
