@@ -40,7 +40,7 @@ Page {
             "section": "main"
         }),
         ({
-            "text": "GNOME Aisleriot manual pages are licensed under <a href='#1'>%1</a> or later.",
+            "text": "GNOME Aisleriot manual pages are licensed under <a href='#1'>%1</a> (1.1 or later).",
             "abbrs": { 0: "GFDL 1.3" },
             "names": { 0: "GNU Free Documentation License version 1.3" },
             "links": { 0: "COPYING.GFDL1.3" },
