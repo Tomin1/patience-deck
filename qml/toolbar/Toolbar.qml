@@ -75,7 +75,8 @@ Item {
     Flow {
         id: mainButtons
 
-        x: vertical ? 0 : Theme.horizontalPageMargin
+        // Button graphics have some padding, thus remove some of that page margin
+        x: vertical ? 0 : Theme.horizontalPageMargin - Theme.paddingMedium
         y: vertical ? title.y + title.height : 0
         height: vertical ? Theme.itemSizeLarge * (buttonCount - 1) : Theme.itemSizeLarge
         width: {
@@ -146,9 +147,10 @@ Item {
     Flow {
         id: extraButtons
 
-        x: vertical ? _labeledButtonWidth : Theme.horizontalPageMargin
+        // Button graphics have some padding, thus remove some of that page margin
+        x: vertical ? _labeledButtonWidth : Theme.horizontalPageMargin - Theme.paddingMedium
         y: mainButtons.y + (vertical ? 0 : mainButtons.height)
-        width: vertical ? _labeledButtonWidth : (parent.width - 2 * Theme.horizontalPageMargin)
+        width: vertical ? _labeledButtonWidth : (parent.width - x - Theme.horizontalPageMargin)
         spacing: vertical? 0 : (width - hintButton.width - dealButton.width - restartButton.width) / 2
         visible: expanded || animating
 
