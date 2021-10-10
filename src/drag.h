@@ -82,6 +82,7 @@ private:
     void highlightOrDrop();
     static bool couldBeDoubleClick(const Card *card);
     static quint32 nextId();
+    static CardList toCardData(const QList<Card *> &cards, DragState state);
 
     static quint32 s_count;
     static QElapsedTimer s_doubleClickTimer;

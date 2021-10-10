@@ -25,24 +25,6 @@
 #include "constants.h"
 #include "logging.h"
 
-namespace {
-
-CardList toCardData(const QList<Card *> &cards)
-{
-    CardList list;
-    for (const Card *card : cards) {
-        if (card)
-            list << card->data();
-        else
-            qCCritical(lcDrag) << "Tried to convert non-existing card to data";
-    }
-    if (list.isEmpty())
-        qCCritical(lcDrag) << "Returning an empty list of CardData from list of cards";
-    return list;
-}
-
-} // namespace
-
 quint32 Drag::s_count = 0;
 
 QElapsedTimer Drag::s_doubleClickTimer;
@@ -158,7 +140,7 @@ void Drag::highlightOrDrop()
             // Cache miss, check
             m_couldDrop.insert(target->id(), Checking);
             qCDebug(lcDrag) << "Testing move from" << m_source << "to" << target;
-            emit doCheckDrop(m_id, m_source->id(), target->id(), toCardData(m_cards));
+            emit doCheckDrop(m_id, m_source->id(), target->id(), toCardData(m_cards, m_state));
             [[fallthrough]];
         case Checking: // Signal for the same slot received twice, the correct signal should still arrive
             m_target--; // Check the slot again later
@@ -192,7 +174,7 @@ void Drag::drop(Slot *slot)
 {
     qCDebug(lcDrag) << "Moving from" << m_source << "to" << slot;
     m_state = Dropped;
-    emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards));
+    emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards, m_state));
 }
 
 void Drag::cancel(bool force)
@@ -201,7 +183,7 @@ void Drag::cancel(bool force)
 
     if (force || m_state < Dropped) {
         if (m_state >= StartingDrag) { 
-            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards));
+            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards, Canceled));
             this->setParentItem(nullptr);
             m_source->put(m_cards);
             m_cards.clear();
@@ -315,4 +297,18 @@ quint32 Drag::nextId()
     if (id == 0) // We wrapped around, 0 is not an acceptable value
         id = ++s_count;
     return id;
+}
+
+CardList Drag::toCardData(const QList<Card *> &cards, DragState state)
+{
+    CardList list;
+    for (const Card *card : cards) {
+        if (card)
+            list << card->data();
+        else
+            qCCritical(lcDrag) << "Tried to convert non-existing card to data";
+    }
+    if (list.isEmpty())
+        qCCritical(lcDrag) << "Returning an empty list of CardData in state" << state;
+    return list;
 }
