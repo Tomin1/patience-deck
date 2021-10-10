@@ -171,7 +171,12 @@ void Card::mousePressEvent(QMouseEvent *event)
 {
     qCDebug(lcMouse) << event << "for" << this;
 
-    m_table->drag(event, this);
+    Drag *drag = m_table->drag(event, this);
+
+    if (!drag) {
+        qCWarning(lcDrag) << "Could not handle mouse press: Another drag ongoing!";
+        return;
+    }
 
     setKeepMouseGrab(true);
 }
@@ -183,7 +188,7 @@ void Card::mouseReleaseEvent(QMouseEvent *event)
     auto drag = m_table->drag(event, this);
 
     if (!drag) {
-        qCCritical(lcDrag) << "Can not handle mouse release! There is no drag ongoing!";
+        qCWarning(lcDrag) << "Could not handle mouse release: no drag ongoing or there is another drag!";
         return;
     }
 
@@ -199,7 +204,7 @@ void Card::mouseMoveEvent(QMouseEvent *event)
     auto drag = m_table->drag(event, this);
 
     if (!drag) {
-        qCCritical(lcDrag) << "Can not handle mouse move! There is no drag ongoing!";
+        qCWarning(lcDrag) << "Could not handle mouse move: no drag ongoing or there is another drag!";
         return;
     }
 
