@@ -104,7 +104,7 @@ void Drag::finish(QMouseEvent *event)
         if (m_mayBeADoubleClick) {
             qCDebug(lcDrag) << "Detected double click on" << m_card;
             emit doDoubleClick(m_id, m_source->id());
-            deleteLater();
+            done();
         } else {
             qCDebug(lcDrag) << "Detected click on" << m_card;
             emit doClick(m_id, m_source->id());
@@ -190,7 +190,7 @@ void Drag::cancel(bool force)
         }
 
         m_state = Canceled;
-        deleteLater();
+        done();
     }
 }
 
@@ -241,7 +241,7 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
         m_state = Finished;
         m_table->store(m_cards);
         m_cards.clear();
-        deleteLater();
+        done();
     } else {
         cancel(true);
     }
@@ -257,6 +257,12 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
     if (could)
         s_doubleClickTimer.invalidate();
 
+    done();
+}
+
+void Drag::done()
+{
+    emit finished();
     deleteLater();
 }
 
