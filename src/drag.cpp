@@ -177,11 +177,11 @@ void Drag::drop(Slot *slot)
     emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards, m_state));
 }
 
-void Drag::cancel(bool force)
+void Drag::cancel()
 {
     qCDebug(lcDrag) << "Canceling drag of" << m_card << "at state" << m_state;
 
-    if (force || m_state < Dropped) {
+    if (m_state < Dropped) {
         if (m_state >= StartingDrag) { 
             emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards, Canceled));
             this->setParentItem(nullptr);
@@ -243,7 +243,7 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
         m_cards.clear();
         done();
     } else {
-        cancel(true);
+        cancel();
     }
 }
 
