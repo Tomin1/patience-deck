@@ -363,6 +363,8 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
     could = scm_is_true(rv);
     if (could)
         m_action = id;
+    else
+        d_ptr->discardMove();
     emit couldDrag(id, slotId, could);
     return could;
 }

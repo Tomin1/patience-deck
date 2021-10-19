@@ -112,6 +112,8 @@ void Drag::finish(QMouseEvent *event)
     } else if (m_state == Dragging) {
         m_state = Dropping;
         checkTargets(true);
+    } else if (m_state == Canceled) {
+        done();
     } else {
         cancel();
     }
@@ -182,15 +184,16 @@ void Drag::cancel()
     qCDebug(lcDrag) << "Canceling drag of" << m_card << "at state" << m_state;
 
     if (m_state < Dropped) {
-        if (m_state >= StartingDrag) { 
+        if (m_state >= Dragging) { 
             emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards, Canceled));
             this->setParentItem(nullptr);
             m_source->put(m_cards);
             m_cards.clear();
         }
 
+        if (m_state == Dropping || m_state == AboutToDrag)
+            done();
         m_state = Canceled;
-        done();
     }
 }
 
@@ -213,6 +216,8 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
         }
 
         checkTargets();
+    } else {
+        cancel();
     }
 }
 
