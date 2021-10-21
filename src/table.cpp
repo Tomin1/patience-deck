@@ -554,8 +554,8 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
 QDebug operator<<(QDebug debug, const Table *table)
 {
     if (table)
-        debug.nospace() << "invalid table";
-    else
         debug.nospace() << "Table()";
+    else
+        debug.nospace() << "invalid table";
     return debug.space();
 }
