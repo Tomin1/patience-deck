@@ -7,7 +7,7 @@
 Summary: A GNU implementation of Scheme for application extensibility
 Name: guile22
 Version: 2.2.7
-Release: 5
+Release: 6
 Source: ftp://ftp.gnu.org/pub/gnu/guile/guile-%{version}.tar.gz
 URL: http://www.gnu.org/software/guile/
 License: LGPLv3+
@@ -19,10 +19,7 @@ Requires: coreutils
 
 Provides: bundled(gnulib)
 
-#Patch1: guile-multilib.patch
-#Patch3: guile-threadstest.patch
-#Patch4: disable-out-of-memory-test.patch
-#Patch5: guile-configure.patch
+Patch1: guile-avoid-libcrypt-and-ncurses.patch
 
 %description
 GUILE (GNU's Ubiquitous Intelligent Language for Extension) is a library
@@ -48,16 +45,13 @@ applications that will be linked to GUILE.  You'll also need to
 install the guile package.
 
 %prep
-%setup -q -n guile-%version
-#%patch1 -p1 -b .multilib
-#%patch3 -p1 -b .threadstest
-#%patch4 -p1
-#%patch5 -p1 -b .configure
+%autosetup -p1 -n guile-%version
 
 %build
 
 autoreconf -fiv
 %configure --disable-static --disable-error-on-warning --program-suffix=%{?mver}
+sed '/HAVE_CRYPT/s/1/0/' -i config.h
 
 # Remove RPATH
 sed -i 's|" $sys_lib_dlsearch_path "|" $sys_lib_dlsearch_path %{_libdir} "|' \
@@ -106,9 +100,6 @@ touch $RPM_BUILD_ROOT%{_datadir}/guile/site/%{mver}/slibcat
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1208760.
 find $RPM_BUILD_ROOT%{_datadir} -name '*.scm' -exec touch -r "%{_specdir}/guile22.spec" '{}' \;
 find $RPM_BUILD_ROOT%{_libdir} -name '*.go' -exec touch -r "%{_specdir}/guile22.spec" '{}' \;
-
-# Remove Libtool archive
-rm $RPM_BUILD_ROOT%{_libdir}/guile/%{mver}/extensions/guile-readline.la
 
 #%check
 #make %{?_smp_mflags} check
@@ -173,6 +164,9 @@ fi
 
 
 %changelog
+* Sat Oct 16 2021 Tomi Leppänen – 2.2.7-6
+- Added a patch to skip libcrypt and ncurses dependencies
+
 * Sat Jun 6 2020 Tomi Leppänen – 2.2.6-5
 - Spec taken from Fedora, adjusted for Sailfish OS
 

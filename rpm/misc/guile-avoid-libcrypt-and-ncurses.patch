@@ -1,0 +1,113 @@
+--- guile-2.2.7/configure.ac.old	2021-10-16 16:32:47.617617544 +0300
++++ guile-2.2.7/configure.ac	2021-10-16 16:33:41.975779852 +0300
+@@ -812,7 +812,7 @@
+ #   cuserid - on Tru64 5.1b the declaration is documented to be available
+ #       only with `_XOPEN_SOURCE' or some such.
+ #
+-AC_CHECK_HEADERS([crypt.h netdb.h pthread.h pthread_np.h sys/param.h sys/resource.h sys/file.h sys/mman.h])
++AC_CHECK_HEADERS([netdb.h pthread.h pthread_np.h sys/param.h sys/resource.h sys/file.h sys/mman.h])
+ AC_CHECK_FUNCS(chroot flock getlogin cuserid getpriority setpriority getpass sethostname gethostname)
+ AC_CHECK_DECLS([sethostname, hstrerror, cuserid])
+ 
+@@ -829,9 +829,9 @@
+ # AC_SEARCH_LIBS lets us add -lcrypt to LIBS only if crypt() is not in the
+ # libraries already in that list.
+ #
+-AC_SEARCH_LIBS(crypt, crypt,
+-  [AC_DEFINE([HAVE_CRYPT],1,
+-             [Define to 1 if you have the `crypt' function.])])
++#AC_SEARCH_LIBS(crypt, crypt,
++#  [AC_DEFINE([HAVE_CRYPT],1,
++#             [Define to 1 if you have the `crypt' function.])])
+ 
+ # When compiling with GCC on some OSs (Solaris, AIX), _Complex_I doesn't
+ # work; in the reported cases so far, 1.0fi works well instead.  According
+@@ -1644,7 +1644,7 @@
+ EXTRA_DOT_X_FILES="`echo ${LIB@&t@OBJS} | sed 's,\.[[^.]]* ,.x ,g;s,\.[[^.]]*$,.x,'`"
+ 
+ # GNU Readline bindings.
+-GUILE_READLINE
++#GUILE_READLINE
+ 
+ AC_SUBST(GUILE_MAJOR_VERSION)
+ AC_SUBST(GUILE_MINOR_VERSION)
+@@ -1732,7 +1732,6 @@
+   examples/Makefile
+   libguile/Makefile
+   libguile/version.h
+-  guile-readline/Makefile
+   test-suite/Makefile
+   test-suite/standalone/Makefile
+   test-suite/vm/Makefile
+--- guile-2.2.7/Makefile.am.old	2021-10-16 19:53:28.937129050 +0300
++++ guile-2.2.7/Makefile.am	2021-10-16 19:54:14.812239999 +0300
+@@ -32,7 +32,6 @@
+ 	libguile				\
+ 	bootstrap				\
+ 	module					\
+-	guile-readline				\
+ 	examples				\
+ 	emacs					\
+ 	test-suite				\
+--- guile-2.2.7/Makefile.in.old	2021-10-16 19:53:19.629106542 +0300
++++ guile-2.2.7/Makefile.in	2021-10-16 19:54:18.133248029 +0300
+@@ -1697,7 +1697,6 @@
+ 	libguile				\
+ 	bootstrap				\
+ 	module					\
+-	guile-readline				\
+ 	examples				\
+ 	emacs					\
+ 	test-suite				\
+--- guile-2.2.7/module/Makefile.am.old	2021-10-16 19:53:35.398144676 +0300
++++ guile-2.2.7/module/Makefile.am	2021-10-16 19:54:21.943258612 +0300
+@@ -39,7 +39,6 @@
+ 	$(top_builddir)/meta/build-env					\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)		\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"			\
+-	  -L "$(abs_top_srcdir)/guile-readline"				\
+ 	  -o "ice-9/psyntax-pp.go" "$(srcdir)/ice-9/psyntax.scm"
+ 
+ SOURCES =					\
+--- guile-2.2.7/module/Makefile.in.old	2021-10-16 19:53:38.249151576 +0300
++++ guile-2.2.7/module/Makefile.in	2021-10-16 19:54:26.802272336 +0300
+@@ -2264,7 +2264,6 @@
+ 	$(top_builddir)/meta/build-env				\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)	\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"		\
+-	  -L "$(abs_top_srcdir)/guile-readline"			\
+ 	  -o "$@" "$<"
+ 
+ .el.go:
+@@ -2272,7 +2271,6 @@
+ 	$(top_builddir)/meta/build-env				\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)	\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"		\
+-	  -L "$(abs_top_srcdir)/guile-readline"			\
+ 	  --from=elisp -o "$@" "$<"
+ $(VM_TARGETS): $(top_builddir)/libguile/vm-operations.h
+ 
+@@ -2287,7 +2285,6 @@
+ 	$(top_builddir)/meta/build-env					\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)		\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"			\
+-	  -L "$(abs_top_srcdir)/guile-readline"				\
+ 	  -o "ice-9/psyntax-pp.go" "$(srcdir)/ice-9/psyntax.scm"
+ 
+ ice-9/psyntax-pp.scm.gen:
+--- guile-2.2.7/am/guilec.old	2021-10-16 19:53:50.113180265 +0300
++++ guile-2.2.7/am/guilec	2021-10-16 19:54:31.337285148 +0300
+@@ -31,7 +31,6 @@
+ 	$(top_builddir)/meta/build-env				\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)	\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"		\
+-	  -L "$(abs_top_srcdir)/guile-readline"			\
+ 	  -o "$@" "$<"
+ 
+ .el.go:
+@@ -39,5 +38,4 @@
+ 	$(top_builddir)/meta/build-env				\
+ 	guild compile --target="$(host)" $(GUILE_WARNINGS)	\
+ 	  -L "$(abs_srcdir)" -L "$(abs_builddir)"		\
+-	  -L "$(abs_top_srcdir)/guile-readline"			\
+ 	  --from=elisp -o "$@" "$<"

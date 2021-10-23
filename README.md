@@ -61,6 +61,7 @@ Repeat for _libunistring_:
 
 And for _guile_:
 
+    $ sfdk --specfile ../patience-deck/rpm/misc/guile.spec apply
     $ sfdk --specfile ../patience-deck/rpm/misc/guile.spec build
 
 Go to _Patience Deck_ source directory and continue by building it.
