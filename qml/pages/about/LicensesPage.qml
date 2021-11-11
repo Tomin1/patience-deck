@@ -92,14 +92,11 @@ Page {
             "type": "regular"
         }),
         ({
-            "text": "Libltdl library is distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
-            "abbrs": { 0: "GNU LGPLv2.1", 1: "GNU GPLv2" },
-            "names": {
-                0: "GNU Lesser General Public License version 2.1",
-                1: "GNU General Public License version 2"
-             },
-            "links": { 0: "lib/licenses/COPYING.LIB", 1: "lib/licenses/COPYING.GPL2" },
-            "count": 2,
+            "text": "Libltdl library is distributed under <a href='#1'>%1</a>.",
+            "abbrs": { 0: "GNU LGPLv2.1" },
+            "names": { 0: "GNU Lesser General Public License version 2.1" },
+            "links": { 0: "lib/licenses/COPYING.LIB" },
+            "count": 1,
             "type": "last"
         })
     ]

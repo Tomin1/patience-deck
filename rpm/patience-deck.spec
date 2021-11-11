@@ -107,8 +107,6 @@ cp libs/%{_arch}/gc-*/README.QUICK \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/gc.README
 cp libs/%{_arch}/libffi-*/LICENSE \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/libffi.LICENSE
-cp libs/%{_arch}/libtool-*/COPYING \
-   %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.GPL2
 cp libs/%{_arch}/libtool-*/libltdl/COPYING.LIB \
    %{buildroot}%{_datadir}/%{name}/lib/licenses/COPYING.LIB
 
