@@ -24,12 +24,21 @@ Page {
 
     readonly property var licenses: [
         ({
+            //% "Patience Deck is free software, "
+            //% "and you are welcome to redistribute it under certain conditions. "
+            //% "This software comes with ABSOLUTELY NO WARRANTY. "
+            //% "Patience Deck contains work licensed under multiple different licenses."
+            "text": qsTrId("patience-la-free_software_and_redistribution_multiple_licenses"),
+            "count": 0,
+            "type": "header"
+        }),
+        ({
             "text": "Patience Deck code is licensed under <a href='#1'>%1</a>.",
             "abbrs": { 0: "GNU GPLv3" },
             "names": { 0: "GNU General Public License version 3" },
             "links": { 0: "COPYING.GPL3" },
             "count": 1,
-            "section": "main"
+            "type": "regular"
         }),
         ({
             "text": "GNOME Aisleriot games and distributed artwork are licensed under <a href='#1'>%1</a> or later.",
@@ -37,7 +46,7 @@ Page {
             "names": { 0: "GNU General Public License version 3" },
             "links": { 0: "COPYING.GPL3" },
             "count": 1,
-            "section": "main"
+            "type": "regular"
         }),
         ({
             "text": "GNOME Aisleriot manual pages are licensed under <a href='#1'>%1</a> (1.1 or later).",
@@ -45,10 +54,16 @@ Page {
             "names": { 0: "GNU Free Documentation License version 1.3" },
             "links": { 0: "COPYING.GFDL1.3" },
             "count": 1,
-            "section": "main"
+            "type": "last"
         })
     ]
     readonly property var libLicenses: [
+        ({
+            //% "Harbour distribution of Patience Deck bundles several libraries that have their own licenses."
+            "text": qsTrId("patience-la-harbour_distribution_bundles_libraries"),
+            "count": 0,
+            "type": "header"
+        }),
         ({
             "text": "Guile, GNU MP and libunistring libraries are distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
             "abbrs": { 0: "GNU LGPLv3", 1: "GNU GPLv3" },
@@ -58,7 +73,7 @@ Page {
             },
             "links": { 0: "lib/licenses/COPYING.LESSER", 1: "lib/licenses/COPYING.GPL3" },
             "count": 2,
-            "section": "libs"
+            "type": "regular"
         }),
         ({
             "text": "Gc library is permissively licensed. See <a href='#1'>%1</a> for more details.",
@@ -66,7 +81,7 @@ Page {
             "names": { 0: "gc readme file" },
             "links": { 0: "lib/licenses/gc.README" },
             "count": 1,
-            "section": "libs"
+            "type": "regular"
         }),
         ({
             "text": "Libffi library is permissively licensed. See <a href='#1'>%1</a> for more details.",
@@ -74,7 +89,7 @@ Page {
             "names": { 0: "libffi license file" },
             "links": { 0: "lib/licenses/libffi.LICENSE" },
             "count": 1,
-            "section": "libs"
+            "type": "regular"
         }),
         ({
             "text": "Libltdl library is distributed under <a href='#1'>%1</a>. See also <a href='#2'>%2</a>.",
@@ -85,7 +100,7 @@ Page {
              },
             "links": { 0: "lib/licenses/COPYING.LIB", 1: "lib/licenses/COPYING.GPL2" },
             "count": 2,
-            "section": "libs"
+            "type": "last"
         })
     ]
 
@@ -93,7 +108,6 @@ Page {
 
     SilicaListView {
         anchors.fill: parent
-        bottomMargin: Theme.paddingLarge
         spacing: Theme.paddingLarge
 
         header: Component {
@@ -120,6 +134,7 @@ Page {
 
         delegate: Component {
             Paragraph {
+                color: model.type == "header" ? Theme.secondaryHighlightColor : Theme.highlightColor
                 linkColor: Theme.primaryColor
                 text: {
                     var text = model.text
@@ -136,23 +151,7 @@ Page {
                         "description": model.names[index]
                     })
                 }
-                width: page.width - 2*Theme.horizontalPageMargin
-            }
-        }
-
-        section {
-            property: "section"
-            delegate: Paragraph {
-                color: Theme.secondaryHighlightColor
-                text: section === "libs"
-                    //% "Harbour distribution of Patience Deck bundles several libraries that have their own licenses."
-                    ? qsTrId("patience-la-harbour_distribution_bundles_libraries")
-                    //% "Patience Deck is free software, "
-                    //% "and you are welcome to redistribute it under certain conditions. "
-                    //% "This software comes with ABSOLUTELY NO WARRANTY. "
-                    //% "Patience Deck contains work licensed under multiple different licenses."
-                    : qsTrId("patience-la-free_software_and_redistribution_multiple_licenses")
-                height: implicitHeight + Theme.paddingLarge
+                spacing: model.type == "header" || model.type == "last" ? Theme.paddingLarge : 0
                 width: page.width - 2*Theme.horizontalPageMargin
             }
         }
