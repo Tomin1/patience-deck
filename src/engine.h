@@ -26,6 +26,8 @@
 #include <QString>
 #include "enginedata.h"
 
+class QCommandLineParser;
+
 class EngineHelper;
 class EnginePrivate;
 class Engine : public QObject
@@ -35,6 +37,9 @@ public:
     ~Engine();
 
     static Engine *instance();
+
+    static void addArguments(QCommandLineParser *parser);
+    static void setArguments(QCommandLineParser *parser);
 
     enum ActionType {
         InsertionAction,
@@ -107,9 +112,27 @@ signals:
 
 private:
     friend EnginePrivate;
+
 #ifdef ENGINE_EXERCISER
     friend EngineHelper;
-#endif
+
+#else
+    struct ReadSavedState {
+        bool valid;
+        QString gameFile;
+        quint32 seed;
+        bool hasSeed;
+        bool seedOk;
+
+        ReadSavedState()
+            : valid(false)
+            , seed(0)
+            , hasSeed(false)
+            , seedOk(true) {}
+    };
+
+    static ReadSavedState readSavedState(const MGConfItem &stateConf);
+#endif // ENGINE_EXERCISER
 
     void loadGame(const QString &gameFile, bool restored);
     void startEngine(bool newSeed);

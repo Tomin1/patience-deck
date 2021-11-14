@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QCommandLineParser>
 #include <QDebug>
+#include <QRegularExpression>
 #include "constants.h"
 #include "engine.h"
 #include "engine_p.h"
@@ -161,6 +163,45 @@ void Engine::initWithDirectory(const QString &gameDirectory)
 Engine::~Engine()
 {
     s_engine = nullptr;
+}
+
+void Engine::addArguments(QCommandLineParser *parser)
+{
+    parser->addOptions({
+        {{"g", "game"}, "Set game file to load", "filename"},
+        {{"s", "seed"}, "Set initial seed to load", "integer"},
+        {{"o", "options"}, "Indices of options to set before loading game", "options"}
+    });
+}
+
+void Engine::setArguments(QCommandLineParser *parser)
+{
+    MGConfItem stateConf(Constants::ConfPath + StateConf);
+    ReadSavedState state = readSavedState(stateConf);
+    if (parser->isSet("game"))
+        state.gameFile = parser->value("game");
+    if (parser->isSet("seed")) {
+        state.seed = parser->value("seed").toInt();
+        state.hasSeed = true;
+    }
+    stateConf.set(QStringLiteral("%1;%2").arg(state.gameFile).arg(state.seed));
+    stateConf.sync();
+
+    if (!state.gameFile.isEmpty() && parser->isSet("options")) {
+        GameOptionList options;
+        QRegularExpression sep("[;, ]");
+        for (const QString &value : parser->value("options").split(sep, QString::SkipEmptyParts)) {
+            bool ok = true;
+            int index = value.toInt(&ok);
+            if (ok) {
+                GameOption option;
+                option.index = index;
+                option.set = true;
+                options << option;
+            }
+        }
+        GameOptionModel::saveOptions(state.gameFile, options);
+    }
 }
 
 void Engine::load(const QString &gameFile)
@@ -677,22 +718,34 @@ void Engine::restoreSavedState()
             && d_ptr->m_state > EnginePrivate::UninitializedState) {
         qCWarning(lcEngine) << "Engine running, can not set seed";
     } else {
-        auto state = m_stateConf.value();
-        if (state.isValid()) {
-            bool ok = true;
-            auto parts = state.toString().split(';');
-            auto gameFile = parts.at(0);
-            if (parts.count() >= 2)
-                d_ptr->m_seed = parts.at(1).toULongLong(&ok);
-            if (ok) {
-                loadGame(gameFile, parts.count() >= 2);
-            }
-            emit restoreCompleted(ok);
+        auto state = readSavedState(m_stateConf);
+        if (state.valid) {
+            if (state.hasSeed)
+                d_ptr->m_seed = state.seed;
+            if (state.seedOk)
+                loadGame(state.gameFile, state.hasSeed);
+            emit restoreCompleted(state.seedOk);
         } else {
             qCDebug(lcEngine) << "Engine state was not stored, not restored";
             emit restoreCompleted(false);
         }
     }
+}
+
+Engine::ReadSavedState Engine::readSavedState(const MGConfItem &stateConf)
+{
+    ReadSavedState saved;
+    auto state = stateConf.value();
+    if (state.isValid()) {
+        saved.valid = true;
+        auto parts = state.toString().split(';');
+        saved.gameFile = parts.at(0);
+        if (parts.count() >= 2) {
+            saved.hasSeed = true;
+            saved.seed = parts.at(1).toULongLong(&saved.seedOk);
+        }
+    }
+    return saved;
 }
 #endif // ENGINE_EXERCISER
 

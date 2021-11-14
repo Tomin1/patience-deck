@@ -19,12 +19,14 @@
 #include <QtQuick>
 #endif
 
+#include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QQuickView>
 #include <QScopedPointer>
 #include <QtQml>
 #include <sailfishapp.h>
 #include "constants.h"
+#include "engine.h"
 #include "patience.h"
 #include "table.h"
 #include "gamelist.h"
@@ -35,6 +37,17 @@ int main(int argc, char *argv[])
     qputenv("GUILE_AUTO_COMPILE", "0");
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("A collection of patience games.");
+    auto helpOption = parser.addHelpOption();
+    Engine::addArguments(&parser);
+
+    parser.process(*app);
+    if (parser.isSet(helpOption))
+        parser.showHelp();
+    Engine::setArguments(&parser);
+
     qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
     qmlRegisterType<Table>("Patience", 1, 0, "Table");
     qmlRegisterType<GameList>("Patience", 1, 0, "GameList");
