@@ -118,6 +118,39 @@ void Card::setSize(const QSizeF &size)
     }
 }
 
+QPointF Card::topLeft() const
+{
+    return QPointF(x(), y());
+}
+
+void Card::setTopLeft(const QPointF &topLeft)
+{
+    setX(topLeft.x());
+    setY(topLeft.y());
+}
+
+void Card::moveTo(QQuickItem *item)
+{
+    if (!item) {
+        qCCritical(lcDrag) << "Tried to move" << this << "to non-existing item!";
+        return;
+    }
+
+    if (parentItem() != item) {
+        QPointF oldTopLeft = topLeft();
+        QPointF newTopLeft = item->mapFromItem(parentItem(), oldTopLeft);
+        if (newTopLeft != oldTopLeft)
+            setTopLeft(newTopLeft);
+        setParentItem(item);
+    }
+}
+
+void Card::shred()
+{
+    setParentItem(nullptr);
+    deleteLater();
+}
+
 Suit Card::suit() const
 {
     return m_data.suit;

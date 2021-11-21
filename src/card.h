@@ -38,6 +38,10 @@ public:
 
     QSizeF size() const;
     void setSize(const QSizeF &size);
+    QPointF topLeft() const;
+    void setTopLeft(const QPointF &topLeft);
+    void moveTo(QQuickItem *item);
+    void shred();
 
     Suit suit() const;
     Rank rank() const;
