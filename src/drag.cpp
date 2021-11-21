@@ -225,7 +225,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
                                << "starting from" << m_card;
         for (Card *card : m_cards) {
             if (card)
-                card->setParentItem(this);
+                card->moveTo(this);
             else
                 qCCritical(lcDrag) << "Tried to drag non-existing card";
         }

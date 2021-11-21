@@ -83,8 +83,7 @@ void Manager::handleImmediately(Engine::ActionType action, int slotId, int index
     case Engine::RemovalAction:
         {
             Card *card = slot->takeAt(index);
-            card->setParentItem(nullptr);
-            card->deleteLater();
+            card->shred();
             break;
         }
     case Engine::FlippingAction:
@@ -97,10 +96,8 @@ void Manager::handleImmediately(Engine::ActionType action, int slotId, int index
         {
             auto cards = slot->takeAll();
             for (Card *card : cards) {
-                if (card) {
-                    card->setParentItem(nullptr);
-                    card->deleteLater();
-                }
+                if (card)
+                    card->shred();
             }
             break;
         }
@@ -138,7 +135,7 @@ bool Manager::handleQueued(const Action &action) {
             if (card) {
                 if (card->rank() != action.data.rank || card->suit() != action.data.suit)
                     qCCritical(lcManager) << "Wrong card taken! Was" << card << "should be" << action.data;
-                card->setParentItem(nullptr);
+                card->moveTo(m_table);
                 m_queue.store(card);
             } else {
                 qCDebug(lcManager) << "Removed placeholder from" << slot << "at" << action.index;
@@ -181,8 +178,7 @@ void Manager::handleClearData()
         Slot *slot = m_table->slot(slotId);
         for (Card *card : slot->takeAll()) {
             if (card) {
-                card->setParentItem(nullptr);
-                card->deleteLater();
+                card->shred();
             }
         }
         slot->setParentItem(nullptr);
@@ -218,7 +214,7 @@ void Manager::store(const QList<Card *> &cards)
 {
     for (Card *card : cards) {
         if (card) {
-            card->setParentItem(nullptr);
+            card->moveTo(m_table);
             m_queue.store(card);
         } else {
             qCWarning(lcManager) << "Skipped placeholder card";
