@@ -99,15 +99,32 @@ void Table::updatePolish()
 
 QSGNode *Table::getPaintNodeForSlot(Slot *slot)
 {
-    auto target = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
-    QColor outlineColor(Qt::gray);
-    auto *node = new QSGSimpleRectNode(target, outlineColor);
-    QColor backgroundColor(m_backgroundColor);
-    auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
-    innerNode->setFlag(QSGNode::OwnedByParent);
-    node->appendChildNode(innerNode);
+    auto outside = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
+    auto inside = outside - SlotOutlineWidth;
+
+    auto *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 10);
+    geometry->vertexDataAsPoint2D()[0].set(outside.left(), outside.top());
+    geometry->vertexDataAsPoint2D()[1].set(inside.left(), inside.top());
+    geometry->vertexDataAsPoint2D()[2].set(outside.right(), outside.top());
+    geometry->vertexDataAsPoint2D()[3].set(inside.right(), inside.top());
+    geometry->vertexDataAsPoint2D()[4].set(outside.right(), outside.bottom());
+    geometry->vertexDataAsPoint2D()[5].set(inside.right(), inside.bottom());
+    geometry->vertexDataAsPoint2D()[6].set(outside.left(), outside.bottom());
+    geometry->vertexDataAsPoint2D()[7].set(inside.left(), inside.bottom());
+    geometry->vertexDataAsPoint2D()[8].set(outside.left(), outside.top());
+    geometry->vertexDataAsPoint2D()[9].set(inside.left(), inside.top());
+
+    auto *material = new QSGFlatColorMaterial;
+    material->setColor(QColor(Qt::gray));
+
+    auto *node = new QSGGeometryNode();
+    node->setGeometry(geometry);
+    node->setFlag(QSGNode::OwnsGeometry);
+    node->setMaterial(material);
+    node->setFlag(QSGNode::OwnsMaterial);
+
     if (slot->highlighted() && slot->isEmpty()) {
-        auto child = new QSGSimpleRectNode(target, m_highlightColor);
+        auto child = new QSGSimpleRectNode(outside, m_highlightColor);
         child->setFlag(QSGNode::OwnedByParent);
         node->appendChildNode(child);
     }
