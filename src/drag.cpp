@@ -201,7 +201,7 @@ void Drag::cancel()
     if (m_state < Dropped) {
         if (m_state >= Dragging) { 
             emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards, Canceled));
-            this->setParentItem(nullptr);
+            setParentItem(nullptr);
             m_source->put(m_cards);
             m_cards.clear();
         }

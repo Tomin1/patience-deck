@@ -258,7 +258,7 @@ void Engine::startEngine(bool newSeed)
         d_ptr->resetGenerator(newSeed);
         d_ptr->m_state = EnginePrivate::BeginState;
         bool error = false;
-        scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, this->d_ptr,
+        scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, d_ptr,
                     Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
         if (error) {
             qCWarning(lcEngine) << "A scheme error happened while starting new game";
