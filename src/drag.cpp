@@ -82,18 +82,26 @@ Slot *Drag::source() const
 
 void Drag::update(QMouseEvent *event)
 {
-    if (mayBeAClick(event)) {
+    if (mayBeAClick(event))
         return;
-    } else if (m_state == AboutToDrag) {
+
+    switch (m_state) {
+    case AboutToDrag:
         m_state = StartingDrag;
         emit doDrag(m_id, m_source->id(), m_source->asCardData(m_card));
-    } else if (m_state == Dragging) {
+        break;
+    case Dragging: {
         QPointF point = m_card->mapToItem(m_table, event->pos());
         QPointF move = point - m_lastPoint;
         setX(x() + move.x());
         setY(y() + move.y());
         m_lastPoint = point;
         checkTargets();
+        break;
+    }
+    default:
+        qCCritical(lcDrag) << "Invalid state in update:" << m_state;
+        break;
     }
 }
 
@@ -109,13 +117,20 @@ void Drag::finish(QMouseEvent *event)
             qCDebug(lcDrag) << "Detected click on" << m_card;
             emit doClick(m_id, m_source->id());
         }
-    } else if (m_state == Dragging) {
+        return;
+    }
+
+    switch (m_state) {
+    case Dragging:
         m_state = Dropping;
         checkTargets(true);
-    } else if (m_state == Canceled) {
+        break;
+    case Canceled:
         done();
-    } else {
+        break;
+    default:
         cancel();
+        break;
     }
 }
 
