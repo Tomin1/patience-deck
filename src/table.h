@@ -45,6 +45,8 @@ class Table : public QQuickItem
                WRITE setVerticalMargin NOTIFY verticalMarginChanged);
     Q_PROPERTY(qreal maximumVerticalMargin READ maximumVerticalMargin
                WRITE setMaximumVerticalMargin NOTIFY maximumVerticalMarginChanged);
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor
+               RESET resetBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor
                RESET resetHighlightColor NOTIFY highlightColorChanged)
 
@@ -70,6 +72,9 @@ public:
     QColor highlightColor() const;
     void setHighlightColor(QColor color);
     void resetHighlightColor();
+    QColor backgroundColor() const;
+    void setBackgroundColor(QColor color);
+    void resetBackgroundColor();
 
     qreal sideMargin() const;
     QSizeF margin() const;
@@ -103,8 +108,8 @@ signals:
     void maximumHorizontalMarginChanged();
     void verticalMarginChanged();
     void maximumVerticalMarginChanged();
+    void backgroundColorChanged();
     void highlightColorChanged();
-    void highlightOpacityChanged();
     void cardTextureUpdated();
 
     void doClick(quint32 id, int slotId);
@@ -138,6 +143,7 @@ private:
     QSizeF m_cardMargin;
     bool m_dirty;
     bool m_dirtyCardSize;
+    QColor m_backgroundColor;
 
     Slot *m_highlightedSlot;
     QColor m_highlightColor;

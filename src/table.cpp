@@ -38,6 +38,7 @@ namespace {
 const qreal CardRatio = 79.0 / 123.0;
 const QMarginsF SlotMargins(3, 3, 3, 3);
 const QMarginsF SlotOutlineWidth(3, 3, 3, 3);
+const QColor DefaultBackgroundColor(Qt::darkGreen);
 const QColor DefaultHighlightColor(Qt::blue);
 const qreal DefaultHighlightOpacity = 0.25;
 
@@ -51,6 +52,7 @@ Table::Table(QQuickItem *parent)
     , m_sideMargin(0)
     , m_dirty(true)
     , m_dirtyCardSize(true)
+    , m_backgroundColor(DefaultBackgroundColor)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
     , m_manager(this)
@@ -100,7 +102,7 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     auto target = QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins;
     QColor outlineColor(Qt::gray);
     auto *node = new QSGSimpleRectNode(target, outlineColor);
-    QColor backgroundColor(Qt::darkGreen);
+    QColor backgroundColor(m_backgroundColor);
     auto *innerNode = new QSGSimpleRectNode(target - SlotOutlineWidth, backgroundColor);
     innerNode->setFlag(QSGNode::OwnedByParent);
     node->appendChildNode(innerNode);
@@ -117,11 +119,12 @@ QSGNode *Table::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     auto *node = static_cast<QSGSimpleRectNode *>(oldNode);
     if (!node || m_dirty) {
         if (!node) {
-            QColor backgroundColor(Qt::darkGreen);
+            QColor backgroundColor(m_backgroundColor);
             node = new QSGSimpleRectNode(boundingRect(), backgroundColor);
         }
         if (m_dirty) {
             node->setRect(boundingRect());
+            node->setColor(QColor(m_backgroundColor));
             node->removeAllChildNodes();
         }
         for (Slot *slot : m_slots) {
@@ -213,6 +216,9 @@ void Table::setHighlightColor(QColor color)
     if (m_highlightColor != color) {
         m_highlightColor = color;
         emit highlightColorChanged();
+        m_dirty = true;
+        if (!preparing())
+            update();
     }
 }
 
@@ -221,6 +227,28 @@ void Table::resetHighlightColor()
     QColor color(DefaultHighlightColor);
     color.setAlphaF(DefaultHighlightOpacity);
     setHighlightColor(color);
+}
+
+QColor Table::backgroundColor() const
+{
+    return m_backgroundColor;
+}
+
+void Table::setBackgroundColor(QColor color)
+{
+    if (m_backgroundColor != color) {
+        m_backgroundColor = color;
+        emit backgroundColorChanged();
+        m_dirty = true;
+        if (!preparing())
+            update();
+    }
+}
+
+void Table::resetBackgroundColor()
+{
+    QColor color(DefaultBackgroundColor);
+    setBackgroundColor(color);
 }
 
 qreal Table::sideMargin() const
