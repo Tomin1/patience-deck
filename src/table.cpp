@@ -103,6 +103,8 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     auto inside = outside - SlotOutlineWidth;
 
     auto *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 10);
+    geometry->setVertexDataPattern(QSGGeometry::StaticPattern);
+    geometry->setIndexDataPattern(QSGGeometry::StaticPattern);
     geometry->vertexDataAsPoint2D()[0].set(outside.left(), outside.top());
     geometry->vertexDataAsPoint2D()[1].set(inside.left(), inside.top());
     geometry->vertexDataAsPoint2D()[2].set(outside.right(), outside.top());
