@@ -114,14 +114,16 @@ QSGNode *Table::getPaintNodeForSlot(Slot *slot)
     geometry->vertexDataAsPoint2D()[8].set(outside.left(), outside.top());
     geometry->vertexDataAsPoint2D()[9].set(inside.left(), inside.top());
 
-    auto *material = new QSGFlatColorMaterial;
-    material->setColor(QColor(Qt::gray));
+    static QSGFlatColorMaterial *material = nullptr;
+    if (!material) {
+        material = new QSGFlatColorMaterial;
+        material->setColor(QColor(Qt::gray));
+    }
 
     auto *node = new QSGGeometryNode();
     node->setGeometry(geometry);
     node->setFlag(QSGNode::OwnsGeometry);
     node->setMaterial(material);
-    node->setFlag(QSGNode::OwnsMaterial);
 
     if (slot->highlighted() && slot->isEmpty()) {
         auto child = new QSGSimpleRectNode(outside, m_highlightColor);
