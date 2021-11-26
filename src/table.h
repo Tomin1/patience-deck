@@ -30,6 +30,7 @@
 #include "manager.h"
 #include "slot.h"
 
+class QSGGeometryNode;
 class QSGTexture;
 class QQuickWindow;
 class Table : public QQuickItem
@@ -55,7 +56,10 @@ public:
     ~Table();
 
     void updatePolish();
-    QSGNode *getPaintNodeForSlot(Slot *slot);
+    QRectF getSlotOutline(Slot *slot);
+    void setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot);
+    void setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot);
+    void setMaterialForSlotNode(QSGGeometryNode *node);
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
     QSGTexture *cardTexture();
 
@@ -75,6 +79,7 @@ public:
     QColor backgroundColor() const;
     void setBackgroundColor(QColor color);
     void resetBackgroundColor();
+    bool transparentBackground() const;
 
     qreal sideMargin() const;
     QSizeF margin() const;
@@ -99,7 +104,21 @@ public:
     iterator begin();
     iterator end();
 
+    enum Dirty {
+        Clean = 0x00,
+        BackgroundType = 0x01,
+        BackgroundColor = 0x02,
+        BackgroundSize = 0x04,
+        HighlightedSlot = 0x08,
+        HighlightColor = 0x10,
+        SlotSize = 0x20,
+        SlotCount = 0x40,
+        Filthy = 0xff
+    };
+    Q_DECLARE_FLAGS(DirtyFlags, Dirty)
+
 public slots:
+    void handleSizeChanged();
     void setDirtyCardSize();
 
 signals:
@@ -141,7 +160,7 @@ private:
     QSizeF m_cardSizeInTexture;
     QSizeF m_cardSpace;
     QSizeF m_cardMargin;
-    bool m_dirty;
+    DirtyFlags m_dirty;
     bool m_dirtyCardSize;
     QColor m_backgroundColor;
 
@@ -160,5 +179,7 @@ private:
 };
 
 QDebug operator<<(QDebug debug, const Table *table);
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Table::DirtyFlags);
 
 #endif // TABLE_H
