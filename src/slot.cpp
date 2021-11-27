@@ -74,10 +74,12 @@ void Slot::updateLocations(iterator first)
     if (reevaluateDelta())
         first = begin();
 
+    auto firstExpandedIt = firstExpanded();
     for (auto it = first; it != end(); ++it) {
         Card *card = *it;
         if (card) {
             card->setZ(it - begin());
+            card->setVisible(it >= firstExpandedIt);
             if (expandedRight()) {
                 card->setX(round(delta(it)));
                 card->setY(0);
@@ -207,7 +209,7 @@ QList<Card *> Slot::take(Card *first)
     for (auto it2 = it; it2 != end(); ++it2)
         tail.append(*it2);
     m_cards.erase(it, end());
-    if (expanded() && !m_table->preparing())
+    if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed" << tail.count() << "cards from" << this;
     return tail;
@@ -275,6 +277,8 @@ Slot::iterator Slot::firstExpanded()
 {
     if (m_expansionDepth == Expansion::Full || m_expansionDepth >= m_cards.count())
         return begin();
+    if (m_expansionDepth == Expansion::None /* && !isEmpty() */)
+        return end() - 1;
     return end() - m_expansionDepth;
 }
 
