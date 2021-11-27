@@ -42,6 +42,7 @@ Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
     , m_expansion(expandedDown ? ExpandsInY : DoesNotExpand
                 | expandedRight ? ExpandsInX : DoesNotExpand)
     , m_expansionDepth(expansionDepth)
+    , m_firstExpandedValid(false)
     , m_highlighted(false)
 {
 }
@@ -74,12 +75,11 @@ void Slot::updateLocations(iterator first)
     if (reevaluateDelta())
         first = begin();
 
-    auto firstExpandedIt = firstExpanded();
     for (auto it = first; it != end(); ++it) {
         Card *card = *it;
         if (card) {
             card->setZ(it - begin());
-            card->setVisible(it >= firstExpandedIt);
+            card->setVisible(it >= firstExpanded());
             if (expandedRight()) {
                 card->setX(round(delta(it)));
                 card->setY(0);
@@ -123,6 +123,7 @@ void Slot::insert(int index, Card *card)
 {
     auto it = m_cards.begin() + index;
     m_cards.insert(it, card);
+    m_firstExpandedValid = false;
     if (card)
         card->moveTo(this);
     // TODO: Do adjustments once move ends
@@ -150,6 +151,7 @@ void Slot::set(int index, Card *card)
 Card *Slot::takeAt(int index)
 {
     Card *card = m_cards.takeAt(index);
+    m_firstExpandedValid = false;
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed card from" << this;
@@ -162,6 +164,7 @@ QList<Card *> Slot::takeAll()
 {
     QList<Card *> cards;
     m_cards.swap(cards);
+    m_firstExpandedValid = false;
     qCDebug(lcSlot) << "Removed all cards from" << this;
     emit slotEmptied();
     return cards;
@@ -209,6 +212,7 @@ QList<Card *> Slot::take(Card *first)
     for (auto it2 = it; it2 != end(); ++it2)
         tail.append(*it2);
     m_cards.erase(it, end());
+    m_firstExpandedValid = false;
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed" << tail.count() << "cards from" << this;
@@ -218,6 +222,7 @@ QList<Card *> Slot::take(Card *first)
 void Slot::put(const QList<Card *> &cards)
 {
     m_cards.append(cards);
+    m_firstExpandedValid = false;
     for (Card *card : cards) {
         if (card)
             card->moveTo(this);
@@ -252,12 +257,12 @@ bool Slot::expandedDown() const
     return m_expansion & ExpandsInY;
 }
 
-qreal Slot::delta(Slot::const_iterator iter)
+qreal Slot::delta(const Slot::const_iterator &iter)
 {
-    if (iter == begin() || !expanded() || iter < firstExpanded())
+    if (iter == constBegin() || !expanded() || iter < firstExpanded())
         return 0.0;
 
-    return m_calculatedDelta*(iter - firstExpanded());
+    return m_calculatedDelta * (iter - firstExpanded());
 }
 
 void Slot::setDelta(double delta)
@@ -273,13 +278,18 @@ int Slot::expansionDepth() const
     return m_expansionDepth;
 }
 
-Slot::iterator Slot::firstExpanded()
+Slot::const_iterator Slot::firstExpanded()
 {
-    if (m_expansionDepth == Expansion::Full || m_expansionDepth >= m_cards.count())
-        return begin();
-    if (m_expansionDepth == Expansion::None /* && !isEmpty() */)
-        return end() - 1;
-    return end() - m_expansionDepth;
+    if (!m_firstExpandedValid) {
+        if (m_expansionDepth == Expansion::Full || m_expansionDepth >= m_cards.count())
+            m_firstExpanded = constBegin();
+        else if (m_expansionDepth == Expansion::None /* && !isEmpty() */)
+            m_firstExpanded = constEnd() - 1;
+        else
+            m_firstExpanded = constEnd() - m_expansionDepth;
+        m_firstExpandedValid = true;
+    }
+    return m_firstExpanded;
 }
 
 Slot::const_iterator Slot::constBegin() const
