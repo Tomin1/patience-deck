@@ -71,11 +71,8 @@ Card::Card(const CardData &card, Table *table, Slot *slot, QObject *parent)
 QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     auto texture = m_table->cardTexture();
-    if (!texture) {
-        if (oldNode)
-            delete oldNode;
+    if (!texture)
         return nullptr;
-    }
 
     auto *node = static_cast<QSGSimpleTextureNode *>(oldNode);
     if (!node || m_dirty) {
