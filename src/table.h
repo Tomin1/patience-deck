@@ -56,10 +56,6 @@ public:
     ~Table();
 
     void updatePolish();
-    QRectF getSlotOutline(Slot *slot);
-    void setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot);
-    void setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot);
-    void setMaterialForSlotNode(QSGGeometryNode *node);
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
     QSGTexture *cardTexture();
 
@@ -154,6 +150,11 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void setCardTexture(QSGTexture *texture);
     void setPendingCardTexture(QSGTexture *texture);
+
+    static QRectF getSlotOutline(Slot *slot);
+    static void setMaterialForSlotNode(QSGGeometryNode *node);
+    static void setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot);
+    void setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot);
 
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
