@@ -38,8 +38,8 @@ namespace {
 const qreal CardBaseWidth = 79.0;
 const qreal CardBaseHeight = 123.0;
 const qreal CardRatio = CardBaseWidth / CardBaseHeight;
-const QMarginsF SlotMargins(3 / CardBaseWidth, 3 / CardBaseWidth, 3 / CardBaseWidth, 3 / CardBaseWidth);
-const QMarginsF SlotOutlineWidth(3 / CardBaseWidth, 3 / CardBaseWidth, 3 / CardBaseWidth, 3 / CardBaseWidth);
+const qreal SlotMargin = 3 / CardBaseWidth;
+const qreal SlotOutlineWidth = 3 / CardBaseWidth;
 const QColor DefaultBackgroundColor(Qt::darkGreen);
 const QColor DefaultHighlightColor(Qt::blue);
 const qreal DefaultHighlightOpacity = 0.25;
@@ -110,7 +110,9 @@ void Table::updatePolish()
 
 QRectF Table::getSlotOutline(Slot *slot)
 {
-    return QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - SlotMargins * slot->width();
+    qreal margin = SlotMargin * slot->width();
+    QMarginsF margins(margin, margin, margin, margin);
+    return QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - margins;
 }
 
 void Table::setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot)
@@ -125,7 +127,8 @@ void Table::setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot)
     }
 
     auto outside = getSlotOutline(slot);
-    auto inside = outside - SlotOutlineWidth * slot->width();
+    qreal outline = SlotOutlineWidth * slot->width();
+    auto inside = outside - QMarginsF(outline, outline, outline, outline);
     auto *data = geometry->vertexDataAsPoint2D();
     data[0].set(outside.left(), outside.top());
     data[1].set(inside.left(), inside.top());
