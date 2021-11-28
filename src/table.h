@@ -30,9 +30,9 @@
 #include "manager.h"
 #include "slot.h"
 
-class QSGGeometryNode;
 class QSGTexture;
 class QQuickWindow;
+class SlotNode;
 class Table : public QQuickItem
 {
     Q_OBJECT
@@ -109,6 +109,7 @@ public:
         HighlightColor = 0x10,
         SlotSize = 0x20,
         SlotCount = 0x40,
+        HiddenSlots = 0x80,
         Filthy = 0xff
     };
     Q_DECLARE_FLAGS(DirtyFlags, Dirty)
@@ -152,9 +153,9 @@ private:
     void setPendingCardTexture(QSGTexture *texture);
 
     static QRectF getSlotOutline(Slot *slot);
-    static void setMaterialForSlotNode(QSGGeometryNode *node);
-    static void setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot);
-    void setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot);
+    static void setMaterialForSlotNode(SlotNode *node);
+    static void setGeometryForSlotNode(SlotNode *node, Slot *slot);
+    void setHighlightForSlotNode(SlotNode *node, Slot *slot);
 
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;

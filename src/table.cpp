@@ -46,6 +46,29 @@ const qreal DefaultHighlightOpacity = 0.25;
 
 } // namespace
 
+class SlotNode : public QSGGeometryNode
+{
+public:
+    SlotNode()
+        : QSGGeometryNode()
+        , m_hidden(false)
+    {
+    }
+
+    bool isSubtreeBlocked()
+    {
+        return m_hidden;
+    }
+
+    void setHidden(bool hidden)
+    {
+        m_hidden = hidden;
+    }
+
+private:
+    bool m_hidden;
+};
+
 const QString Constants::DataDirectory = QStringLiteral(QUOTE(DATADIR) "/data");
 
 #define dirty(flag) (m_dirty & (flag))
@@ -115,7 +138,7 @@ QRectF Table::getSlotOutline(Slot *slot)
     return QRectF(slot->x(), slot->y(), slot->width(), slot->height()) - margins;
 }
 
-void Table::setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot)
+void Table::setGeometryForSlotNode(SlotNode *node, Slot *slot)
 {
     auto *geometry = node->geometry();
     if (!geometry) {
@@ -143,7 +166,7 @@ void Table::setGeometryForSlotNode(QSGGeometryNode *node, Slot *slot)
     node->markDirty(QSGNode::DirtyGeometry);
 }
 
-void Table::setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot)
+void Table::setHighlightForSlotNode(SlotNode *node, Slot *slot)
 {
     auto child = static_cast<QSGSimpleRectNode *>(node->firstChild());
     if (dirty(HighlightedSlot)) {
@@ -165,7 +188,7 @@ void Table::setHighlightForSlotNode(QSGGeometryNode *node, Slot *slot)
         child->setRect(getSlotOutline(slot));
 }
 
-void Table::setMaterialForSlotNode(QSGGeometryNode *node)
+void Table::setMaterialForSlotNode(SlotNode *node)
 {
     static QSGFlatColorMaterial *material = nullptr;
     if (!material) {
@@ -196,23 +219,26 @@ QSGNode *Table::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         if (dirty(SlotCount)) {
             node->removeAllChildNodes();
             for (int i = 0; i < m_slots.count(); i++) {
-                auto *slotNode = new QSGGeometryNode();
+                auto *slotNode = new SlotNode();
                 setMaterialForSlotNode(slotNode);
                 slotNode->setFlag(QSGNode::OwnedByParent);
                 node->appendChildNode(slotNode);
             }
-            smudge(HighlightedSlot | HighlightColor | SlotSize);
+            smudge(HighlightedSlot | HighlightColor | SlotSize | HiddenSlots);
         }
 
-        if (dirty(HighlightedSlot | HighlightColor | SlotSize)) {
+        if (dirty(HighlightedSlot | HighlightColor | SlotSize | HiddenSlots)) {
             auto slotIt = m_slots.constBegin();
-            auto nodeIt = static_cast<QSGGeometryNode *>(node->firstChild());
+            auto nodeIt = static_cast<SlotNode *>(node->firstChild());
             while (slotIt != m_slots.constEnd() && nodeIt != nullptr) {
                 if (dirty(SlotSize))
                     setGeometryForSlotNode(nodeIt, *slotIt);
-                setHighlightForSlotNode(nodeIt, *slotIt);
+                if (dirty(HiddenSlots))
+                    nodeIt->setHidden((*slotIt)->isEmpty());
+                if (dirty(HighlightedSlot | HighlightColor | SlotSize))
+                    setHighlightForSlotNode(nodeIt, *slotIt);
                 ++slotIt;
-                nodeIt = static_cast<QSGGeometryNode *>(nodeIt->nextSibling());
+                nodeIt = static_cast<SlotNode *>(nodeIt->nextSibling());
             }
             if (slotIt != m_slots.constEnd())
                 qCCritical(lcTable) << "Failed to iterate through all slots!";
@@ -522,6 +548,7 @@ void Table::handleSlotEmptied()
     Slot *slot = qobject_cast<Slot *>(sender());
     if (slot && slot == m_highlightedSlot)
         smudge(HighlightedSlot);
+    smudge(HiddenSlots);
     if (!preparing())
         update();
 }
