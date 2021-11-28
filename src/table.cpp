@@ -62,11 +62,15 @@ Table::Table(QQuickItem *parent)
     , m_manager(this)
     , m_drag(nullptr)
     , m_cardTexture(nullptr)
+    , m_pendingCardTexture(nullptr)
+    , m_previousWindow(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
     setFlag(QQuickItem::ItemHasContents);
     m_highlightColor.setAlphaF(DefaultHighlightOpacity);
+
+    connect(this, &QQuickItem::windowChanged, this, &Table::connectWindowSignals);
 
     auto renderer = new TextureRenderer();
     renderer->moveToThread(&m_textureThread);
@@ -91,14 +95,15 @@ Table::~Table()
 {
     m_textureThread.quit();
     m_textureThread.wait();
-    if (m_cardTexture)
-        delete m_cardTexture;
+    setCardTexture(nullptr);
+    setPendingCardTexture(nullptr);
 }
 
 void Table::updatePolish()
 {
     if (m_dirtyCardSize)
         updateCardSize();
+    swapCardTexture();
 }
 
 QRectF Table::getSlotOutline(Slot *slot)
@@ -443,6 +448,7 @@ void Table::clear()
     m_tableSize = QSizeF();
     m_cardSize = QSizeF();
     setCardTexture(nullptr);
+    setPendingCardTexture(nullptr);
     m_cardSizeInTexture = QSizeF();
     m_cardImage = QImage();
     smudge(SlotCount);
@@ -606,12 +612,6 @@ void Table::updateCardSize()
 
 QSGTexture *Table::cardTexture()
 {
-    if (!m_cardTexture && !m_cardImage.isNull()) {
-        setCardTexture(window()->createTextureFromImage(m_cardImage));
-        connect(window(), &QQuickWindow::sceneGraphInvalidated, m_cardTexture, [this] {
-            setCardTexture(nullptr);
-        });
-    }
     return m_cardTexture;
 }
 
@@ -622,16 +622,55 @@ void Table::setCardTexture(QSGTexture *texture)
     m_cardTexture = texture;
 }
 
+void Table::setPendingCardTexture(QSGTexture *texture)
+{
+    if (m_pendingCardTexture)
+        m_pendingCardTexture->deleteLater();
+    m_pendingCardTexture = texture;
+}
+
+void Table::connectWindowSignals(QQuickWindow *window)
+{
+    if (m_previousWindow)
+        m_previousWindow->disconnect(this);
+    if (window) {
+        connect(window, &QQuickWindow::sceneGraphInitialized, this, &Table::createCardTexture);
+        connect(window, &QQuickWindow::sceneGraphInvalidated, this, &Table::handleSceneGraphInvalidated);
+    }
+    m_previousWindow = window;
+}
+
+void Table::createCardTexture()
+{
+    if (!m_cardImage.isNull()) {
+        setPendingCardTexture(window()->createTextureFromImage(m_cardImage));
+        qCDebug(lcTable) << "New card texture ready for card size of" << m_cardSize;
+        polish();
+    }
+}
+
+void Table::swapCardTexture() {
+    if (m_pendingCardTexture) {
+        setCardTexture(m_pendingCardTexture);
+        m_pendingCardTexture = nullptr;
+        emit cardTextureUpdated();
+    }
+}
+
 void Table::handleCardTextureRendered(QImage image, const QSize &size)
 {
-    QSize expectedSize(m_cardSize.width()*13, m_cardSize.height()*5);
+    QSize expectedSize(m_cardSize.width() * 13, m_cardSize.height() * 5);
     if (expectedSize == size) {
         m_cardImage = image;
         m_cardSizeInTexture = m_cardSize;
-        setCardTexture(nullptr);
-        qCDebug(lcTable) << "New card texture rendered for card size of" << m_cardSize;
-        emit cardTextureUpdated();
+        createCardTexture();
     }
+}
+
+void Table::handleSceneGraphInvalidated()
+{
+    setCardTexture(nullptr);
+    setPendingCardTexture(nullptr);
 }
 
 void Table::handleEngineFailure()

@@ -135,7 +135,11 @@ signals:
     void doRenderCardTexture(const QSize &size);
 
 private slots:
+    void connectWindowSignals(QQuickWindow *window);
+    void createCardTexture();
+    void swapCardTexture();
     void handleCardTextureRendered(QImage image, const QSize &size);
+    void handleSceneGraphInvalidated();
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);
     void handleSlotEmptied();
@@ -149,6 +153,7 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void setCardTexture(QSGTexture *texture);
+    void setPendingCardTexture(QSGTexture *texture);
 
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
@@ -175,7 +180,9 @@ private:
 
     QThread m_textureThread;
     QSGTexture *m_cardTexture;
+    QSGTexture *m_pendingCardTexture;
     QImage m_cardImage;
+    QQuickWindow *m_previousWindow;
 };
 
 QDebug operator<<(QDebug debug, const Table *table);
