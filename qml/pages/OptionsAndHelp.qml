@@ -34,6 +34,16 @@ Page {
         anchors.fill: parent
         contentHeight: column.height
 
+        PullDownMenu {
+            enabled: !loadingIndicator.running // TODO: This is not foolproof
+
+            MenuItem {
+                //% "Common settings"
+                text: qsTrId("patience-me-common-settings")
+                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
+            }
+        }
+
         Column {
             id: column
 

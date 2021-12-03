@@ -18,7 +18,6 @@
 import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
-import Nemo.Configuration 1.0
 import Patience 1.0
 
 Page {
@@ -134,25 +133,9 @@ Page {
                 onClicked: Patience.showAllGames = !Patience.showAllGames
                 height: implicitHeight
             }
-
-            TextSwitch {
-                //% "Prevent display blanking"
-                text: qsTrId("patience-la-prevent_display_blanking")
-                //% "Display will not dim or turn black while a game is running"
-                description: qsTrId("patience-de-display_will_not_blank")
-                checked: preventBlanking.value
-                onClicked: preventBlanking.value = !preventBlanking.value
-                height: implicitHeight + Theme.paddingLarge
-            }
         }
 
         VerticalScrollDecorator {}
-    }
-
-    ConfigurationValue {
-        id: preventBlanking
-        defaultValue: false
-        key: "/site/tomin/apps/PatienceDeck/preventBlanking"
     }
 
     Component {
