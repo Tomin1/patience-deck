@@ -41,6 +41,19 @@ Page {
                 //: Name of this application, %1 is version number
                 //% "Patience Deck %1"
                 description: qsTrId("patience-de-patience_deck").arg(Qt.application.version)
+                height: Math.max(implicitHeight, icon.height + 2 * Theme.paddingLarge)
+                rightMargin: Theme.paddingLarge + icon.width + Theme.horizontalPageMargin
+
+                Image {
+                    id: icon
+
+                    anchors {
+                        right: parent.right
+                        rightMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                    source: Patience.getIconPath(Theme.iconSizeLauncher)
+                }
             }
 
             Paragraph {
