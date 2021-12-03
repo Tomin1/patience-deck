@@ -28,6 +28,7 @@
 
 const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
 const QString HistoryConf = QStringLiteral("/history");
+const QString HarbourPrefix = QLatin1String("harbour-");
 
 Patience* Patience::s_game = nullptr;
 
@@ -319,8 +320,13 @@ void Patience::restoreSavedOrLoad(const QString &fallback)
 
 QString Patience::getIconPath(int size) const
 {
-    QString name = QCoreApplication::instance()->applicationName();
+    QString name = QCoreApplication::instance()->arguments().first().section('/', -1);;
     return QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png").arg(size).arg(name);
+}
+
+bool Patience::showLibraryLicenses() const
+{
+    return QCoreApplication::instance()->arguments().first().section('/', -1).startsWith(HarbourPrefix);
 }
 
 void Patience::catchFailure(QString message) {

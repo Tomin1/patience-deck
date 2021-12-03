@@ -121,7 +121,7 @@ Page {
                 for (var i = 0; i < page.licenses.length; i++) {
                     licenseModel.append(page.licenses[i])
                 }
-                if (Qt.application.name.indexOf("harbour-") == 0) {
+                if (Patience.showLibraryLicenses) {
                     for (var i = 0; i < page.libLicenses.length; i++) {
                         licenseModel.append(page.libLicenses[i])
                     }

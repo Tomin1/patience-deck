@@ -47,6 +47,7 @@ class Patience : public QObject
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
     Q_PROPERTY(QString helpFile READ helpFile NOTIFY gameNameChanged)
     Q_PROPERTY(int gamesCount READ gamesCount CONSTANT)
+    Q_PROPERTY(bool showLibraryLicenses READ showLibraryLicenses CONSTANT)
 
 public:
     static Patience* instance();
@@ -95,6 +96,7 @@ public:
     QStringList history() const;
     bool engineFailed() const;
     int gamesCount() const;
+    bool showLibraryLicenses() const;
 
 signals:
     void canUndoChanged();

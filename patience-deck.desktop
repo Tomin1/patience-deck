@@ -4,3 +4,8 @@ X-Nemo-Application-Type=silica-qt5
 Icon=patience-deck
 Exec=patience-deck
 Name=Patience Deck
+
+[X-Sailjail]
+OrganizationName=site.tomin.apps
+ApplicationName=PatienceDeck
+Permissions=
