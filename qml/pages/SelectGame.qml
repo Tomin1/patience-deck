@@ -26,6 +26,7 @@ Page {
         id: listView
         model: GameList { id: gameList }
         anchors.fill: parent
+        bottomMargin: Theme.paddingLarge
         header: PageHeader {
             //% "Games"
             title: qsTrId("patience-he-games")
