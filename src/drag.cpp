@@ -102,6 +102,7 @@ void Drag::update(QMouseEvent *event)
     default:
         qCCritical(lcDrag) << "Invalid state in update:" << m_state;
         [[fallthrough]];
+    case StartingDrag:
     case Canceled:
         break;
     }
