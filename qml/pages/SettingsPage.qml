@@ -77,7 +77,15 @@ Page {
 
                     //% "Background"
                     label: qsTrId("patience-la-background")
-                    currentIndex: colorSelector.color.a === 0.0 ? 1 : 0
+                    currentIndex: {
+                        if (backgroundColor.value === "") {
+                            return 1
+                        } else if (backgroundColor.color.a === 0.0) {
+                            return 2
+                        } else {
+                            return 0
+                        }
+                    }
                     anchors {
                         left: parent.left
                         top: parent.top
@@ -91,6 +99,12 @@ Page {
                         }
 
                         MenuItem {
+                            //: Background color is adapted to current ambience
+                            //% "Adaptive"
+                            text: qsTrId("patience-me-adaptive")
+                        }
+
+                        MenuItem {
                             //: Transparent background, no color
                             //% "Transparent"
                             text: qsTrId("patience-me-transparent")
@@ -99,10 +113,12 @@ Page {
 
                     onCurrentIndexChanged: {
                         if (ready) {
-                            if (currentIndex === 1) {
-                                backgroundColor.value = Theme.rgba(backgroundColor.value, 0.0)
+                            if (currentIndex === 2) {
+                                backgroundColor.value = Theme.rgba(backgroundColor.color, 0.0)
+                            } else if (currentIndex === 1) {
+                                backgroundColor.value = ""
                             } else {
-                                backgroundColor.value = Theme.rgba(backgroundColor.value, 1)
+                                backgroundColor.value = Theme.rgba(backgroundColor.color, 1.0)
                             }
                         }
                     }
@@ -121,7 +137,7 @@ Page {
                     height: Theme.itemSizeExtraSmall
                     width: height
                     radius: height / 4
-                    color: backgroundColor.value
+                    color: backgroundSelector.currentIndex !== 1 ? backgroundColor.color : "transparent"
                     border {
                         color: backgroundSelector.currentIndex === 0 ? Theme.primaryColor : "transparent"
                         width: 2
@@ -164,6 +180,7 @@ Page {
 
     ConfigurationValue {
         id: backgroundColor
+        readonly property color color: value === "" ? defaultValue : value
         defaultValue: "darkgreen"
         key: "/site/tomin/apps/PatienceDeck/backgroundColor"
     }

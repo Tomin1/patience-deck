@@ -129,7 +129,7 @@ Page {
                 maximumHorizontalMargin: Theme.paddingLarge
                 verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
                 maximumVerticalMargin: Theme.paddingLarge
-                backgroundColor: backgroundColorValue.value
+                backgroundColor: backgroundColorValue.color
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
                 layer.enabled: pullDownMenu.active
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
@@ -221,6 +221,7 @@ Page {
 
     ConfigurationValue {
         id: backgroundColorValue
+        readonly property color color: value === "" ? Theme.rgba(Theme.highlightColor, Theme.opacityLow) : value
         defaultValue: "darkgreen"
         key: "/site/tomin/apps/PatienceDeck/backgroundColor"
     }
