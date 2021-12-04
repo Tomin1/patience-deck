@@ -122,6 +122,10 @@ Page {
                     width: height
                     radius: height / 4
                     color: backgroundColor.value
+                    border {
+                        color: backgroundSelector.currentIndex === 0 ? Theme.primaryColor : "transparent"
+                        width: 2
+                    }
 
                     MouseArea {
                         anchors.fill: parent
