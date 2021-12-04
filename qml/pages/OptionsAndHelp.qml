@@ -31,11 +31,20 @@ Page {
     }
 
     SilicaFlickable {
+        id: flickable
+
         anchors.fill: parent
         contentHeight: column.height
+        interactive: false
+
+        Timer {
+            interval: 100
+            running: !loadingIndicator.running
+            onTriggered: parent.interactive = true
+        }
 
         PullDownMenu {
-            enabled: !loadingIndicator.running // TODO: This is not foolproof
+            enabled: !loadingIndicator.running
 
             MenuItem {
                 //% "Common settings"
@@ -185,6 +194,8 @@ Page {
                         }
                     }
                 }
+
+                onClosed: flickable.interactive = true
             }
 
             onCurrentIndexChanged: if (ready) parent.selectIndex(currentIndex)
