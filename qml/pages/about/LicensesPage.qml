@@ -33,7 +33,7 @@ Page {
             "type": "header"
         }),
         ({
-            "text": "Patience Deck code is licensed under <a href='#1'>%1</a>.",
+            "text": "Patience Deck itself is licensed under <a href='#1'>%1</a>.",
             "abbrs": { 0: "GNU GPLv3" },
             "names": { 0: "GNU General Public License version 3" },
             "links": { 0: "COPYING.GPL3" },
