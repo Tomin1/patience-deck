@@ -20,6 +20,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 BuildRequires:  git-core
 BuildRequires:  python3-base
+BuildRequires:  python3-lxml
 BuildRequires:  librsvg-tools
 
 %if %{with harbour}
@@ -123,6 +124,14 @@ python3 tools/generate_authors.py \
         --games=aisleriot/games \
         --append="Aike Reyer" \
         %{buildroot}%{_datadir}/%{name}/data/AUTHORS
+
+for style in optimized simplified
+do
+    python3 tools/card_style_converter.py \
+           data/anglo-${style}.json \
+           aisleriot/cards/anglo.svg \
+           %{buildroot}%{_datadir}/%{name}/data/anglo-${style}.svg
+done
 
 %files
 %defattr(-,root,root,-)
