@@ -18,6 +18,7 @@
 #ifndef TEXTURERENDERER_H
 #define TEXTURERENDERER_H
 
+#include <MGConfItem>
 #include <QImage>
 #include <QObject>
 #include <QSize>
@@ -37,7 +38,12 @@ signals:
     void textureRendered(QImage image, const QSize &size);
 
 private:
-    static QSvgRenderer *renderer();
+    QSvgRenderer *renderer();
+    void resetRenderer();
+
+    QSvgRenderer *m_renderer;
+    MGConfItem m_cardStyleConf;
+    QSize m_size;
 };
 
 #endif // TEXTURERENDERER_H

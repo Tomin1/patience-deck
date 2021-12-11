@@ -21,27 +21,59 @@
 #include "logging.h"
 #include "texturerenderer.h"
 
+namespace {
+
+const QString CardStyleConf = QStringLiteral("/cardStyle");
+const QString OptimizedStyle = QStringLiteral("optimized");
+const QString SimplifiedStyle = QStringLiteral("simplified");
+const QString FileTemplate = QStringLiteral("%1/anglo%2.svg");
+
+} // namespace
+
 TextureRenderer::TextureRenderer(QObject *parent)
     : QObject(parent)
+    , m_renderer(nullptr)
+    , m_cardStyleConf(Constants::ConfPath + CardStyleConf)
 {
+
+    connect(&m_cardStyleConf, &MGConfItem::valueChanged, this, [&] {
+        qCDebug(lcTable) << "Card style changed, rendering new card texture";
+        resetRenderer();
+        renderTexture(m_size);
+    });
 }
 
 QSvgRenderer *TextureRenderer::renderer()
 {
-    static QSvgRenderer *renderer = nullptr;
-    if (!renderer)
-        renderer = new QSvgRenderer(Constants::DataDirectory + QStringLiteral("/anglo.svg"));
-    return renderer;
+    if (!m_renderer) {
+        QString style = m_cardStyleConf.value().toString();
+        QString variant;
+        if (style == OptimizedStyle || style == SimplifiedStyle)
+            variant = QStringLiteral("-%1").arg(style);
+        m_renderer = new QSvgRenderer(FileTemplate.arg(Constants::DataDirectory).arg(variant), this);
+    }
+    return m_renderer;
+}
+
+void TextureRenderer::resetRenderer()
+{
+    if (m_renderer) {
+        m_renderer->deleteLater();
+        m_renderer = nullptr;
+    }
 }
 
 void TextureRenderer::renderTexture(const QSize &size)
 {
-    QImage image(size, QImage::Format_ARGB32_Premultiplied);
-    QPainter painter(&image);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.fillRect(0, 0, size.width(), size.height(), Qt::transparent);
-    painter.setRenderHint(QPainter::Antialiasing);
-    renderer()->render(&painter);
-    qCDebug(lcTable) << "Drew new texture of size" << size;
-    emit textureRendered(image, size);
+    if (size.isValid()) {
+        m_size = size;
+        QImage image(size, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&image);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.fillRect(0, 0, size.width(), size.height(), Qt::transparent);
+        painter.setRenderHint(QPainter::Antialiasing);
+        renderer()->render(&painter);
+        qCDebug(lcTable) << "Drew new texture of size" << size;
+        emit textureRendered(image, size);
+    }
 }
