@@ -171,7 +171,6 @@ Page {
                 description: qsTrId("patience-de-display_will_not_blank")
                 checked: preventBlanking.value
                 onClicked: preventBlanking.value = !preventBlanking.value
-                height: implicitHeight + Theme.paddingLarge
             }
         }
 

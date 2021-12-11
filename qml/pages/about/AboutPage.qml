@@ -131,7 +131,7 @@ Page {
                 description: qsTrId("patience-de-list_unsupported_games")
                 checked: Patience.showAllGames
                 onClicked: Patience.showAllGames = !Patience.showAllGames
-                height: implicitHeight
+                height: implicitHeight + Theme.paddingLarge
             }
         }
 
