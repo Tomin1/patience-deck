@@ -60,8 +60,8 @@ Page {
             width: page.width
 
             PageHeader {
-                // Page title for options and help page
-                //% "Options & Help"
+                // Page title for options and rules page
+                //% "Options & Rules"
                 title: qsTrId("patience-he-options")
             }
 
@@ -135,8 +135,8 @@ Page {
             }
 
             SectionHeader {
-                //% "Help"
-                text: qsTrId("patience-se-game_help")
+                //% "Rules"
+                text: qsTrId("patience-se-game_rules")
             }
 
             BusyIndicator {

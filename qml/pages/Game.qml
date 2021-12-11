@@ -79,10 +79,10 @@ Page {
             }
 
             MenuItem {
-                //% "Options & Help"
+                //% "Options & Rules"
                 text: qsTrId("patience-me-game_options")
                 enabled: !Patience.engineFailed
-                onClicked: pageStack.push(Qt.resolvedUrl("OptionsAndHelp.qml"))
+                onClicked: pageStack.push(Qt.resolvedUrl("OptionsAndRules.qml"))
             }
         }
 
