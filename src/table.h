@@ -30,6 +30,7 @@
 #include "manager.h"
 #include "slot.h"
 
+class QCommandLineParser;
 class QSGTexture;
 class QQuickWindow;
 class SlotNode;
@@ -54,6 +55,9 @@ class Table : public QQuickItem
 public:
     explicit Table(QQuickItem *parent = nullptr);
     ~Table();
+
+    static void addArguments(QCommandLineParser *parser);
+    static void setArguments(QCommandLineParser *parser);
 
     void updatePolish();
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);

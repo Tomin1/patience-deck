@@ -29,6 +29,7 @@
 #include "engine.h"
 #include "patience.h"
 #include "table.h"
+#include "texturerenderer.h"
 #include "gamelist.h"
 #include "gameoptionmodel.h"
 
@@ -42,11 +43,15 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription("A collection of patience games.");
     auto helpOption = parser.addHelpOption();
     Engine::addArguments(&parser);
+    Table::addArguments(&parser);
+    TextureRenderer::addArguments(&parser);
 
     parser.process(*app);
     if (parser.isSet(helpOption))
         parser.showHelp();
     Engine::setArguments(&parser);
+    Table::setArguments(&parser);
+    TextureRenderer::setArguments(&parser);
 
     qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
     qmlRegisterType<Table>("Patience", 1, 0, "Table");

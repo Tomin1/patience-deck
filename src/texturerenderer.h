@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QSize>
 
+class QCommandLineParser;
 class QSvgRenderer;
 class TextureRenderer : public QObject
 {
@@ -30,6 +31,9 @@ class TextureRenderer : public QObject
 
 public:
     explicit TextureRenderer(QObject *parent = nullptr);
+
+    static void addArguments(QCommandLineParser *parser);
+    static void setArguments(QCommandLineParser *parser);
 
 public slots:
     void renderTexture(const QSize &size);

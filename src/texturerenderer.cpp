@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QCommandLineParser>
 #include <QPainter>
 #include <QSvgRenderer>
 #include "constants.h"
@@ -24,6 +25,7 @@
 namespace {
 
 const QString CardStyleConf = QStringLiteral("/cardStyle");
+const QString RegularStyle = QStringLiteral("regular");
 const QString OptimizedStyle = QStringLiteral("optimized");
 const QString SimplifiedStyle = QStringLiteral("simplified");
 const QString FileTemplate = QStringLiteral("%1/anglo%2.svg");
@@ -41,6 +43,25 @@ TextureRenderer::TextureRenderer(QObject *parent)
         resetRenderer();
         renderTexture(m_size);
     });
+}
+
+void TextureRenderer::addArguments(QCommandLineParser *parser)
+{
+    parser->addOptions({
+        {{"c", "cards"}, "Set card style", "regular|optimized|simplified"},
+    });
+}
+
+void TextureRenderer::setArguments(QCommandLineParser *parser)
+{
+    if (parser->isSet("cards")) {
+        MGConfItem cardsConf(Constants::ConfPath + CardStyleConf);
+        QString value = parser->value("cards");
+        if (value == RegularStyle || value == OptimizedStyle || value == SimplifiedStyle) {
+            cardsConf.set(value);
+            cardsConf.sync();
+        }
+    }
 }
 
 QSvgRenderer *TextureRenderer::renderer()

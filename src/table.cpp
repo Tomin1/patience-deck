@@ -17,8 +17,10 @@
 
 #include <algorithm>
 #include <math.h>
+#include <MGConfItem>
 #include <QBrush>
 #include <QColor>
+#include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QQuickWindow>
 #include <QSGSimpleRectNode>
@@ -122,6 +124,32 @@ Table::~Table()
     m_textureThread.wait();
     setCardTexture(nullptr);
     setPendingCardTexture(nullptr);
+}
+
+void Table::addArguments(QCommandLineParser *parser)
+{
+    parser->addOptions({
+        {{"b", "background"}, "Set background style", "default|<color>|adaptive|transparent"},
+    });
+}
+
+void Table::setArguments(QCommandLineParser *parser)
+{
+    if (parser->isSet("background")) {
+        MGConfItem backgroundConf(Constants::ConfPath + QStringLiteral("/backgroundColor"));
+        QString value = parser->value("background");
+        QColor color(backgroundConf.value(DefaultBackgroundColor.name()).toString());
+        if (value == QLatin1String("default"))
+            color = QColor(DefaultBackgroundColor);
+        else if (value == QLatin1String("adaptive"))
+            color = QColor();
+        else if (value == QLatin1String("transparent"))
+            color.setAlpha(0);
+        else
+            color = QColor(value);
+        backgroundConf.set(color.isValid() ? color.name(color.alpha() == 255 ? QColor::HexRgb : QColor::HexArgb) : QString());
+        backgroundConf.sync();
+    }
 }
 
 void Table::updatePolish()
@@ -369,8 +397,7 @@ void Table::setBackgroundColor(QColor color)
 
 void Table::resetBackgroundColor()
 {
-    QColor color(DefaultBackgroundColor);
-    setBackgroundColor(color);
+    setBackgroundColor(DefaultBackgroundColor);
 }
 
 bool Table::transparentBackground() const
