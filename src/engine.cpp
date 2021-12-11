@@ -509,11 +509,13 @@ bool Engine::click(quint32 id, int slotId)
 {
     if (m_action) {
         qCWarning(lcEngine) << "Tried to click while an action was ongoing";
+        emit clicked(id, slotId, false);
         return false;
     }
 
     if (d_ptr->hasDelayedCall()) {
         qCWarning(lcEngine) << "Tried to click while a delayed call was ongoing";
+        emit clicked(id, slotId, false);
         return false;
     }
 
@@ -543,11 +545,13 @@ bool Engine::doubleClick(quint32 id, int slotId)
 {
     if (m_action) {
         qCWarning(lcEngine) << "Tried to double click while an action was ongoing";
+        emit doubleClicked(id, slotId, false);
         return false;
     }
 
     if (d_ptr->hasDelayedCall()) {
         qCWarning(lcEngine) << "Tried to double click while a delayed call was ongoing";
+        emit doubleClicked(id, slotId, false);
         return false;
     }
 
