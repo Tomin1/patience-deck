@@ -126,8 +126,6 @@ Page {
                 }
 
                 Rectangle {
-                    id: colorSelector
-
                     anchors {
                         right: parent.right
                         rightMargin: Theme.paddingLarge
@@ -143,9 +141,10 @@ Page {
                         width: 2
                     }
 
-                    MouseArea {
+                    BackgroundItem {
                         anchors.fill: parent
                         enabled: backgroundSelector.currentIndex === 0
+                        contentItem.radius: height / 4
 
                         onClicked: {
                             var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", {
