@@ -24,7 +24,7 @@ Page {
     id: page
 
     readonly property var backgroundColorOptions: [
-        "maroon", "sienna", "peru", "goldenrod", "olive", "darkolivegreen", "darkgreen", "seagreen", "darkslategray", "steelblue", "midnightblue", "darkslateblue", "indigo", "palevioletred", "dimgray"
+        "maroon", "sienna", "peru", "goldenrod", "olive", "darkolivegreen", "green", "seagreen", "darkslategray", "steelblue", "navy", "darkslateblue", "indigo", "palevioletred", "dimgray"
     ]
 
     allowedOrientations: Orientation.All
@@ -215,7 +215,7 @@ Page {
     ConfigurationValue {
         id: backgroundColor
         readonly property color color: value === "" ? defaultValue : value
-        defaultValue: "darkgreen"
+        defaultValue: "green"
         key: "/site/tomin/apps/PatienceDeck/backgroundColor"
     }
 
