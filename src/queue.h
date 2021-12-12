@@ -84,10 +84,14 @@ public:
     void flipQueued(int slot, int index, const CardData &data);
     void clearQueued(int slot);
 
+    typename QSet<C>::iterator beginRecent();
+    typename QSet<C>::iterator endRecent();
+
 private:
     std::list<Action> m_actions;
     QMap<int, std::list<Action>> m_laterActions;
     QMultiHash<SuitAndRank, C> m_cards;
+    QSet<C> m_recentlyAdded;
 };
 
 #endif // QUEUE_H

@@ -38,6 +38,7 @@ void Queue<C>::clear()
 {
     m_actions.clear();
     m_laterActions.clear();
+    m_recentlyAdded.clear();
 }
 
 template<class C>
@@ -75,12 +76,15 @@ void Queue<C>::store(C card)
 {
     qCDebug(lcQueue) << "Storing" << card;
     m_cards.insert(card->value(), card);
+    m_recentlyAdded.insert(card);
 }
 
 template<class C>
 C Queue<C>::take(const Action &action)
 {
-    return m_cards.take(action.value());
+    auto card = m_cards.take(action.value());
+    m_recentlyAdded.remove(card);
+    return card;
 }
 
 template<class C>
@@ -90,6 +94,7 @@ QList<C> Queue<C>::takeAll()
     for (auto card : m_cards)
         cards.append(card);
     m_cards.clear();
+    m_recentlyAdded.clear();
     return cards;
 }
 
@@ -262,6 +267,18 @@ bool Queue<C>::iterator::requeue()
     iter->replaces = true;
     queue->requeue(*iter);
     return true;
+}
+
+template<class C>
+typename QSet<C>::iterator Queue<C>::beginRecent()
+{
+    return m_recentlyAdded.begin();
+}
+
+template<class C>
+typename QSet<C>::iterator Queue<C>::endRecent()
+{
+    return m_recentlyAdded.end();
 }
 
 Action::Action(Engine::ActionType type, int slot, int index, const CardData &data)

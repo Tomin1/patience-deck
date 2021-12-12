@@ -207,6 +207,10 @@ void Manager::handleMoveEnded()
             it.requeue();
     }
 
+    // Hide all unused cards
+    for (auto it = m_queue.beginRecent(); it != m_queue.endRecent(); ++it)
+        (*it)->setParentItem(nullptr);
+
     m_queue.clear();
 }
 
