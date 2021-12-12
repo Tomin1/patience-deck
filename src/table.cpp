@@ -525,7 +525,7 @@ Drag *Table::drag(QMouseEvent *event, Card *card)
     if (m_drag)
         return nullptr;
 
-    if (event->type() == QEvent::MouseButtonPress) {
+    if (event->type() == QEvent::MouseButtonPress && card->slot()) {
         m_drag = new Drag(event, this, card->slot(), card);
         Drag *drag = m_drag;
         connect(m_drag, &Drag::finished, this, [this, drag] {
