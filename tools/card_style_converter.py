@@ -23,6 +23,7 @@
 # that they won't result in unintended changes to existing graphics.
 
 import argparse
+import functools
 import json
 import lxml.etree as ET
 import re
@@ -87,6 +88,7 @@ def iterate_path_points(elem):
             assert p is not None, f"Invalid point in {elem.get('id')}: {point}"
             yield float(p.group('x')), float(p.group('y') if p.group('y') is not None else p.group('x'))
 
+@functools.lru_cache
 def calculate_extremes(elem):
     if elem.tag == '{http://www.w3.org/2000/svg}path':
         min_x, min_y, max_x, max_y = 2**32-1, 2**32-1, 0, 0
@@ -108,20 +110,26 @@ def calculate_topleft(elem):
     x, y, *_ = calculate_extremes(elem)
     return x, y
 
-def calculate_transformation(tree, name):
+@functools.lru_cache(64)
+def find_element(tree, name):
+    return tree.find(f"//*[@id='{name}']")
+
+def calculate_transformation(tree, name, elem=None):
     ox, oy = 0, 0
-    elem = tree.find(f"//*[@id='{name}']")
+    if elem is None:
+        elem = find_element(tree, name)
     if elem.tag == '{http://www.w3.org/2000/svg}use':
         id = elem.get('{http://www.w3.org/1999/xlink}href')[1:]
-        used = tree.find(f"//*[@id='{id}']")
         ox, oy = calculate_transformation(tree, id)
     else:
         ox, oy = calculate_topleft(elem)
     return transform(elem, ox, oy)
 
-def calculate_position(tree, name):
-    ox, oy = calculate_transformation(tree, name)
-    x, y = position(tree.find(f"//*[@id='{name}']"))
+def calculate_position(tree, name, elem=None):
+    if elem is None:
+        elem = find_element(tree, name)
+    ox, oy = calculate_transformation(tree, name, elem)
+    x, y = position(elem)
     return ox + x, oy + y
 
 def style(elem, name, default):
@@ -138,7 +146,7 @@ def calculate_size(tree, elem):
         return max_x - min_x, max_y - min_y
     elif elem.tag == '{http://www.w3.org/2000/svg}use':
         id = elem.get('{http://www.w3.org/1999/xlink}href')[1:]
-        return calculate_size(tree, tree.find(f"//*[@id='{id}']"))
+        return calculate_size(tree, find_element(tree, id))
     elif elem.tag == '{http://www.w3.org/2000/svg}g':
         min_x, min_y, max_x, max_y = 2**32-1, 2**32-1, -2**32, -2**32
         for child in elem.iterchildren():
@@ -159,7 +167,7 @@ def move(tree, elem, dx, dy, copy_tree):
     name = elem.get('id')
 
     x1, y1 = calculate_position(copy_tree, name)
-    x2, y2 = calculate_position(tree, name)
+    x2, y2 = calculate_position(tree, name, elem)
     dx2 = x2 - x1
     dy2 = y2 - y1
 
@@ -181,6 +189,9 @@ def move(tree, elem, dx, dy, copy_tree):
             assert False, f"Unknown transformation: {t}"
     elif dx != 0 or dy != 0 or dx2 != 0 or dy2 != 0:
         elem.set('transform', f"translate({dx - dx2:.04f},{dy - dy2:.04f})")
+
+    if not __debug__:
+        return
 
     xt, yt = calculate_position(copy_tree, name)
     if dx == 0 and dy == 0:
@@ -219,8 +230,8 @@ def modify(tree, copy_tree, actions):
                 dx, dy = pos
                 attrib['transform'] = f"translate({dx:.04f},{dy:.04f})"
             elif len(pos) == 4:
-                x, y = calculate_position(tree, used)
-                w, h = calculate_size(tree, tree.find(f"//*[@id='{used}']"))
+                x, y = calculate_position(tree, used, elem)
+                w, h = calculate_size(tree, elem)
                 dx, dy, u, v = pos
                 attrib['transform'] = (f"matrix({u:.04f},0,0,{v:.04f},"
                                        f"{u * -x + x - (u * w - w) / 2 + dx:.04f},"
