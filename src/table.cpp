@@ -455,8 +455,9 @@ QList<Slot *> Table::getSlotsFor(const Card *card, Slot *source)
     auto rect = mapRectFromItem(card, card->boundingRect());
     QMap<qreal, Slot *> results;
     for (Slot *slot : m_slots) {
-        QRectF children = mapRectFromItem(slot, slot->childrenRect());
-        auto box = mapRectFromItem(slot, slot->boundingRect()).united(children);
+        auto box = mapRectFromItem(slot, slot->box());
+        if (box.width() > card->width() && box.height() > card->height())
+            qCWarning(lcTable) << "Box for" << slot << "is too big" << box;
         auto overlapped = rect.intersected(box);
         if (!overlapped.isEmpty())
             results.insert(overlapped.height() * overlapped.width(), slot);

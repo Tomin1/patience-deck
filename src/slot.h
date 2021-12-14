@@ -78,6 +78,8 @@ public:
     bool contains(Card *card) const;
     using QQuickItem::contains;
 
+    QRectF box() const;
+
     bool expanded() const;
     bool expandedRight() const;
     bool expandedDown() const;

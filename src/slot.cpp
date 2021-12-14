@@ -242,6 +242,14 @@ bool Slot::contains(Card *card) const
     return m_cards.contains(card);
 }
 
+QRectF Slot::box() const
+{
+    QRectF box = boundingRect();
+    if (!isEmpty())
+        box = box.united(mapRectFromItem(m_cards.last(), m_cards.last()->boundingRect()));
+    return box;
+}
+
 bool Slot::expanded() const
 {
     return m_expansion != DoesNotExpand;
