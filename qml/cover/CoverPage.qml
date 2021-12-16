@@ -38,7 +38,7 @@ CoverBackground {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Patience.gameName
             horizontalAlignment: Text.AlignHCenter
-            width: parent.width - 2*Theme.paddingSmall
+            width: parent.width - 2 * Theme.paddingMedium
             wrapMode: Text.Wrap
         }
 
