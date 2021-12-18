@@ -23,10 +23,11 @@
 #include <QQuickItem>
 #include "enginedata.h"
 
-class QMouseEvent;
-class Table;
 class Card;
+class FeedbackEventAttachedType;
+class QMouseEvent;
 class Slot;
+class Table;
 class Drag : public QQuickItem
 {
     Q_OBJECT
@@ -57,6 +58,7 @@ private slots:
     void handleCouldDrop(quint32 id, int slotId, bool could);
     void handleDropped(quint32 id, int slotId, bool could);
     void handleClicked(quint32 id, int slotId, bool could);
+    void handleDoubleClicked(quint32 id, int slotId, bool could);
 
 private:
     enum DragState {
@@ -82,6 +84,7 @@ private:
     void checkTargets(bool force = false);
     void highlightOrDrop();
     void done();
+    FeedbackEventAttachedType *feedback();
     static bool couldBeDoubleClick(const Card *card);
     static quint32 nextId();
     static CardList toCardData(const QList<Card *> &cards, DragState state);

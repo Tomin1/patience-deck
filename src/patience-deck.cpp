@@ -27,6 +27,7 @@
 #include <sailfishapp.h>
 #include "constants.h"
 #include "engine.h"
+#include "feedbackevent.h"
 #include "patience.h"
 #include "table.h"
 #include "texturerenderer.h"
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
     qmlRegisterType<Table>("Patience", 1, 0, "Table");
+    qmlRegisterUncreatableType<FeedbackEvent>("Patience", 1, 0, "FeedbackEvent", "This is an attached property to Table");
     qmlRegisterType<GameList>("Patience", 1, 0, "GameList");
     qmlRegisterType<GameOptionModel>("Patience", 1, 0, "GameOptions");
     app->setApplicationVersion(QUOTE(VERSION));

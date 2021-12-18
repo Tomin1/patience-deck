@@ -24,6 +24,7 @@ SOURCES += \
     patience/patience.cpp \
     table/card.cpp \
     table/drag.cpp \
+    table/feedbackevent.cpp \
     table/slot.cpp \
     table/table.cpp \
     table/texturerenderer.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     patience/timer.h \
     table/card.h \
     table/drag.h \
+    table/feedbackevent.h \
     table/slot.h \
     table/table.h \
     table/texturerenderer.h

@@ -18,12 +18,13 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QStyleHints>
-#include "drag.h"
-#include "table.h"
 #include "card.h"
-#include "slot.h"
 #include "constants.h"
+#include "drag.h"
+#include "feedbackevent.h"
 #include "logging.h"
+#include "slot.h"
+#include "table.h"
 
 quint32 Drag::s_count = 0;
 
@@ -56,6 +57,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     connect(engine, &Engine::couldDrop, this, &Drag::handleCouldDrop);
     connect(engine, &Engine::dropped, this, &Drag::handleDropped);
     connect(engine, &Engine::clicked, this, &Drag::handleClicked);
+    connect(engine, &Engine::doubleClicked, this, &Drag::handleDoubleClicked);
 
     m_mayBeADoubleClick = couldBeDoubleClick(card);
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
@@ -115,7 +117,6 @@ void Drag::finish(QMouseEvent *event)
         if (m_mayBeADoubleClick) {
             qCDebug(lcDrag) << "Detected double click on" << m_card;
             emit doDoubleClick(m_id, m_source->id());
-            done();
         } else {
             qCDebug(lcDrag) << "Detected click on" << m_card;
             emit doClick(m_id, m_source->id());
@@ -185,6 +186,7 @@ void Drag::highlightOrDrop()
         if (m_state < Dropping) {
             m_table->highlight(nullptr);
         } else {
+            emit feedback()->dropFailed();
             cancel();
         }
     }
@@ -261,11 +263,13 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     }
 
     if (could) {
+        emit feedback()->dropSucceeded();
         m_state = Finished;
         m_table->store(m_cards);
         m_cards.clear();
         done();
     } else {
+        emit feedback()->dropFailed();
         cancel();
     }
 }
@@ -277,8 +281,23 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
     if (id != m_id)
         return;
 
-    if (could)
+    if (could) {
+        emit feedback()->clicked();
         s_doubleClickTimer.invalidate();
+    }
+
+    done();
+}
+
+void Drag::handleDoubleClicked(quint32 id, int slotId, bool could)
+{
+    Q_UNUSED(slotId)
+
+    if (id != m_id)
+        return;
+
+    if (could)
+        emit feedback()->clicked();
 
     done();
 }
@@ -340,4 +359,10 @@ CardList Drag::toCardData(const QList<Card *> &cards, DragState state)
     if (list.isEmpty())
         qCCritical(lcDrag) << "Returning an empty list of CardData in state" << state;
     return list;
+}
+
+
+FeedbackEventAttachedType *Drag::feedback()
+{
+    return qobject_cast<FeedbackEventAttachedType*>(qmlAttachedPropertiesObject<FeedbackEvent>(m_table));
 }
