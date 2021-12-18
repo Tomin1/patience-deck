@@ -207,6 +207,15 @@ Page {
                 checked: preventBlanking.value
                 onClicked: preventBlanking.value = !preventBlanking.value
             }
+
+            TextSwitch {
+                //% "Play feedback effects"
+                text: qsTrId("patience-la-play_feedback_effects")
+                //% "Dropping and clicking will play feedback effects"
+                description: qsTrId("patience-de-play_feedback_effects")
+                checked: feedbackEffects.value
+                onClicked: feedbackEffects.value = !feedbackEffects.value
+            }
         }
 
         VerticalScrollDecorator {}
@@ -223,6 +232,12 @@ Page {
         id: cardStyle
         defaultValue: "regular"
         key: "/site/tomin/apps/PatienceDeck/cardStyle"
+    }
+
+    ConfigurationValue {
+        id: feedbackEffects
+        defaultValue: false
+        key: "/site/tomin/apps/PatienceDeck/feedbackEffects"
     }
 
     ConfigurationValue {

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import QtFeedback 5.0
 import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
@@ -132,6 +133,9 @@ Page {
                 backgroundColor: backgroundColorValue.color
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
                 layer.enabled: pullDownMenu.active
+                FeedbackEvent.onClicked: feedback.playEffect()
+                FeedbackEvent.onDropSucceeded: feedback.playEffect()
+                FeedbackEvent.onDropFailed: feedback.playEffect(true)
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }
         }
@@ -219,6 +223,16 @@ Page {
         preventBlanking: preventBlanking.value && Patience.state === Patience.RunningState && !Patience.paused
     }
 
+    ThemeEffect {
+        id: feedback
+
+        function playEffect(weak) {
+            if (feedbackEffects.value) {
+                play(weak ? ThemeEffect.PressWeak : ThemeEffect.Press)
+            }
+        }
+    }
+
     ConfigurationValue {
         id: backgroundColorValue
         readonly property color color: value === "" ? Theme.rgba(Theme.highlightColor, Theme.opacityLow) : value
@@ -230,5 +244,11 @@ Page {
         id: preventBlanking
         defaultValue: false
         key: "/site/tomin/apps/PatienceDeck/preventBlanking"
+    }
+
+    ConfigurationValue {
+        id: feedbackEffects
+        defaultValue: false
+        key: "/site/tomin/apps/PatienceDeck/feedbackEffects"
     }
 }
