@@ -13,37 +13,45 @@ PKGCONFIG += mlite5
 DEFINES += DATADIR=/usr/share/$$TARGET
 DEFINES += VERSION=$(VERSION)
 SOURCES += \
-    card.cpp \
-    drag.cpp \
-    engine.cpp \
-    gamelist.cpp \
-    gameoptionmodel.cpp \
-    interface.cpp \
-    logging.cpp \
-    manager.cpp \
-    patience.cpp \
-    patience-deck.cpp \
-    queue.cpp \
-    slot.cpp \
-    table.cpp \
-    texturerenderer.cpp \
-    timer.cpp
+    engine/engine.cpp \
+    engine/interface.cpp \
+    common/logging.cpp \
+    manager/manager.cpp \
+    manager/queue.cpp \
+    models/gamelist.cpp \
+    models/gameoptionmodel.cpp \
+    patience/timer.cpp \
+    patience/patience.cpp \
+    table/card.cpp \
+    table/drag.cpp \
+    table/slot.cpp \
+    table/table.cpp \
+    table/texturerenderer.cpp \
+    patience-deck.cpp
 
 HEADERS += \
-    card.h \
-    constants.h \
-    drag.h \
-    enginedata.h \
-    engine.h \
-    engine_p.h \
-    gamelist.h \
-    gameoptionmodel.h \
-    interface.h \
-    logging.h \
-    manager.h \
-    patience.h \
-    queue.h \
-    slot.h \
-    table.h \
-    texturerenderer.h \
-    timer.h
+    common/constants.h \
+    common/logging.h \
+    engine/enginedata.h \
+    engine/engine.h \
+    engine/engine_p.h \
+    engine/interface.h \
+    manager/manager.h \
+    manager/queue.h \
+    models/gamelist.h \
+    models/gameoptionmodel.h \
+    patience/patience.h \
+    patience/timer.h \
+    table/card.h \
+    table/drag.h \
+    table/slot.h \
+    table/table.h \
+    table/texturerenderer.h
+
+INCLUDEPATH += \
+    common \
+    engine \
+    manager \
+    models \
+    patience \
+    table
