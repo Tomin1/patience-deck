@@ -96,32 +96,21 @@ Page {
             vertical: page.isLandscape
             pageActive: page.active
             z: 10
-
-            Connections {
-                /*
-                 * This is a "looks good enough" workaround for another issue.
-                 * I would prefer to set tableContainer.clip = true while
-                 * transitioning pages but for some reason Table doesn't behave
-                 * well that is set. I would like to fix that for other reasons
-                 * as well.
-                 */
-                target: pageStack
-                onBusyChanged: if (pageStack.busy) toolbar.expanded = false
-            }
         }
 
         Item {
             id: tableContainer
 
-            clip: page.isPortrait && (toolbar.expanded || toolbar.animating)
+            clip: toolbar.expanded || toolbar.animating
             x: page.isLandscape ? toolbar.width : 0
             y: page.isLandscape ? 0 : toolbar.height
-            height: page.height - messageBar.height - (page.isLandcape ? 0 : toolbar.height)
+            height: page.height - messageBar.height - (page.isLandscape ? 0 : toolbar.height)
             width: page.width - (page.isLandscape ? toolbar.width : 0)
 
             Table {
                 id: table
 
+                anchors.horizontalCenter: parent.horizontalCenter
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
                 height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - messageBar.height
                 width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
