@@ -27,7 +27,6 @@ import "../toolbar"
 Page {
     id: page
 
-    property bool isPortrait: orientation & Orientation.PortraitMask
     property bool active: page.status === PageStatus.Active
     property bool needsGameStart
 
@@ -110,21 +109,27 @@ Page {
             Table {
                 id: table
 
-                anchors.horizontalCenter: parent.horizontalCenter
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
+
                 height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - messageBar.height
                 width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
+                anchors.horizontalCenter: parent.horizontalCenter
+
                 minimumSideMargin: Theme.horizontalPageMargin
-                horizontalMargin: isPortrait ? Theme.paddingSmall : Theme.paddingLarge
+                horizontalMargin: page.isLandscape ? Theme.paddingLarge : Theme.paddingSmall
                 maximumHorizontalMargin: Theme.paddingLarge
-                verticalMargin: isPortrait ? Theme.paddingLarge : Theme.paddingSmall
+                verticalMargin: page.isLandscape ? Theme.paddingSmall : Theme.paddingLarge
                 maximumVerticalMargin: Theme.paddingLarge
+
                 backgroundColor: backgroundColorValue.color
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
+
                 layer.enabled: pullDownMenu.active
+
                 FeedbackEvent.onClicked: feedback.playEffect()
                 FeedbackEvent.onDropSucceeded: feedback.playEffect()
                 FeedbackEvent.onDropFailed: feedback.playEffect(true)
+
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }
         }
