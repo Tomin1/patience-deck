@@ -160,7 +160,7 @@ bool EngineChecker::handleQueued(const Action &action)
                 fail(Error::BadIndex, action, CardData());
             } else {
                 CardData card = slot.takeAt(action.index);
-                m_queue.decrementQueued(action.slot, action.index);
+                m_queue.decrementQueued(action.slot, action.index, card);
                 if (card) {
                     if (card.rank != action.data.rank || card.suit != action.data.suit)
                         fail(Error::WrongCard, action, card);

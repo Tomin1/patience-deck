@@ -9,7 +9,11 @@ DEFINES += \
     DATADIR=games \
     ENGINE_EXERCISER=1
 
-INCLUDEPATH += ../../src/
+INCLUDEPATH += \
+    ../../src/common \
+    ../../src/engine \
+    ../../src/manager \
+    ../../src/models
 
 DISTFILES += \
     qml/*.qml
@@ -18,20 +22,20 @@ SOURCES += \
     src/exerciser.cpp \
     src/checker.cpp \
     src/helper.cpp \
-    ../../src/engine.cpp \
-    ../../src/interface.cpp \
-    ../../src/queue.cpp \
-    ../../src/logging.cpp
+    ../../src/engine/engine.cpp \
+    ../../src/engine/interface.cpp \
+    ../../src/manager/queue.cpp \
+    ../../src/common/logging.cpp
 
 HEADERS += \
     src/checker.h \
     src/helper.h \
-    ../../src/engine.h \
-    ../../src/engine_p.h \
-    ../../src/enginedata.h \
-    ../../src/interface.h \
-    ../../src/queue.h \
-    ../../src/logging.h
+    ../../src/engine/engine.h \
+    ../../src/engine/engine_p.h \
+    ../../src/engine/enginedata.h \
+    ../../src/engine/interface.h \
+    ../../src/manager/queue.h \
+    ../../src/common/logging.h
 
 games.files = $$files(../../aisleriot/games/*.scm)
 games.files -= ../../aisleriot/games/api.scm

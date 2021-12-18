@@ -165,6 +165,7 @@ Engine::~Engine()
     s_engine = nullptr;
 }
 
+#ifndef ENGINE_EXERCISER
 void Engine::addArguments(QCommandLineParser *parser)
 {
     parser->addOptions({
@@ -203,6 +204,7 @@ void Engine::setArguments(QCommandLineParser *parser)
         GameOptionModel::saveOptions(state.gameFile, options);
     }
 }
+#endif // ENGINE_EXERCISER
 
 void Engine::load(const QString &gameFile)
 {

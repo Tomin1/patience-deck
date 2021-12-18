@@ -38,8 +38,10 @@ public:
 
     static Engine *instance();
 
+#ifndef ENGINE_EXERCISER
     static void addArguments(QCommandLineParser *parser);
     static void setArguments(QCommandLineParser *parser);
+#endif // ENGINE_EXERCISER
 
     enum ActionType {
         InsertionAction,
