@@ -523,8 +523,10 @@ Drag *Table::drag(QMouseEvent *event, Card *card)
     if (event->type() != QEvent::MouseButtonPress && m_drag && m_drag->card() == card)
         return m_drag;
 
-    if (m_drag)
+    if (m_drag) {
+        qCWarning(lcTable) << "Ignoring mouse event due to prevous drag still existing" << m_drag;
         return nullptr;
+    }
 
     if (event->type() == QEvent::MouseButtonPress && card->slot()) {
         m_drag = new Drag(event, this, card->slot(), card);

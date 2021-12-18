@@ -80,6 +80,8 @@ private:
         CantDrop,
     };
 
+    friend QDebug operator<<(QDebug debug, const Drag *drag);
+
     bool mayBeAClick(QMouseEvent *event);
     void checkTargets(bool force = false);
     void highlightOrDrop();

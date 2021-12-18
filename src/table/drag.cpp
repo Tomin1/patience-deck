@@ -366,3 +366,43 @@ FeedbackEventAttachedType *Drag::feedback()
 {
     return qobject_cast<FeedbackEventAttachedType*>(qmlAttachedPropertiesObject<FeedbackEvent>(m_table));
 }
+
+QDebug operator<<(QDebug debug, const Drag *drag)
+{
+    if (drag) {
+        debug.nospace() << "Drag(";
+        switch (drag->m_state) {
+        case Drag::NoDrag:
+            debug.nospace() << "NoDrag";
+            break;
+        case Drag::AboutToDrag:
+            debug.nospace() << "AboutToDrag";
+            break;
+        case Drag::StartingDrag:
+            debug.nospace() << "StartingDrag";
+            break;
+        case Drag::Dragging:
+            debug.nospace() << "Dragging";
+            break;
+        case Drag::Dropping:
+            debug.nospace() << "Dropping";
+            break;
+        case Drag::Dropped:
+            debug.nospace() << "Dropped";
+            break;
+        case Drag::Finished:
+            debug.nospace() << "Finished";
+            break;
+        case Drag::Canceled:
+            debug.nospace() << "Canceled";
+            break;
+        case Drag::Clicked:
+            debug.nospace() << "Clicked";
+            break;
+        }
+        debug.nospace() << ")";
+    } else {
+        debug.nospace() << "invalid drag";
+    }
+    return debug.space();
+}
