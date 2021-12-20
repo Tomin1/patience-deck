@@ -23,13 +23,10 @@ Row {
     property alias value: valueLabel.text
     property alias nameVisible: nameLabel.visible
     readonly property int nameWidth: nameLabel.width + spacing
+    readonly property int contentWidth: nameLabel.width + spacing + valueLabel.width
     property int maximumWidth
 
     spacing: Theme.paddingSmall
-    Behavior on x {
-        enabled: animating
-        NumberAnimation { duration: 100 }
-    }
 
     Label {
         id: nameLabel

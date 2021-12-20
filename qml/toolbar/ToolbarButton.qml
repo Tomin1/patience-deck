@@ -22,15 +22,17 @@ MouseArea {
     property alias imageSource: image.source
     property alias text: label.text
     property alias showText: label.visible
-    property bool down: pressed && containsPress
+    property bool down: !disabled && pressed && containsPress
+    property bool disabled
+    readonly property int contentWidth: Theme.itemSizeLarge + label.width
 
     height: Theme.itemSizeLarge
-    width: Theme.itemSizeLarge + (showText ? label.width : 0)
+    width: Theme.itemSizeLarge + (showText ? label.width + Theme.paddingLarge : 0)
 
     SilicaControl {
         anchors.fill: parent
         highlighted: parent.down
-        opacity: parent.enabled ? 1.0 : Theme.opacityLow
+        opacity: parent.disabled ? Theme.opacityLow : 1.0
 
         Icon {
             id: image

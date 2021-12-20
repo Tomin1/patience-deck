@@ -25,253 +25,573 @@ Item {
     property bool vertical
     property bool pageActive
     property bool expanded
-    readonly property bool animating: heightAnimation.running || widthAnimation.running
-    readonly property int _labeledButtonWidth: Theme.itemSizeLarge * 2
-    readonly property int buttonCount: {
-        if (vertical) {
-            var buttonSpace = parent.height - title.verticalHeight
-            return buttonSpace / Theme.itemSizeLarge
-        } else {
-            return 3
-        }
-    }
+    readonly property bool dragged: dragArea.drag.active
+    readonly property bool animating: dragged || horizontalTransition.running
+                                              || horizontalExpandedTransition.running
+                                              || verticalTransition.running
+                                              || verticalExpandedTransition.running
+    readonly property int buttonCountHorizontal: Math.ceil(parent.width / 2 / Theme.itemSizeLarge)
+    readonly property int spaceY: handle.y
+    readonly property int minimumSpaceY: Theme.itemSizeLarge
+    readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
+    readonly property int buttonCountVertical: Math.max(
+                            Math.floor((parent.height - title.verticalHeight) / Theme.itemSizeLarge),
+                            Patience.showDeal ? 5 : 4)
+    readonly property int spaceX: handle.x
+    readonly property int minimumSpaceX: Theme.itemSizeLarge
+    readonly property int maximumSpaceX: Math.max(gameTitle.contentWidth,
+                                                  scoreText.contentWidth,
+                                                  elapsedText.contentWidth,
+                                                  undoButton.contentWidth,
+                                                  redoButton.contentWidth,
+                                                  hintButton.contentWidth,
+                                                  dealButton.contentWidth,
+                                                  restartButton.contentWidth) + Theme.paddingLarge
+    readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
+    readonly property int toolbarVelocity: Theme.dp(3000)
 
-    height: {
-        if (vertical) {
-            return parent.height
-        } else if (expanded) {
-            return extraButtons.y + extraButtons.height + Theme.paddingSmall
-        } else {
-            return Theme.itemSizeLarge
-        }
-    }
-    Behavior on height {
-        enabled: !vertical && !orientationTransitionRunning && pageActive
-
-        NumberAnimation {
-            id: heightAnimation
-            duration: 100
-        }
-    }
-    width: {
-        if (!vertical) {
-            return parent.width
-        } else if (expanded) {
-            return Theme.horizontalPageMargin + _labeledButtonWidth * 2
-        } else {
-            return Theme.itemSizeLarge
-        }
-    }
-    Behavior on width {
-        enabled: vertical && !orientationTransitionRunning && pageActive
-
-        NumberAnimation {
-            id: widthAnimation
-            duration: 100
-        }
-    }
+    height: minimumSpaceY + (handle.visible ? handleWidth : 0)
+    width: parent.width
     clip: animating
+    states: [
+        State {
+            name: "dragged"
+            when: !vertical && dragged
+            extend: "expanded"
+            PropertyChanges { target: toolbar; height: spaceY + handleWidth }
+            AnchorChanges { target: handle; anchors.bottom: undefined }
+        },
+        State {
+            name: "expanded"
+            when: !vertical && expanded
+            PropertyChanges { target: toolbar; height: maximumSpaceY + handleWidth }
+        },
+        State {
+            name: "vertical dragged"
+            when: vertical && dragged
+            extend: "vertical expanded"
+            PropertyChanges { target: toolbar; width: spaceX + handleWidth }
+            AnchorChanges { target: handle; anchors.right: undefined }
+        },
+        State {
+            name: "vertical expanded"
+            when: vertical && expanded
+            extend: "vertical"
+            PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
+            PropertyChanges { target: scoreText; x: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: elapsedText; x: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: mainButtons; width: maximumSpaceX }
+        },
+        State {
+            name: "vertical"
+            when: vertical
 
-    Flow {
-        id: mainButtons
+            PropertyChanges {
+                target: toolbar
 
-        // Button graphics have some padding, thus remove some of that page margin
-        x: vertical ? 0 : Theme.horizontalPageMargin - Theme.paddingMedium
-        y: vertical ? title.y + title.height : 0
-        height: vertical ? Theme.itemSizeLarge * (buttonCount - 1) : Theme.itemSizeLarge
-        width: {
-            if (vertical) {
-                return expanded ? _labeledButtonWidth : Theme.itemSizeLarge
-            } else {
-                return Theme.itemSizeLarge * buttonCount
+                height: toolbar.parent.height
+                width: minimumSpaceX + handleWidth
             }
-        }
+            PropertyChanges {
+                target: handle
 
-        ToolbarButton {
-            //% "Undo"
-            text: qsTrId("patience-bt-undo")
-            imageSource: "../../buttons/icon-m-undo.svg"
-            showText: vertical && (expanded || animating)
-            enabled: Patience.canUndo
-            onClicked: Patience.undoMove()
-        }
+                height: toolbar.height
+                width: handleWidth
+            }
+            AnchorChanges {
+                target: handleIcon
 
-        ToolbarButton {
-            //% "Redo"
-            text: qsTrId("patience-bt-redo")
-            imageSource: "../../buttons/icon-m-redo.svg"
-            showText: vertical && (expanded || animating)
-            enabled: Patience.canRedo
-            onClicked: Patience.redoMove()
-        }
-
-        IconButton {
-            id: expandButton
-
-            enabled: !overlayLoader.active
-            icon.source: "../../buttons/icon-m-expand.svg"
-            icon.sourceSize.height: Theme.itemSizeLarge
-            icon.sourceSize.width: Theme.itemSizeLarge
-            parent: vertical ? toolbar : mainButtons
-            x: vertical ? 0 : 0
-            y: vertical ? toolbar.height - height : 0
-            height: Theme.itemSizeLarge
-            width: Theme.itemSizeLarge
-            transformOrigin: Item.Center
-            rotation: {
-                if (vertical) {
-                    return expanded ? 90 : 270
-                } else {
-                    return expanded ? 180 : 0
+                anchors {
+                    bottom: undefined
+                    right: parent.right
+                    horizontalCenter: undefined
+                    verticalCenter: parent.verticalCenter
                 }
             }
-            Behavior on rotation {
-                enabled: !orientationTransitionRunning && pageActive
-                NumberAnimation { duration: 100 }
+            PropertyChanges {
+                target: handleIcon
+
+                anchors.rightMargin: (handleIcon.height - handleIcon.width) / 2
+                rotation: 90
             }
-            onClicked: expanded = !expanded
+            AnchorChanges {
+                target: handleBorderTop
+
+                anchors {
+                    left: handle.left
+                    top: handle.top
+                    right: undefined
+                    bottom: handle.bottom
+                }
+            }
+            PropertyChanges { target: handleBorderTop; width: 1 }
+            AnchorChanges {
+                target: handleBorderBottom
+
+                anchors {
+                    left: undefined
+                    top: handle.top
+                    right: handle.right
+                    bottom: handle.bottom
+                }
+            }
+            PropertyChanges { target: handleBorderBottom; width: 1 }
+            PropertyChanges {
+                target: toolbarArea
+
+                anchors {
+                    rightMargin: handleWidth
+                    bottomMargin: { return 0 }
+                }
+            }
+            PropertyChanges { target: dragArea; drag.axis: Drag.XAxis }
+            PropertyChanges {
+                target: title
+
+                height: title.verticalHeight
+                width: spaceX - Theme.paddingSmall * 2
+                x: Theme.paddingSmall
+            }
+            PropertyChanges {
+                target: gameTitle
+
+                x: { return 0 }
+                y: { return 0 }
+                truncationMode: TruncationMode.None
+            }
+            PropertyChanges {
+                target: scoreText
+
+                x: -scoreText.nameWidth + spaceX - minimumSpaceX
+                maximumWidth: title.width
+                nameVisible: true
+            }
+            AnchorChanges { target: scoreText; anchors.bottom: elapsedText.top }
+            PropertyChanges {
+                target: elapsedText
+
+                x: -elapsedText.nameWidth + spaceX - minimumSpaceX
+                maximumWidth: title.width
+                nameVisible: true
+            }
+            PropertyChanges { target: mainButtonsContainer; height: Math.min(toolbarArea.height - title.verticalHeight, Theme.itemSizeLarge * buttonCountVertical) }
+            AnchorChanges {
+                target: mainButtonsContainer
+
+                anchors {
+                    top: undefined
+                    bottom: parent.bottom
+                }
+            }
+            PropertyChanges {
+                target: mainButtons
+
+                height: Theme.itemSizeLarge * buttonCountVertical
+                width: minimumSpaceX
+                x: { return 0 }
+                y: mainButtons.y
+            }
+            PropertyChanges { target: extraButtons; visible: false }
         }
+    ]
+    transitions: [
+        Transition {
+            id: horizontalTransition
+            from: "dragged"
+            to: ""
 
-        ToolbarButton {
-            id: hintButton
-            //% "Hint"
-            text: qsTrId("patience-bt-hint")
-            imageSource: "../../buttons/icon-m-hint.svg"
-            parent: vertical && buttonCount >= 4 ? mainButtons : extraButtons
-            showText: !vertical || expanded || animating
-            enabled: Patience.state === Patience.StartingState || Patience.state === Patience.RunningState
-            onClicked: Patience.getHint()
-        }
-    }
+            ParallelAnimation {
+                SmoothedAnimation {
+                    target: toolbar
+                    properties: "height"
+                    from: spaceY + handleWidth
+                    to: minimumSpaceY + handleWidth
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: handle
+                    properties: "y"
+                    from: spaceY
+                    to: minimumSpaceY
+                    velocity: toolbarVelocity
+                }
+            }
+        },
+        Transition {
+            id: horizontalExpandedTransition
+            from: "dragged"
+            to: "expanded"
 
-    Flow {
-        id: extraButtons
+            ParallelAnimation {
+                SmoothedAnimation {
+                    target: toolbar
+                    properties: "height"
+                    from: spaceY + handleWidth
+                    to: maximumSpaceY + handleWidth
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: handle
+                    properties: "y"
+                    from: spaceY
+                    to: maximumSpaceY
+                    velocity: toolbarVelocity
+                }
+            }
+        },
+        Transition {
+            id: verticalTransition
+            from: "vertical dragged"
+            to: "vertical"
 
-        // Button graphics have some padding, thus remove some of that page margin
-        x: vertical ? _labeledButtonWidth : Theme.horizontalPageMargin - Theme.paddingMedium
-        y: mainButtons.y + (vertical ? 0 : mainButtons.height)
-        width: vertical ? _labeledButtonWidth : (parent.width - x - Theme.horizontalPageMargin)
-        spacing: vertical? 0 : (width - hintButton.width - dealButton.width - restartButton.width) / 2
-        visible: expanded || animating
+            ParallelAnimation {
+                SmoothedAnimation {
+                    target: toolbar
+                    properties: "width"
+                    from: spaceX + handleWidth
+                    to: minimumSpaceX + handleWidth
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: handle
+                    properties: "x"
+                    from: spaceX
+                    to: minimumSpaceX
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: title
+                    properties: "width"
+                    from: spaceX - Theme.paddingSmall * 2
+                    to: minimumSpaceX - Theme.paddingSmall * 2
+                    velocity: toolbarVelocity
+                }
+                SequentialAnimation {
+                    SmoothedAnimation {
+                        from: spaceX
+                        to: Math.max(scoreText.width, spaceX)
+                        velocity: toolbarVelocity
+                    }
+                    SmoothedAnimation {
+                        target: scoreText
+                        properties: "x"
+                        from: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -scoreText.nameWidth
+                        velocity: toolbarVelocity
+                    }
+                }
+                SequentialAnimation {
+                    SmoothedAnimation {
+                        from: spaceX
+                        to: Math.max(elapsedText.width, spaceX)
+                        velocity: toolbarVelocity
+                    }
+                    SmoothedAnimation {
+                        target: elapsedText
+                        properties: "x"
+                        from: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -elapsedText.nameWidth
+                        velocity: toolbarVelocity
+                    }
+                }
+            }
+        },
+        Transition {
+            id: verticalExpandedTransition
+            from: "vertical dragged"
+            to: "vertical expanded"
 
-        ToolbarButton {
-            id: restartButton
-            //% "Restart"
-            text: qsTrId("patience-bt-restart")
-            imageSource: "../../buttons/icon-m-restart.svg"
-            onClicked: {
-                expanded = false
-                Patience.restartGame()
+            ParallelAnimation {
+                SmoothedAnimation {
+                    target: toolbar
+                    properties: "width"
+                    from: spaceX + handleWidth
+                    to: maximumSpaceX + handleWidth
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: handle
+                    properties: "x"
+                    from: spaceX
+                    to: maximumSpaceX
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: title
+                    properties: "width"
+                    from: spaceX - Theme.paddingSmall * 2
+                    to: maximumSpaceX - Theme.paddingSmall * 2
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: scoreText
+                    properties: "x"
+                    from: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-scoreText.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    velocity: toolbarVelocity
+                }
+                SmoothedAnimation {
+                    target: elapsedText
+                    properties: "x"
+                    from: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-elapsedText.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    velocity: toolbarVelocity
+                }
             }
         }
+    ]
 
-        ToolbarButton {
-            id: dealButton
-            //% "Deal"
-            text: qsTrId("patience-bt-deal")
-            imageSource: "../../buttons/icon-m-deal.svg"
-            enabled: Patience.canDeal
-            visible: Patience.showDeal
-            onClicked: Patience.dealCard()
+    MouseArea {
+        id: dragArea
+        anchors.fill: parent
+        drag {
+            target: handle
+            axis: Drag.YAxis
+            minimumY: minimumSpaceY
+            maximumY: maximumSpaceY
+            minimumX: minimumSpaceX
+            maximumX: maximumSpaceX
+            filterChildren: true
+        }
+        enabled: vertical || extraButtons.children.length > 0
+
+        MouseArea {
+            id: toolbarArea
+
+            anchors {
+                fill: parent
+                bottomMargin: handleWidth
+            }
+            clip: animating
+
+            MouseArea {
+                id: mainButtonsContainer
+
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                }
+                height: mainButtons.height
+                width: mainButtons.width
+                drag {
+                    target: mainButtons
+                    axis: Drag.YAxis
+                    minimumY: height - mainButtons.height
+                    maximumY: 0
+                    filterChildren: true
+                }
+                enabled: vertical
+                clip: vertical && height < mainButtons.height
+
+                Flow {
+                    id: mainButtons
+
+                    // Button graphics have some padding, thus remove some of that page margin
+                    x: Theme.horizontalPageMargin - Theme.paddingMedium
+                    y: 0
+                    height: minimumSpaceY
+                    width: Theme.itemSizeLarge * buttonCountHorizontal
+
+                    ToolbarButton {
+                        id: restartButton
+
+                        //% "Restart"
+                        text: qsTrId("patience-bt-restart")
+                        imageSource: "../../buttons/icon-m-restart.svg"
+                        showText: parent == extraButtons || expanded || animating
+                        parent: vertical || buttonCountHorizontal >= 5 ? mainButtons : extraButtons
+                        onClicked: Patience.restartGame()
+                    }
+
+                    ToolbarButton {
+                        id: dealButton
+
+                        //% "Deal"
+                        text: qsTrId("patience-bt-deal")
+                        imageSource: "../../buttons/icon-m-deal.svg"
+                        showText: parent == extraButtons || (vertical && (expanded || animating))
+                        parent: vertical || buttonCountHorizontal >= 4 ? mainButtons : extraButtons
+                        disabled: !Patience.canDeal
+                        visible: Patience.showDeal
+                        onClicked: Patience.dealCard()
+                    }
+
+                    ToolbarButton {
+                        id: hintButton
+
+                        //% "Hint"
+                        text: qsTrId("patience-bt-hint")
+                        imageSource: "../../buttons/icon-m-hint.svg"
+                        showText: parent == extraButtons || (vertical && (expanded || animating))
+                        parent: vertical || buttonCountHorizontal >= 3 ? mainButtons : extraButtons
+                        disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
+                        onClicked: Patience.getHint()
+                    }
+
+                    ToolbarButton {
+                        id: redoButton
+
+                        //% "Redo"
+                        text: qsTrId("patience-bt-redo")
+                        imageSource: "../../buttons/icon-m-redo.svg"
+                        showText: parent == extraButtons || (vertical && (expanded || animating))
+                        parent: vertical || buttonCountHorizontal >= 2 ? mainButtons : extraButtons
+                        disabled: !Patience.canRedo
+                        onClicked: Patience.redoMove()
+                    }
+
+                    ToolbarButton {
+                        id: undoButton
+
+                        //% "Undo"
+                        text: qsTrId("patience-bt-undo")
+                        imageSource: "../../buttons/icon-m-undo.svg"
+                        showText: parent == extraButtons || (vertical && (expanded || animating))
+                        parent: vertical || buttonCountHorizontal >= 1 ? mainButtons : extraButtons
+                        disabled: !Patience.canUndo
+                        onClicked: Patience.undoMove()
+                    }
+                }
+            }
+
+            Flow {
+                id: extraButtons
+
+                // Button graphics have some padding, thus remove some of that page margin
+                x: Theme.horizontalPageMargin - Theme.paddingMedium
+                y: mainButtonsContainer.y + mainButtons.height
+                width: parent.width - x - Theme.horizontalPageMargin
+                visible: expanded || animating
+            }
+
+            Item {
+                id: title
+
+                // These apply to !vertical
+                readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
+                readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
+                readonly property int verticalHeight: gameTitle.height
+                                                    + (Patience.showScore ? scoreText.height : 0)
+                                                    + elapsedText.height
+
+                height: minimumSpaceY
+                width: maximumWidth
+                x: minimumX
+                anchors.top: parent.top
+                clip: width < gameTitle.contentWidth
+
+                Label {
+                    id: gameTitle
+
+                    text: Patience.gameName
+                    color: Theme.highlightColor
+                    font.pixelSize: Theme.fontSizeLarge
+                    truncationMode: TruncationMode.Fade
+                    verticalAlignment: Text.AlignBottom
+                    width: Math.min(parent.width, contentWidth)
+                    x: title.width - width
+                    y: scoreText.y - height
+                }
+
+
+                ScoreText {
+                    id: scoreText
+
+                    //% "Score:"
+                    text: qsTrId("patience-la-score")
+                    value: Patience.score
+                    anchors.bottom: parent.bottom
+                    x: parent.width - width - elapsedText.width - spacer.width - 2 * Theme.paddingSmall
+                    maximumWidth: title.maximumWidth - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
+                    nameVisible: false
+                    visible: Patience.showScore
+                }
+
+                Label {
+                    id: spacer
+                    text: "\u2022"
+                    color: Theme.highlightColor
+                    anchors {
+                        bottom: parent.bottom
+                        right: elapsedText.left
+                        rightMargin: Theme.paddingSmall
+                    }
+                    visible: !vertical && Patience.showScore
+                }
+
+                ScoreText {
+                    id: elapsedText
+
+                    //% "Time:"
+                    text: qsTrId("patience-la-time")
+                    value: Patience.elapsedTime
+                    anchors.bottom: parent.bottom
+                    x: parent.width - width
+                    maximumWidth: title.maximumWidth
+                    nameVisible: false
+                }
+            }
         }
     }
 
     Item {
-        id: title
+        id: handle
 
-        // These apply to !vertical
-        readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
-        readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
-        readonly property int verticalHeight: gameTitle.height
-                                            + (Patience.showScore ? scoreText.height : 0)
-                                            + elapsedText.height
+        property int prevX: x
+        property int prevY: y
 
-        height: vertical ? verticalHeight : Theme.itemSizeLarge
-        width: vertical ? parent.width - Theme.paddingSmall * 2 : maximumWidth
-        x: vertical ? Theme.paddingSmall : minimumX
         anchors {
-            top: parent.top
-            topMargin: {
-                if (vertical) {
-                    var remainingSpace = parent.height - (height + buttonCount * Theme.itemSizeLarge)
-                    if (remainingSpace > Theme.paddingMedium) {
-                        return Theme.paddingMedium
-                    } else {
-                        return remainingSpace
-                    }
-                } else {
-                    return 0
-                }
-            }
+            bottom: parent.bottom
+            right: parent.right
+        }
+        height: handleWidth
+        width: parent.width
+        visible: vertical || extraButtons.children.length > 0
+
+        onXChanged: {
+            if (dragged) expanded = prevX < x
+            prevX = x
         }
 
-        Label {
-            id: gameTitle
-
-            text: Patience.gameName
-            color: Theme.highlightColor
-            font.pixelSize: Theme.fontSizeLarge
-            truncationMode: TruncationMode.Fade
-            verticalAlignment: Text.AlignBottom
-            width: Math.min(parent.width, contentWidth)
-            x: vertical ? 0 : parent.width - width
-            y: vertical ? 0 : scoreText.y - height
+        onYChanged: {
+            if (dragged) expanded = prevY < y
+            prevY = y
         }
 
+        Rectangle {
+            id: handleBorderTop
 
-        ScoreText {
-            id: scoreText
-
-            //% "Score:"
-            text: qsTrId("patience-la-score")
-            value: Patience.score
-            nameVisible: vertical
-            anchors.bottom: vertical ? elapsedText.top : parent.bottom
-            x: {
-                if (vertical) {
-                    return expanded ? 0 : -nameWidth
-                } else {
-                    return parent.width - width - elapsedText.width - spacer.width - 2 * Theme.paddingSmall
-                }
+            anchors {
+                left: parent.left
+                top: parent.top
+                right: parent.right
             }
-            maximumWidth: {
-                if (vertical) {
-                    return parent.width
-                } else {
-                    return title.maximumWidth - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
-                }
-            }
-            visible: Patience.showScore
+            height: 1
+            color: "white"
         }
 
-        Label {
-            id: spacer
-            text: "\u2022"
-            color: Theme.highlightColor
+        Icon {
+            id: handleIcon
+
+            source: "../../buttons/handle.svg"
+            sourceSize.height: handleWidth
+            sourceSize.width: handleWidth * (88 / 48)
             anchors {
                 bottom: parent.bottom
-                right: elapsedText.left
-                rightMargin: Theme.paddingSmall
+                horizontalCenter: parent.horizontalCenter
             }
-            visible: !vertical && Patience.showScore
         }
 
-        ScoreText {
-            id: elapsedText
+        Rectangle {
+            id: handleBorderBottom
 
-            //% "Time:"
-            text: qsTrId("patience-la-time")
-            value: Patience.elapsedTime
-            nameVisible: vertical
-            anchors.bottom: parent.bottom
-            x: {
-                if (vertical) {
-                    return expanded ? 0 : -nameWidth
-                } else {
-                    return parent.width - width
-                }
+            anchors {
+                left: parent.left
+                bottom: parent.bottom
+                right: parent.right
             }
-            maximumWidth: vertical ? parent.width : title.maximumWidth
+            height: 1
+            color: "white"
         }
     }
 }

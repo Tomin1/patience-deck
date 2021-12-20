@@ -111,8 +111,8 @@ Page {
 
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
 
-                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge) - messageBar.height
-                width: page.width - (page.isLandscape ? Theme.itemSizeLarge : 0)
+                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge + toolbar.handleWidth) - messageBar.height
+                width: page.width - (page.isLandscape ? Theme.itemSizeLarge + toolbar.handleWidth : 0)
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 minimumSideMargin: Theme.horizontalPageMargin
@@ -175,11 +175,9 @@ Page {
             source: "GameOverOverlay.qml"
             x: tableContainer.x
             y: tableContainer.y
-            height: table.height
-            width: table.width
+            height: tableContainer.height
+            width: tableContainer.width
             z: 5
-
-            onActiveChanged: if (active) toolbar.expanded = false
         }
 
         Loader {
@@ -188,8 +186,8 @@ Page {
             source: "EngineFailureOverlay.qml"
             x: tableContainer.x
             y: tableContainer.y
-            height: table.height
-            width: table.width
+            height: tableContainer.height
+            width: tableContainer.width
             z: 10
         }
     }
