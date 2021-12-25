@@ -143,6 +143,7 @@ Page {
                 bottom: parent.bottom
             }
             height: message.height
+            clip: message.contentWidth > width
 
             drag {
                 target: message
