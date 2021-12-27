@@ -842,10 +842,10 @@ void EnginePrivate::clear(bool resetData)
     if (resetData) {
         m_state = UninitializedState;
         setFeatures(0);
-        setCanUndo(false);
-        setCanRedo(false);
-        setCanDeal(false);
     }
+    setCanUndo(false);
+    setCanRedo(false);
+    setCanDeal(false);
     m_cardSlots.clear();
     clearDelayedCall();
     emit engine()->clearData();
