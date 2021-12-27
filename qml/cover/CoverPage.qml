@@ -47,5 +47,15 @@ CoverBackground {
             text: Patience.elapsedTime
             color: Theme.secondaryColor
         }
+
+        Icon {
+            anchors.horizontalCenter: parent.horizontalCenter
+            source: Patience.state === Patience.WonState
+                    ? "../../buttons/icon-m-fireworks.svg"
+                    : "../../buttons/icon-m-skull.svg"
+            sourceSize.height: Theme.iconSizeLarge
+            sourceSize.width: Theme.iconSizeLarge
+            visible: Patience.state >= Patience.GameOverState
+        }
     }
 }
