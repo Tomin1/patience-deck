@@ -150,7 +150,7 @@ Item {
                 target: title
 
                 height: title.verticalHeight
-                width: spaceX - Theme.paddingSmall * 2
+                width: spaceX - Theme.paddingSmall
                 x: Theme.paddingSmall
             }
             PropertyChanges {
