@@ -178,8 +178,22 @@ Item {
             PropertyChanges {
                 target: mainButtonsContainer
 
-                height: Math.min(toolbarArea.height - title.verticalHeight,
-                                 Theme.itemSizeLarge * buttonCountVertical)
+                height: {
+                    var spaceAvailable = toolbarArea.height - title.verticalHeight
+                    if (spaceAvailable > Theme.itemSizeLarge * buttonCountVertical) {
+                        return Theme.itemSizeLarge * buttonCountVertical
+                    }
+                    var minItemSize = 0.2 * Theme.itemSizeLarge
+                    var maxItemSize = Theme.itemSizeLarge - minItemSize
+                    var lastButtonSpace = spaceAvailable % Theme.itemSizeLarge
+                    if (lastButtonSpace < minItemSize + Theme.paddingSmall) {
+                        return spaceAvailable - lastButtonSpace - minItemSize
+                    } else if (lastButtonSpace > maxItemSize - Theme.paddingSmall) {
+                        return spaceAvailable - (lastButtonSpace - maxItemSize) - Theme.paddingSmall
+                    } else {
+                        return spaceAvailable - Theme.paddingSmall
+                    }
+                }
                 enabled: true
                 clip: height < mainButtons.height
             }
