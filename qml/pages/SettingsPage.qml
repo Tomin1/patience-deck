@@ -200,9 +200,9 @@ Page {
             }
 
             TextSwitch {
-                //% "Prevent display blanking"
+                //% "Prevent display from blanking"
                 text: qsTrId("patience-la-prevent_display_blanking")
-                //% "Display will not dim or turn black while a game is running"
+                //% "Display does not dim or turn black while a game is running"
                 description: qsTrId("patience-de-display_will_not_blank")
                 checked: preventBlanking.value
                 onClicked: preventBlanking.value = !preventBlanking.value
@@ -211,7 +211,7 @@ Page {
             TextSwitch {
                 //% "Play feedback effects"
                 text: qsTrId("patience-la-play_feedback_effects")
-                //% "Dropping and clicking will play feedback effects"
+                //% "Vibrates when dropping and clicking"
                 description: qsTrId("patience-de-play_feedback_effects")
                 checked: feedbackEffects.value
                 onClicked: feedbackEffects.value = !feedbackEffects.value
