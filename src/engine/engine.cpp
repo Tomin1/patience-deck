@@ -743,12 +743,14 @@ Engine::ReadSavedState Engine::readSavedState(const MGConfItem &stateConf)
     ReadSavedState saved;
     auto state = stateConf.value();
     if (state.isValid()) {
-        saved.valid = true;
         auto parts = state.toString().split(';');
-        saved.gameFile = parts.at(0);
-        if (parts.count() >= 2) {
-            saved.hasSeed = true;
-            saved.seed = parts.at(1).toULongLong(&saved.seedOk);
+        saved.valid = !parts.at(0).isEmpty();
+        if (saved.valid) {
+            saved.gameFile = parts.at(0);
+            if (parts.count() >= 2) {
+                saved.hasSeed = true;
+                saved.seed = parts.at(1).toULongLong(&saved.seedOk);
+            }
         }
     }
     return saved;
