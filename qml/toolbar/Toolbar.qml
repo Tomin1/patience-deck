@@ -593,7 +593,7 @@ Item {
                 right: parent.right
             }
             height: 1
-            color: "white"
+            color: Theme.colorScheme === Theme.LightOnDark ? "white" : "black"
         }
 
         Icon {
@@ -617,7 +617,7 @@ Item {
                 right: parent.right
             }
             height: 1
-            color: "white"
+            color: handleBorderTop.color
         }
     }
 }
