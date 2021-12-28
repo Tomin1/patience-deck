@@ -97,6 +97,7 @@ Item {
 
                 height: toolbar.height
                 width: handleWidth
+                visible: true
             }
             AnchorChanges {
                 target: handleIcon
@@ -144,7 +145,7 @@ Item {
                     bottomMargin: { return 0 }
                 }
             }
-            PropertyChanges { target: dragArea; drag.axis: Drag.XAxis }
+            PropertyChanges { target: dragArea; drag.axis: Drag.XAxis; enabled: true }
             PropertyChanges {
                 target: title
 
@@ -174,7 +175,14 @@ Item {
                 maximumWidth: title.width
                 nameVisible: true
             }
-            PropertyChanges { target: mainButtonsContainer; height: Math.min(toolbarArea.height - title.verticalHeight, Theme.itemSizeLarge * buttonCountVertical) }
+            PropertyChanges {
+                target: mainButtonsContainer
+
+                height: Math.min(toolbarArea.height - title.verticalHeight,
+                                 Theme.itemSizeLarge * buttonCountVertical)
+                enabled: true
+                clip: height < mainButtons.height
+            }
             AnchorChanges {
                 target: mainButtonsContainer
 
@@ -192,6 +200,12 @@ Item {
                 y: mainButtons.y
             }
             PropertyChanges { target: extraButtons; visible: false }
+            PropertyChanges { target: undoButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges { target: redoButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges { target: hintButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges { target: dealButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges { target: restartButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges { target: spacer; visible: false }
         }
     ]
     transitions: [
@@ -353,7 +367,7 @@ Item {
             maximumX: maximumSpaceX
             filterChildren: true
         }
-        enabled: vertical || extraButtons.children.length > 0
+        enabled: buttonCountHorizontal < 5
 
         MouseArea {
             id: toolbarArea
@@ -380,8 +394,6 @@ Item {
                     maximumY: 0
                     filterChildren: true
                 }
-                enabled: vertical
-                clip: vertical && height < mainButtons.height
 
                 Flow {
                     id: mainButtons
@@ -398,8 +410,8 @@ Item {
                         //% "Restart"
                         text: qsTrId("patience-bt-restart")
                         imageSource: "../../buttons/icon-m-restart.svg"
-                        showText: parent == extraButtons || expanded || animating
-                        parent: vertical || buttonCountHorizontal >= 5 ? mainButtons : extraButtons
+                        showText: buttonCountHorizontal < 5
+                        parent: buttonCountHorizontal >= 5 ? mainButtons : extraButtons
                         onClicked: Patience.restartGame()
                     }
 
@@ -409,8 +421,8 @@ Item {
                         //% "Deal"
                         text: qsTrId("patience-bt-deal")
                         imageSource: "../../buttons/icon-m-deal.svg"
-                        showText: parent == extraButtons || (vertical && (expanded || animating))
-                        parent: vertical || buttonCountHorizontal >= 4 ? mainButtons : extraButtons
+                        showText: buttonCountHorizontal < 4
+                        parent: buttonCountHorizontal >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
                         onClicked: Patience.dealCard()
@@ -422,8 +434,8 @@ Item {
                         //% "Hint"
                         text: qsTrId("patience-bt-hint")
                         imageSource: "../../buttons/icon-m-hint.svg"
-                        showText: parent == extraButtons || (vertical && (expanded || animating))
-                        parent: vertical || buttonCountHorizontal >= 3 ? mainButtons : extraButtons
+                        showText: buttonCountHorizontal < 3 
+                        parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
                         onClicked: Patience.getHint()
                     }
@@ -434,8 +446,8 @@ Item {
                         //% "Redo"
                         text: qsTrId("patience-bt-redo")
                         imageSource: "../../buttons/icon-m-redo.svg"
-                        showText: parent == extraButtons || (vertical && (expanded || animating))
-                        parent: vertical || buttonCountHorizontal >= 2 ? mainButtons : extraButtons
+                        showText: buttonCountHorizontal < 2
+                        parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
                         disabled: !Patience.canRedo
                         onClicked: Patience.redoMove()
                     }
@@ -446,8 +458,8 @@ Item {
                         //% "Undo"
                         text: qsTrId("patience-bt-undo")
                         imageSource: "../../buttons/icon-m-undo.svg"
-                        showText: parent == extraButtons || (vertical && (expanded || animating))
-                        parent: vertical || buttonCountHorizontal >= 1 ? mainButtons : extraButtons
+                        showText: buttonCountHorizontal < 1
+                        parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
                         disabled: !Patience.canUndo
                         onClicked: Patience.undoMove()
                     }
@@ -516,7 +528,7 @@ Item {
                         right: elapsedText.left
                         rightMargin: Theme.paddingSmall
                     }
-                    visible: !vertical && Patience.showScore
+                    visible: Patience.showScore
                 }
 
                 ScoreText {
@@ -546,7 +558,7 @@ Item {
         }
         height: handleWidth
         width: parent.width
-        visible: vertical || extraButtons.children.length > 0
+        visible: buttonCountHorizontal < 5
 
         onXChanged: {
             if (dragged) expanded = prevX < x
