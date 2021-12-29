@@ -139,9 +139,7 @@ void Table::setArguments(QCommandLineParser *parser)
         MGConfItem backgroundConf(Constants::ConfPath + QStringLiteral("/backgroundColor"));
         QString value = parser->value("background");
         QColor color(backgroundConf.value(DefaultBackgroundColor.name()).toString());
-        if (value == QLatin1String("default"))
-            color = QColor(DefaultBackgroundColor);
-        else if (value == QLatin1String("adaptive"))
+        if (value == QLatin1String("default") || value == QLatin1String("adaptive"))
             color = QColor();
         else if (value == QLatin1String("transparent"))
             color.setAlpha(0);

@@ -223,8 +223,8 @@ Page {
 
     ConfigurationValue {
         id: backgroundColor
-        readonly property color color: value === "" ? defaultValue : value
-        defaultValue: "green"
+        readonly property color color: value === "" ? "green" : value
+        defaultValue: ""
         key: "/site/tomin/apps/PatienceDeck/backgroundColor"
     }
 

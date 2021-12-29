@@ -229,7 +229,7 @@ Page {
     ConfigurationValue {
         id: backgroundColorValue
         readonly property color color: value === "" ? Theme.rgba(Theme.highlightColor, Theme.opacityLow) : value
-        defaultValue: "green"
+        defaultValue: ""
         key: "/site/tomin/apps/PatienceDeck/backgroundColor"
     }
 
