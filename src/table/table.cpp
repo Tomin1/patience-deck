@@ -522,7 +522,7 @@ Drag *Table::drag(QMouseEvent *event, Card *card)
         return m_drag;
 
     if (m_drag) {
-        qCWarning(lcTable) << "Ignoring mouse event due to prevous drag still existing" << m_drag;
+        qCWarning(lcTable) << "Ignoring mouse event due to previous drag still existing" << m_drag;
         return nullptr;
     }
 
