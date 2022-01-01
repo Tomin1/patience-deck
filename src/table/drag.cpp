@@ -261,7 +261,7 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
         return;
 
     if (m_state >= Finished) {
-        qCWarning(lcDrag) << "This drag has already handled dropping";
+        qCWarning(lcDrag) << this << "has already handled dropping";
         return;
     }
 
