@@ -222,7 +222,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
     if (id != m_id && slotId != m_source->id())
         return;
 
-    if (could) {
+    if (m_state == StartingDrag && could) {
         m_state = Dragging;
         m_cards = m_source->take(m_card);
         if (m_cards.empty())
@@ -236,6 +236,9 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
         }
 
         checkTargets();
+    } else if (m_state == Canceled) {
+        emit doCancelDrag(m_id, m_source->id(), m_source->asCardData(m_card));
+        done();
     } else {
         cancel();
     }
