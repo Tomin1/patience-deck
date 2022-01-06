@@ -439,7 +439,7 @@ Item {
                         parent: buttonCountHorizontal >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
-                        onClicked: Patience.dealCard()
+                        onClicked: if (!disabled) Patience.dealCard()
                     }
 
                     ToolbarButton {
@@ -451,7 +451,7 @@ Item {
                         showText: buttonCountHorizontal < 3 
                         parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
-                        onClicked: Patience.getHint()
+                        onClicked: if (!disabled) Patience.getHint()
                     }
 
                     ToolbarButton {
@@ -463,7 +463,7 @@ Item {
                         showText: buttonCountHorizontal < 2
                         parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
                         disabled: !Patience.canRedo
-                        onClicked: Patience.redoMove()
+                        onClicked: if (!disabled) Patience.redoMove()
                     }
 
                     ToolbarButton {
@@ -475,7 +475,7 @@ Item {
                         showText: buttonCountHorizontal < 1
                         parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
                         disabled: !Patience.canUndo
-                        onClicked: Patience.undoMove()
+                        onClicked: if (!disabled) Patience.undoMove()
                     }
                 }
             }
