@@ -290,8 +290,8 @@ Item {
                 SmoothedAnimation {
                     target: title
                     properties: "width"
-                    from: spaceX - Theme.paddingSmall * 2
-                    to: minimumSpaceX - Theme.paddingSmall * 2
+                    from: spaceX - Theme.paddingSmall
+                    to: minimumSpaceX - Theme.paddingSmall
                     velocity: toolbarVelocity
                 }
                 SequentialAnimation {
