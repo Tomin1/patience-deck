@@ -78,9 +78,9 @@ Page {
                     //% "Background"
                     label: qsTrId("patience-la-background")
                     currentIndex: {
-                        if (backgroundColor.value === "") {
+                        if (settings.backgroundColorValue === "") {
                             return 1
-                        } else if (backgroundColor.color.a === 0.0) {
+                        } else if (settings.solidBackgroundColor.a === 0.0) {
                             return 2
                         } else {
                             return 0
@@ -114,11 +114,11 @@ Page {
                     onCurrentIndexChanged: {
                         if (ready) {
                             if (currentIndex === 2) {
-                                backgroundColor.value = Theme.rgba(backgroundColor.color, 0.0)
+                                settings.backgroundColorValue = Theme.rgba(settings.solidBackgroundColor, 0.0)
                             } else if (currentIndex === 1) {
-                                backgroundColor.value = ""
+                                settings.backgroundColorValue = ""
                             } else {
-                                backgroundColor.value = Theme.rgba(backgroundColor.color, 1.0)
+                                settings.backgroundColorValue = Theme.rgba(settings.solidBackgroundColor, 1.0)
                             }
                         }
                     }
@@ -135,7 +135,7 @@ Page {
                     height: Theme.itemSizeExtraSmall
                     width: height
                     radius: height / 4
-                    color: backgroundSelector.currentIndex !== 1 ? backgroundColor.color : "transparent"
+                    color: backgroundSelector.currentIndex !== 1 ? settings.solidBackgroundColor : "transparent"
                     border {
                         color: backgroundSelector.currentIndex === 0 ? Theme.primaryColor : "transparent"
                         width: 2
@@ -151,7 +151,7 @@ Page {
                                 "colors": page.backgroundColorOptions
                             })
                             dialog.accepted.connect(function() {
-                                backgroundColor.value = dialog.color
+                                settings.backgroundColorValue = dialog.color
                             })
                         }
                     }
@@ -166,7 +166,7 @@ Page {
                 //% "Card style"
                 label: qsTrId("patience-la-card_style")
                 currentIndex: {
-                    var index = choices.indexOf(cardStyle.value)
+                    var index = choices.indexOf(settings.cardStyle)
                     return index !== -1 ? index : 0
                 }
 
@@ -190,7 +190,7 @@ Page {
                     }
                 }
 
-                onCurrentIndexChanged: if (ready) cardStyle.value = choices[currentIndex]
+                onCurrentIndexChanged: if (ready) settings.cardStyle = choices[currentIndex]
                 Component.onCompleted: ready = true
             }
 
@@ -204,8 +204,8 @@ Page {
                 text: qsTrId("patience-la-prevent_display_blanking")
                 //% "Display does not dim or turn black while a game is running"
                 description: qsTrId("patience-de-display_will_not_blank")
-                checked: preventBlanking.value
-                onClicked: preventBlanking.value = !preventBlanking.value
+                checked: settings.preventBlanking
+                onClicked: settings.preventBlanking = !settings.preventBlanking
             }
 
             TextSwitch {
@@ -213,36 +213,13 @@ Page {
                 text: qsTrId("patience-la-play_feedback_effects")
                 //% "Vibrates when dropping and clicking"
                 description: qsTrId("patience-de-play_feedback_effects")
-                checked: feedbackEffects.value
-                onClicked: feedbackEffects.value = !feedbackEffects.value
+                checked: settings.feedbackEffects
+                onClicked: settings.feedbackEffects = !settings.feedbackEffects
             }
         }
 
         VerticalScrollDecorator {}
     }
 
-    ConfigurationValue {
-        id: backgroundColor
-        readonly property color color: value === "" ? "green" : value
-        defaultValue: ""
-        key: "/site/tomin/apps/PatienceDeck/backgroundColor"
-    }
-
-    ConfigurationValue {
-        id: cardStyle
-        defaultValue: "regular"
-        key: "/site/tomin/apps/PatienceDeck/cardStyle"
-    }
-
-    ConfigurationValue {
-        id: feedbackEffects
-        defaultValue: false
-        key: "/site/tomin/apps/PatienceDeck/feedbackEffects"
-    }
-
-    ConfigurationValue {
-        id: preventBlanking
-        defaultValue: false
-        key: "/site/tomin/apps/PatienceDeck/preventBlanking"
-    }
+    Settings { id: settings }
 }

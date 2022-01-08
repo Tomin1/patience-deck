@@ -121,7 +121,7 @@ Page {
                 verticalMargin: page.isLandscape ? Theme.paddingSmall : Theme.paddingLarge
                 maximumVerticalMargin: Theme.paddingLarge
 
-                backgroundColor: backgroundColorValue.color
+                backgroundColor: settings.backgroundColor
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
 
                 layer.enabled: pullDownMenu.active
@@ -213,35 +213,18 @@ Page {
     }
 
     DisplayBlanking {
-        preventBlanking: preventBlanking.value && Patience.state === Patience.RunningState && !Patience.paused
+        preventBlanking: settings.preventBlanking && Patience.state === Patience.RunningState && !Patience.paused
     }
 
     ThemeEffect {
         id: feedback
 
         function playEffect(weak) {
-            if (feedbackEffects.value) {
+            if (settings.feedbackEffects) {
                 play(weak ? ThemeEffect.PressWeak : ThemeEffect.Press)
             }
         }
     }
 
-    ConfigurationValue {
-        id: backgroundColorValue
-        readonly property color color: value === "" ? Theme.rgba(Theme.highlightColor, Theme.opacityLow) : value
-        defaultValue: ""
-        key: "/site/tomin/apps/PatienceDeck/backgroundColor"
-    }
-
-    ConfigurationValue {
-        id: preventBlanking
-        defaultValue: false
-        key: "/site/tomin/apps/PatienceDeck/preventBlanking"
-    }
-
-    ConfigurationValue {
-        id: feedbackEffects
-        defaultValue: false
-        key: "/site/tomin/apps/PatienceDeck/feedbackEffects"
-    }
+    Settings { id: settings }
 }
