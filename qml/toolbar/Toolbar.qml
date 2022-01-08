@@ -52,7 +52,6 @@ Item {
 
     height: minimumSpaceY + (handle.visible ? handleWidth : 0)
     width: parent.width
-    clip: animating
     states: [
         State {
             name: "dragged"
