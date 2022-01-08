@@ -63,6 +63,28 @@ Page {
     SilicaFlickable {
         anchors.fill: parent
 
+        states: State {
+            name: "landscape"
+            when: page.isLandscape
+            PropertyChanges { target: toolbar; vertical: true }
+            PropertyChanges {
+                target: tableContainer
+
+                x: toolbar.width
+                y: 0
+                height: page.height - messageBar.height
+                width: page.width - toolbar.width
+            }
+            PropertyChanges {
+                target: table
+                height: page.height - messageBar.height
+                width: page.width - Theme.itemSizeLarge - toolbar.handleWidth
+                horizontalMargin: Theme.paddingLarge
+                verticalMargin: Theme.paddingSmall
+            }
+            AnchorChanges { target: messageBar; anchors.left: toolbar.right }
+        }
+
         PullDownMenu {
             id: pullDownMenu
 
@@ -93,7 +115,7 @@ Page {
             id: toolbar
 
             enabled: !Patience.engineFailed
-            vertical: page.isLandscape
+            vertical: false
             pageActive: page.active
             z: 10
         }
@@ -102,24 +124,24 @@ Page {
             id: tableContainer
 
             clip: toolbar.expanded || toolbar.animating
-            x: page.isLandscape ? toolbar.width : 0
-            y: page.isLandscape ? 0 : toolbar.height
-            height: page.height - messageBar.height - (page.isLandscape ? 0 : toolbar.height)
-            width: page.width - (page.isLandscape ? toolbar.width : 0)
+            x: 0
+            y: toolbar.height
+            height: page.height - messageBar.height - toolbar.height
+            width: page.width
 
             Table {
                 id: table
 
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
 
-                height: page.height - (page.isLandscape ? 0 : Theme.itemSizeLarge + toolbar.handleWidth) - messageBar.height
-                width: page.width - (page.isLandscape ? Theme.itemSizeLarge + toolbar.handleWidth : 0)
+                height: page.height - Theme.itemSizeLarge - toolbar.handleWidth - messageBar.height
+                width: page.width
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 minimumSideMargin: Theme.horizontalPageMargin
-                horizontalMargin: page.isLandscape ? Theme.paddingLarge : Theme.paddingSmall
+                horizontalMargin: Theme.paddingSmall
                 maximumHorizontalMargin: Theme.paddingLarge
-                verticalMargin: page.isLandscape ? Theme.paddingSmall : Theme.paddingLarge
+                verticalMargin: Theme.paddingLarge
                 maximumVerticalMargin: Theme.paddingLarge
 
                 backgroundColor: settings.backgroundColor
@@ -139,7 +161,7 @@ Page {
             id: messageBar
 
             anchors {
-                left: page.isLandscape ? toolbar.right : parent.left
+                left: parent.left
                 right: parent.right
                 bottom: parent.bottom
             }
