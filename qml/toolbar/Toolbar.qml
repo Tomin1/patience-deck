@@ -34,6 +34,8 @@ Item {
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
     readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
+    readonly property bool showHandleY: buttonCountHorizontal < 5
+    readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
     readonly property int buttonCountVertical: Math.max(
                             Math.floor((parent.height - title.verticalHeight) / Theme.itemSizeLarge),
                             Patience.showDeal ? 5 : 4)
@@ -47,10 +49,11 @@ Item {
                                                   hintButton.contentWidth,
                                                   dealButton.contentWidth,
                                                   restartButton.contentWidth) + Theme.paddingLarge
+    readonly property int totalSpaceX: minimumSpaceX + handleWidth
     readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
     readonly property int toolbarVelocity: Theme.dp(3000)
 
-    height: minimumSpaceY + (handle.visible ? handleWidth : 0)
+    height: totalSpaceY
     width: parent.width
     states: [
         State {
@@ -89,7 +92,7 @@ Item {
                 target: toolbar
 
                 height: toolbar.parent.height
-                width: minimumSpaceX + handleWidth
+                width: totalSpaceX
             }
             PropertyChanges {
                 target: handle

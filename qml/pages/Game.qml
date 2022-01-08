@@ -78,7 +78,7 @@ Page {
             PropertyChanges {
                 target: table
                 height: page.height - messageBar.height
-                width: page.width - Theme.itemSizeLarge - toolbar.handleWidth
+                width: page.width - toolbar.totalSpaceX
                 horizontalMargin: Theme.paddingLarge
                 verticalMargin: Theme.paddingSmall
             }
@@ -134,7 +134,7 @@ Page {
 
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
 
-                height: page.height - Theme.itemSizeLarge - toolbar.handleWidth - messageBar.height
+                height: page.height - toolbar.totalSpaceY - messageBar.height
                 width: page.width
                 anchors.horizontalCenter: parent.horizontalCenter
 
