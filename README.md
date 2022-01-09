@@ -84,7 +84,7 @@ also _gc_, _libunistring_ and _guile22_ packages to the device.
 #### Note for i486 targets
 Currently there seems to be a bug in glibc that breaks iconv but only on i486
 targets. The only working way to build working libunistring and guile is to add
-_/usr/lib/gconv_ to _/etc/ld.conf.d/gconv.conf_ in the target directory
+_/usr/lib/gconv_ to _/etc/ld.so.conf.d/gconv.conf_ in the target directory
 structure on Platform SDK. This workaround does not seem to work on Sailfish SDK
 at all and thus the build instructions above can not be used. This is not needed
 for harbour builds as there is a working workaround for it already in
