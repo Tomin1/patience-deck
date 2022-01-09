@@ -30,7 +30,8 @@ Deck_ are very quick to do.
 The following instructions are for _SailfishOS-4.1.0.24-aarch64_ target but
 substitute your own depending on which version of Sailfish or which
 architecture you are targeting. If you switch targets, remember to clean up any
-build artifacts in source directories.
+build artifacts in source directories. If you build for i486 target, see the
+note below.
 
 First set your target:
 
@@ -79,6 +80,15 @@ Build the package:
 You can find the built packages in the directory you specified in
 _output-prefix_ step. In addition to _patience-deck_ package you must install
 also _gc_, _libunistring_ and _guile22_ packages to the device.
+
+#### Note for i486 targets
+Currently there seems to be a bug in glibc that breaks iconv but only on i486
+targets. The only working way to build working libunistring and guile is to add
+_/usr/lib/gconv_ to _/etc/ld.conf.d/gconv.conf_ in the target directory
+structure on Platform SDK. This workaround does not seem to work on Sailfish SDK
+at all and thus the build instructions above can not be used. This is not needed
+for harbour builds as there is a working workaround for it already in
+_tools/build\_deps.sh_ and that works also on Sailfish SDK.
 
 ### Building harbour version
 [Harbour](https://harbour.jolla.com/) aka _Jolla Store_ compatible packaging
