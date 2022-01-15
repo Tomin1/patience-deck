@@ -64,7 +64,6 @@ Card::Card(const CardData &card, Table *table, Slot *slot, QObject *parent)
     setParent(parent);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemHasContents);
-    setSmooth(true);
     connect(table, &Table::cardTextureUpdated, this, &Card::handleCardTextureUpdated);
 }
 
