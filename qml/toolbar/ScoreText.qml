@@ -38,7 +38,7 @@ Row {
     Label {
         id: valueLabel
         color: Theme.highlightColor
-        truncationMode: maximumWidth < contentWidth ? TruncationMode.Fade : TruncationMode.None
-        width: Math.min(maximumWidth, contentWidth)
+        truncationMode: maximumWidth >= contentWidth ? TruncationMode.None : TruncationMode.Fade
+        width: maximumWidth === 0 ? contentWidth : Math.min(maximumWidth, contentWidth)
     }
 }

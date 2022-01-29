@@ -37,13 +37,13 @@ Item {
     readonly property bool showHandleY: buttonCountHorizontal < 5
     readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
     readonly property int buttonCountVertical: Math.max(
-                            Math.floor((shortSide - title.verticalHeight) / Theme.itemSizeLarge),
+                            Math.floor((shortSide - titleVertical.height) / Theme.itemSizeLarge),
                             Patience.showDeal ? 5 : 4)
     readonly property int spaceX: handle.x
     readonly property int minimumSpaceX: Theme.itemSizeLarge
-    readonly property int maximumSpaceX: Math.max(gameTitle.contentWidth,
-                                                  scoreText.contentWidth,
-                                                  elapsedText.contentWidth,
+    readonly property int maximumSpaceX: Math.max(gameTitleVertical.contentWidth,
+                                                  scoreTextVertical.contentWidth,
+                                                  elapsedTextVertical.contentWidth,
                                                   undoButton.contentWidth,
                                                   redoButton.contentWidth,
                                                   hintButton.contentWidth,
@@ -80,8 +80,8 @@ Item {
             when: vertical && expanded
             extend: "vertical"
             PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
-            PropertyChanges { target: scoreText; x: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0) }
-            PropertyChanges { target: elapsedText; x: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: scoreTextVertical; x: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: elapsedTextVertical; x: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0) }
             PropertyChanges { target: mainButtons; width: maximumSpaceX }
         },
         State {
@@ -138,42 +138,13 @@ Item {
                 }
             }
             PropertyChanges { target: dragArea; drag.axis: Drag.XAxis; enabled: true }
-            PropertyChanges {
-                target: gameTitle
-
-                x: { return 0 }
-                y: { return 0 }
-                truncationMode: TruncationMode.None
-            }
-            PropertyChanges {
-                target: title
-
-                height: title.verticalHeight
-                width: spaceX - Theme.paddingSmall
-                x: Theme.paddingSmall
-            }
-            PropertyChanges {
-                target: scoreText
-
-                x: -scoreText.nameWidth + spaceX - minimumSpaceX
-                maximumWidth: title.width
-                nameVisible: true
-                truncationMode: TruncationMode.None
-            }
-            AnchorChanges { target: scoreText; anchors.bottom: elapsedText.top }
-            PropertyChanges {
-                target: elapsedText
-
-                x: -elapsedText.nameWidth + spaceX - minimumSpaceX
-                maximumWidth: title.width
-                nameVisible: true
-                truncationMode: TruncationMode.None
-            }
+            PropertyChanges { target: title; visible: false }
+            PropertyChanges { target: titleVertical; visible: true }
             PropertyChanges {
                 target: mainButtonsContainer
 
                 height: {
-                    var spaceAvailable = toolbarArea.height - title.verticalHeight
+                    var spaceAvailable = toolbarArea.height - titleVertical.height
                     if (spaceAvailable > Theme.itemSizeLarge * buttonCountVertical) {
                         return Theme.itemSizeLarge * buttonCountVertical
                     }
@@ -213,7 +184,6 @@ Item {
             PropertyChanges { target: hintButton; showText: expanded || animating; parent: mainButtons }
             PropertyChanges { target: dealButton; showText: expanded || animating; parent: mainButtons }
             PropertyChanges { target: restartButton; showText: expanded || animating; parent: mainButtons }
-            PropertyChanges { target: spacer; visible: false }
         }
     ]
     transitions: [
@@ -282,7 +252,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: title
+                    target: titleVertical
                     properties: "width"
                     from: spaceX - Theme.paddingSmall
                     to: minimumSpaceX - Theme.paddingSmall
@@ -291,28 +261,28 @@ Item {
                 SequentialAnimation {
                     SmoothedAnimation {
                         from: spaceX
-                        to: Math.max(scoreText.width, spaceX)
+                        to: Math.max(scoreTextVertical.contentWidth, spaceX)
                         velocity: toolbarVelocity
                     }
                     SmoothedAnimation {
-                        target: scoreText
+                        target: scoreTextVertical
                         properties: "x"
-                        from: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -scoreText.nameWidth
+                        from: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -scoreTextVertical.nameWidth
                         velocity: toolbarVelocity
                     }
                 }
                 SequentialAnimation {
                     SmoothedAnimation {
                         from: spaceX
-                        to: Math.max(elapsedText.width, spaceX)
+                        to: Math.max(elapsedTextVertical.contentWidth, spaceX)
                         velocity: toolbarVelocity
                     }
                     SmoothedAnimation {
-                        target: elapsedText
+                        target: elapsedTextVertical
                         properties: "x"
-                        from: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -elapsedText.nameWidth
+                        from: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -elapsedTextVertical.nameWidth
                         velocity: toolbarVelocity
                     }
                 }
@@ -339,24 +309,24 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: title
+                    target: titleVertical
                     properties: "width"
                     from: spaceX - Theme.paddingSmall * 2
                     to: maximumSpaceX - Theme.paddingSmall * 2
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: scoreText
+                    target: scoreTextVertical
                     properties: "x"
-                    from: Math.min(-scoreText.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-scoreText.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    from: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-scoreTextVertical.nameWidth + maximumSpaceX - minimumSpaceX, 0)
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: elapsedText
+                    target: elapsedTextVertical
                     properties: "x"
-                    from: Math.min(-elapsedText.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-elapsedText.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    from: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-elapsedTextVertical.nameWidth + maximumSpaceX - minimumSpaceX, 0)
                     velocity: toolbarVelocity
                 }
             }
@@ -487,17 +457,13 @@ Item {
             Item {
                 id: title
 
-                // These apply to !vertical
-                readonly property int maximumWidth: shortSide - minimumX - Theme.horizontalPageMargin
-                readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
-                readonly property int verticalHeight: gameTitle.height
-                                                    + (Patience.showScore ? scoreText.height : 0)
-                                                    + elapsedText.height
-
                 height: minimumSpaceY
-                width: maximumWidth
-                x: minimumX
-                anchors.top: parent.top
+                width: shortSide - 2 * Theme.horizontalPageMargin + Theme.paddingMedium - Theme.itemSizeLarge * buttonCountHorizontal - Theme.paddingSmall
+                anchors {
+                    right: parent.right
+                    rightMargin: Theme.horizontalPageMargin
+                    top: parent.top
+                }
                 clip: width < gameTitle.contentWidth
 
                 Label {
@@ -522,7 +488,7 @@ Item {
                     value: Patience.score
                     anchors.bottom: parent.bottom
                     x: parent.width - width - elapsedText.width - spacer.width - 2 * Theme.paddingSmall
-                    maximumWidth: title.maximumWidth - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
+                    maximumWidth: title.width - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
                     nameVisible: false
                     visible: Patience.showScore
                 }
@@ -547,8 +513,58 @@ Item {
                     value: Patience.elapsedTime
                     anchors.bottom: parent.bottom
                     x: parent.width - width
-                    maximumWidth: title.maximumWidth
+                    maximumWidth: title.width
                     nameVisible: false
+                }
+            }
+
+            Item {
+                id: titleVertical
+
+                visible: false
+                height: gameTitleVertical.height + (Patience.showScore ? scoreTextVertical.height : 0)
+                                                 + elapsedTextVertical.height
+                width: spaceX - Theme.paddingSmall
+                x: Theme.paddingSmall
+                anchors.top: parent.top
+                clip: width < gameTitleVertical.contentWidth
+
+                Label {
+                    id: gameTitleVertical
+
+                    text: Patience.gameName
+                    color: Theme.highlightColor
+                    font.pixelSize: Theme.fontSizeLarge
+                    verticalAlignment: Text.AlignBottom
+                    truncationMode: TruncationMode.None
+                    x: 0
+                    y: 0
+                }
+
+
+                ScoreText {
+                    id: scoreTextVertical
+
+                    //% "Score:"
+                    text: qsTrId("patience-la-score")
+                    value: Patience.score
+                    anchors.bottom: elapsedTextVertical.top
+                    x: -scoreTextVertical.nameWidth + spaceX - minimumSpaceX
+                    truncationMode: TruncationMode.None
+                    nameVisible: true
+                    visible: Patience.showScore
+                }
+
+                ScoreText {
+                    id: elapsedTextVertical
+
+                    //% "Time:"
+                    text: qsTrId("patience-la-time")
+                    value: Patience.elapsedTime
+                    anchors.bottom: parent.bottom
+                    x: -elapsedTextVertical.nameWidth + spaceX - minimumSpaceX
+                    truncationMode: TruncationMode.None
+                    nameVisible: true
                 }
             }
         }
