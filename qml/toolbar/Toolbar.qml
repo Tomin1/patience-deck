@@ -139,18 +139,18 @@ Item {
             }
             PropertyChanges { target: dragArea; drag.axis: Drag.XAxis; enabled: true }
             PropertyChanges {
-                target: title
-
-                height: title.verticalHeight
-                width: spaceX - Theme.paddingSmall
-                x: Theme.paddingSmall
-            }
-            PropertyChanges {
                 target: gameTitle
 
                 x: { return 0 }
                 y: { return 0 }
                 truncationMode: TruncationMode.None
+            }
+            PropertyChanges {
+                target: title
+
+                height: title.verticalHeight
+                width: spaceX - Theme.paddingSmall
+                x: Theme.paddingSmall
             }
             PropertyChanges {
                 target: scoreText
