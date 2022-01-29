@@ -421,14 +421,39 @@ Item {
                     width: Theme.itemSizeLarge * buttonCountHorizontal
 
                     ToolbarButton {
-                        id: restartButton
+                        id: undoButton
 
-                        //% "Restart"
-                        text: qsTrId("patience-bt-restart")
-                        imageSource: "../../buttons/icon-m-restart.svg"
-                        showText: buttonCountHorizontal < 5
-                        parent: buttonCountHorizontal >= 5 ? mainButtons : extraButtons
-                        onClicked: Patience.restartGame()
+                        //% "Undo"
+                        text: qsTrId("patience-bt-undo")
+                        imageSource: "../../buttons/icon-m-undo.svg"
+                        showText: buttonCountHorizontal < 1
+                        parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
+                        disabled: !Patience.canUndo
+                        onClicked: if (!disabled) Patience.undoMove()
+                    }
+
+                    ToolbarButton {
+                        id: redoButton
+
+                        //% "Redo"
+                        text: qsTrId("patience-bt-redo")
+                        imageSource: "../../buttons/icon-m-redo.svg"
+                        showText: buttonCountHorizontal < 2
+                        parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
+                        disabled: !Patience.canRedo
+                        onClicked: if (!disabled) Patience.redoMove()
+                    }
+
+                    ToolbarButton {
+                        id: hintButton
+
+                        //% "Hint"
+                        text: qsTrId("patience-bt-hint")
+                        imageSource: "../../buttons/icon-m-hint.svg"
+                        showText: buttonCountHorizontal < 3
+                        parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
+                        disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
+                        onClicked: if (!disabled) Patience.getHint()
                     }
 
                     ToolbarButton {
@@ -445,39 +470,14 @@ Item {
                     }
 
                     ToolbarButton {
-                        id: hintButton
+                        id: restartButton
 
-                        //% "Hint"
-                        text: qsTrId("patience-bt-hint")
-                        imageSource: "../../buttons/icon-m-hint.svg"
-                        showText: buttonCountHorizontal < 3
-                        parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
-                        disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
-                        onClicked: if (!disabled) Patience.getHint()
-                    }
-
-                    ToolbarButton {
-                        id: redoButton
-
-                        //% "Redo"
-                        text: qsTrId("patience-bt-redo")
-                        imageSource: "../../buttons/icon-m-redo.svg"
-                        showText: buttonCountHorizontal < 2
-                        parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
-                        disabled: !Patience.canRedo
-                        onClicked: if (!disabled) Patience.redoMove()
-                    }
-
-                    ToolbarButton {
-                        id: undoButton
-
-                        //% "Undo"
-                        text: qsTrId("patience-bt-undo")
-                        imageSource: "../../buttons/icon-m-undo.svg"
-                        showText: buttonCountHorizontal < 1
-                        parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
-                        disabled: !Patience.canUndo
-                        onClicked: if (!disabled) Patience.undoMove()
+                        //% "Restart"
+                        text: qsTrId("patience-bt-restart")
+                        imageSource: "../../buttons/icon-m-restart.svg"
+                        showText: buttonCountHorizontal < 5
+                        parent: buttonCountHorizontal >= 5 ? mainButtons : extraButtons
+                        onClicked: Patience.restartGame()
                     }
                 }
             }
