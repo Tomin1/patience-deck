@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021  Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ Row {
     property alias text: nameLabel.text
     property alias value: valueLabel.text
     property alias nameVisible: nameLabel.visible
+    property alias truncationMode: valueLabel.truncationMode
     readonly property int nameWidth: nameLabel.width + spacing
     readonly property int contentWidth: nameLabel.width + spacing + valueLabel.width
     property int maximumWidth
@@ -37,7 +38,7 @@ Row {
     Label {
         id: valueLabel
         color: Theme.highlightColor
-        truncationMode: TruncationMode.Fade
-        width: Math.min(maximumWidth, Math.ceil(contentWidth))
+        truncationMode: maximumWidth < contentWidth ? TruncationMode.Fade : TruncationMode.None
+        width: Math.min(maximumWidth, contentWidth)
     }
 }

@@ -158,6 +158,7 @@ Item {
                 x: -scoreText.nameWidth + spaceX - minimumSpaceX
                 maximumWidth: title.width
                 nameVisible: true
+                truncationMode: TruncationMode.None
             }
             AnchorChanges { target: scoreText; anchors.bottom: elapsedText.top }
             PropertyChanges {
@@ -166,6 +167,7 @@ Item {
                 x: -elapsedText.nameWidth + spaceX - minimumSpaceX
                 maximumWidth: title.width
                 nameVisible: true
+                truncationMode: TruncationMode.None
             }
             PropertyChanges {
                 target: mainButtonsContainer
@@ -504,8 +506,8 @@ Item {
                     text: Patience.gameName
                     color: Theme.highlightColor
                     font.pixelSize: Theme.fontSizeLarge
-                    truncationMode: TruncationMode.Fade
                     verticalAlignment: Text.AlignBottom
+                    truncationMode: parent.width < contentWidth ? TruncationMode.Fade : TruncationMode.None
                     width: Math.min(parent.width, contentWidth)
                     x: title.width - width
                     y: scoreText.y - height
