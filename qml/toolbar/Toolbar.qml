@@ -117,28 +117,18 @@ Item {
                 anchors.rightMargin: (handleIcon.height - handleIcon.width) / 2
                 rotation: 90
             }
-            AnchorChanges {
+            PropertyChanges {
                 target: handleBorderTop
 
-                anchors {
-                    left: handle.left
-                    top: handle.top
-                    right: undefined
-                    bottom: handle.bottom
-                }
+                height: shortSide
+                width: 1
             }
-            PropertyChanges { target: handleBorderTop; width: 1 }
-            AnchorChanges {
+            PropertyChanges {
                 target: handleBorderBottom
 
-                anchors {
-                    left: undefined
-                    top: handle.top
-                    right: handle.right
-                    bottom: handle.bottom
-                }
+                height: shortSide
+                width: 1
             }
-            PropertyChanges { target: handleBorderBottom; width: 1 }
             PropertyChanges {
                 target: toolbarArea
 
@@ -592,9 +582,9 @@ Item {
             anchors {
                 left: parent.left
                 top: parent.top
-                right: parent.right
             }
             height: 1
+            width: shortSide
             color: Theme.colorScheme === Theme.LightOnDark ? "white" : "black"
         }
 
@@ -614,11 +604,11 @@ Item {
             id: handleBorderBottom
 
             anchors {
-                left: parent.left
-                bottom: parent.bottom
                 right: parent.right
+                bottom: parent.bottom
             }
             height: 1
+            width: shortSide
             color: handleBorderTop.color
         }
     }
