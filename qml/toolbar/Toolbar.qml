@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,14 +30,14 @@ Item {
                                               || horizontalExpandedTransition.running
                                               || verticalTransition.running
                                               || verticalExpandedTransition.running
-    readonly property int buttonCountHorizontal: Math.ceil(parent.width / 2 / Theme.itemSizeLarge)
+    readonly property int buttonCountHorizontal: Math.ceil(shortSide / 2 / Theme.itemSizeLarge)
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
     readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
     readonly property bool showHandleY: buttonCountHorizontal < 5
     readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
     readonly property int buttonCountVertical: Math.max(
-                            Math.floor((parent.height - title.verticalHeight) / Theme.itemSizeLarge),
+                            Math.floor((shortSide - title.verticalHeight) / Theme.itemSizeLarge),
                             Patience.showDeal ? 5 : 4)
     readonly property int spaceX: handle.x
     readonly property int minimumSpaceX: Theme.itemSizeLarge
@@ -54,7 +54,7 @@ Item {
     readonly property int toolbarVelocity: Theme.dp(3000)
 
     height: totalSpaceY
-    width: parent.width
+    width: shortSide
     states: [
         State {
             name: "dragged"
@@ -91,7 +91,7 @@ Item {
             PropertyChanges {
                 target: toolbar
 
-                height: toolbar.parent.height
+                height: shortSide
                 width: totalSpaceX
             }
             PropertyChanges {
@@ -450,7 +450,7 @@ Item {
                         //% "Hint"
                         text: qsTrId("patience-bt-hint")
                         imageSource: "../../buttons/icon-m-hint.svg"
-                        showText: buttonCountHorizontal < 3 
+                        showText: buttonCountHorizontal < 3
                         parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
                         onClicked: if (!disabled) Patience.getHint()
@@ -488,7 +488,7 @@ Item {
                 // Button graphics have some padding, thus remove some of that page margin
                 x: Theme.horizontalPageMargin - Theme.paddingMedium
                 y: mainButtonsContainer.y + mainButtons.height
-                width: parent.width - x - Theme.horizontalPageMargin
+                width: shortSide - x - Theme.horizontalPageMargin
                 visible: expanded || animating
             }
 
@@ -496,7 +496,7 @@ Item {
                 id: title
 
                 // These apply to !vertical
-                readonly property int maximumWidth: parent.width - minimumX - Theme.horizontalPageMargin
+                readonly property int maximumWidth: shortSide - minimumX - Theme.horizontalPageMargin
                 readonly property int minimumX: mainButtons.x + mainButtons.width + Theme.paddingSmall
                 readonly property int verticalHeight: gameTitle.height
                                                     + (Patience.showScore ? scoreText.height : 0)
@@ -573,7 +573,7 @@ Item {
             right: parent.right
         }
         height: handleWidth
-        width: parent.width
+        width: shortSide
         visible: buttonCountHorizontal < 5
 
         onXChanged: {

@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021  Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ import "components"
 Page {
     id: page
 
+    property int longSide: Math.max(page.height, page.width)
+    property int shortSide: Math.min(page.height, page.width)
     property bool active: page.status === PageStatus.Active
     property bool needsGameStart
 
@@ -46,6 +48,12 @@ Page {
             Patience.startNewGame()
             needsGameStart = false
         }
+    }
+
+    Component.onCompleted: {
+        // Break bindings
+        page.shortSide = Math.min(page.height, page.width)
+        page.longSide = Math.max(page.height, page.width)
     }
 
     Connections {
@@ -72,13 +80,13 @@ Page {
 
                 x: toolbar.width
                 y: 0
-                height: page.height - messageBar.height
-                width: page.width - toolbar.width
+                height: shortSide - messageBar.height
+                width: longSide - toolbar.width
             }
             PropertyChanges {
                 target: table
-                height: page.height - messageBar.height
-                width: page.width - toolbar.totalSpaceX
+                height: shortSide - messageBar.height
+                width: longSide - toolbar.totalSpaceX
                 horizontalMargin: Theme.paddingLarge
                 verticalMargin: Theme.paddingSmall
             }
@@ -126,16 +134,16 @@ Page {
             clip: toolbar.expanded || toolbar.animating
             x: 0
             y: toolbar.height
-            height: page.height - messageBar.height - toolbar.height
-            width: page.width
+            height: longSide - messageBar.height - toolbar.height
+            width: shortSide
 
             Table {
                 id: table
 
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
 
-                height: page.height - toolbar.totalSpaceY - messageBar.height
-                width: page.width
+                height: longSide - toolbar.totalSpaceY - messageBar.height
+                width: shortSide
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 minimumSideMargin: Theme.horizontalPageMargin
