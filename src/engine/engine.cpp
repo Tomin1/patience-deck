@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021  Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,8 +185,13 @@ void Engine::setArguments(QCommandLineParser *parser)
         state.seed = parser->value("seed").toInt();
         state.hasSeed = true;
     }
-    stateConf.set(QStringLiteral("%1;%2").arg(state.gameFile).arg(state.seed));
-    stateConf.sync();
+    if (parser->isSet("game") || parser->isSet("seed")) {
+        if (state.hasSeed)
+            stateConf.set(QStringLiteral("%1;%2").arg(state.gameFile).arg(state.seed));
+        else
+            stateConf.set(QStringLiteral("%1").arg(state.gameFile));
+        stateConf.sync();
+    }
 
     if (!state.gameFile.isEmpty() && parser->isSet("options")) {
         GameOptionList options;
