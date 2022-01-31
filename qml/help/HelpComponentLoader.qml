@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,25 @@
  */
 
 import QtQuick 2.0
+import Patience 1.0
 
 Loader {
     active: true
     source: {
-        if (model.type.length == 5 && model.type.substring(0, 4) == "sect") {
-            return "components/Section.qml"
-        } else if (model.type == "title") {
+        if (model.type === HelpModel.TitleElement) {
             return "components/Title.qml"
-        } else if (model.type == "para") {
+        } else if (model.type === HelpModel.ParaElement) {
             return "components/Para.qml"
-        } else if (model.type == "informaltable") {
+        } else if (model.type === HelpModel.InformalTableElement) {
             return "components/InformalTable.qml"
-        } else if (model.type == "variablelist") {
+        } else if (model.type === HelpModel.VariableListElement) {
             return "components/VariableList.qml"
-        } else if (model.type == "itemizedlist") {
+        } else if (model.type === HelpModel.ItemizedListElement) {
             return "components/ItemizedList.qml"
-        } else if (model.type == "screenshot") {
+        } else if (model.type === HelpModel.ScreenshotElement) {
             return "components/Screenshot.qml"
         } else {
-            console.log("Unknown type", model.type, "in", __HelpView_sourceFile)
+            console.log("Unknown type", model.type, "in", helpView.source)
             return ""
         }
     }

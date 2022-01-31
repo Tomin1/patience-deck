@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,12 @@ import ".."
 Column {
     id: variableList
 
-    property string query: "%1child::*[%2]/varlistentry".arg(model.parent).arg(model.position)
+    readonly property var contents: model.contents
 
     spacing: Theme.paddingMedium
 
     Repeater {
-        model: VariableListModel {
-            query: variableList.query
-        }
+        model: variableList.contents
 
         Row {
             height: Math.max(labelText.height, valueText.height)
@@ -38,14 +36,14 @@ Column {
             Para {
                 id: labelText
                 horizontalAlignment: Text.AlignRight
-                text: model.label
+                text: modelData.label
                 width: (variableList.width - Theme.paddingMedium) / 2
             }
 
             Para {
                 id: valueText
                 color: Theme.highlightColor
-                text: model.value
+                text: modelData.value
                 width: (variableList.width - Theme.paddingMedium) / 2
             }
         }

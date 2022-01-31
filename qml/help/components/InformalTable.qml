@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@ import ".."
 Grid {
     id: informalTable
 
-    property string query: "%1child::*[%2]//entry".arg(model.parent).arg(model.position)
+    readonly property var contents: model.contents
+
     columns: model.columns
     columnSpacing: Theme.paddingLarge
     rowSpacing: Theme.paddingSmall
@@ -33,7 +34,7 @@ Grid {
         property int space: informalTable.width - informalTable.columnSpacing * (informalTable.columns - 1)
         property int maxColumn: space / informalTable.columns
         property int spaceLeft: {
-            if (!xmlModel.ready) {
+            if (!helpView.ready) {
                 return 0
             }
 
@@ -47,10 +48,7 @@ Grid {
         }
         property var implicitMaxWidths: new Array(informalTable.columns)
 
-        model: InformalTableModel {
-            id: xmlModel
-            query: informalTable.query
-        }
+        model: informalTable.contents
 
         onItemAdded: {
             var position = index % informalTable.columns
@@ -59,8 +57,9 @@ Grid {
         }
 
         Para {
+            text: modelData
             width: {
-                if (cells.spaceLeft != 0 && (model.position - 1) % informalTable.columns == 1) {
+                if (cells.spaceLeft != 0 && index % informalTable.columns == 1) {
                     return Math.min(implicitWidth, cells.spaceLeft)
                 } else {
                     return Math.min(implicitWidth, cells.maxColumn)

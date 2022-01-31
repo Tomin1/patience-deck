@@ -35,17 +35,8 @@ Page {
 
         anchors.fill: parent
         contentHeight: column.height
-        interactive: false
-
-        Timer {
-            interval: 100
-            running: !loadingIndicator.running
-            onTriggered: parent.interactive = true
-        }
 
         PullDownMenu {
-            enabled: !loadingIndicator.running
-
             MenuItem {
                 //% "Common settings"
                 text: qsTrId("patience-me-common-settings")
@@ -139,37 +130,16 @@ Page {
                 text: qsTrId("patience-se-game_rules")
             }
 
-            BusyIndicator {
-                id: loadingIndicator
-                anchors.horizontalCenter: parent.horizontalCenter
-                height: running ? implicitHeight : 0
-                running: true
-                size: BusyIndicatorSize.Large
-            }
-
-            Loader {
-                active: page.status == PageStatus.Active
-                sourceComponent: Component {
-                    HelpView {
-                        source: Patience.helpFile
-                        opacity: ready ? 1.0 : 0.0
-                        Behavior on opacity {
-                            FadeAnimator {
-                                duration: 500
-                                easing.type: Easing.InOutQuad
-                            }
-                        }
-                        bottomPadding: Theme.paddingLarge
-                        onReadyChanged: if (ready) loadingIndicator.running = false
-                    }
-                }
+            HelpView {
+                source: Patience.helpFile
                 anchors {
                     left: parent.left
                     leftMargin: Theme.horizontalPageMargin
                     right: parent.right
                     rightMargin: Theme.horizontalPageMargin
                 }
-                onActiveChanged: if (active) active = true // Break binding
+                bottomPadding: Theme.paddingLarge
+                spacing: Theme.paddingMedium
             }
         }
 
@@ -194,8 +164,6 @@ Page {
                         }
                     }
                 }
-
-                onClosed: flickable.interactive = true
             }
 
             onCurrentIndexChanged: if (ready) parent.selectIndex(currentIndex)

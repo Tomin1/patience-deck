@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import Sailfish.Silica 1.0
 Column {
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
-        source: __HelpView_sourceFile.substring(0, __HelpView_sourceFile.lastIndexOf("/") + 1) + model.picture
+        source: model.picture
     }
 
     Para {

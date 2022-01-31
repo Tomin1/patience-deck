@@ -20,6 +20,7 @@ SOURCES += \
     manager/queue.cpp \
     models/gamelist.cpp \
     models/gameoptionmodel.cpp \
+    models/helpmodel.cpp \
     patience/timer.cpp \
     patience/patience.cpp \
     table/card.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     manager/queue.h \
     models/gamelist.h \
     models/gameoptionmodel.h \
+    models/helpmodel.h \
     patience/patience.h \
     patience/timer.h \
     table/card.h \

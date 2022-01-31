@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ Q_LOGGING_CATEGORY(lcQueue, "site.tomin.patience.table.manager.queue", QtWarning
 Q_LOGGING_CATEGORY(lcSlot, "site.tomin.patience.table.slot", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcGameList, "site.tomin.patience.gamelist", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcOptionList, "site.tomin.patience.optionlist", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcHelpModel, "site.tomin.patience.help", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcTimer, "site.tomin.patience.timer", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcMouse, "site.tomin.patience.mouse", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcEngine, "site.tomin.patience.engine", QtWarningMsg);

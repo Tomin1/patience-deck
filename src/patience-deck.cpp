@@ -28,11 +28,12 @@
 #include "constants.h"
 #include "engine.h"
 #include "feedbackevent.h"
+#include "gamelist.h"
+#include "gameoptionmodel.h"
+#include "helpmodel.h"
 #include "patience.h"
 #include "table.h"
 #include "texturerenderer.h"
-#include "gamelist.h"
-#include "gameoptionmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -59,6 +60,7 @@ int main(int argc, char *argv[])
     qmlRegisterUncreatableType<FeedbackEvent>("Patience", 1, 0, "FeedbackEvent", "This is an attached property to Table");
     qmlRegisterType<GameList>("Patience", 1, 0, "GameList");
     qmlRegisterType<GameOptionModel>("Patience", 1, 0, "GameOptions");
+    qmlRegisterType<HelpModel>("Patience", 1, 0, "HelpModel");
     app->setApplicationVersion(QUOTE(VERSION));
     view->setSource(SailfishApp::pathToMainQml());
     view->show();
