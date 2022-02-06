@@ -26,6 +26,8 @@ namespace {
 
 const QString FavoriteConf = QStringLiteral("/favorites");
 int ShownLastPlayedGames = 5;
+// Default favourites, keep sorted
+const QString DefaultFavorites = QStringLiteral("freecell.scm;helsinki.scm;klondike.scm;spider.scm");
 
 } // namespace
 
@@ -133,7 +135,7 @@ GameList::GameList(QObject *parent)
 
     m_lastPlayed = Patience::instance()->history().mid(0, ShownLastPlayedGames);
 
-    auto favorites = m_favoriteConf.value().toString().split(';');
+    auto favorites = m_favoriteConf.value(DefaultFavorites).toString().split(';');
     favorites.removeAll(QString());
     m_favorites = favorites;
 
