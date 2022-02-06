@@ -4,8 +4,7 @@ Summary:    Collection of patience games
 Version:    0.7
 Release:    1
 # GNOME Aisleriot is GPLv3+ and this uses its assets
-# Game documentation is GFDLv1.1+
-License:    GPLv3 and GFDL
+License:    GPLv3
 URL:        https://github.com/Tomin1/patience-deck/
 Source0:    %{name}-%{version}.tar.bz2
 Patch0:     0001-Fix-errors-with-anglo.svg.patch
