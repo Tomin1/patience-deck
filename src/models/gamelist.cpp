@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,7 +150,7 @@ int GameList::rowCount(const QModelIndex &parent) const
 
 QVariant GameList::data(const QModelIndex &index, int role) const
 {
-    if (index.row() > rowCount())
+    if (index.row() < 0 || index.row() >= rowCount())
         return QVariant();
 
     switch (role) {
@@ -199,7 +199,7 @@ QHash<int, QByteArray> GameList::roleNames() const
 
 void GameList::setFavorite(int row, bool favorite)
 {
-    if (row < 0 || row > rowCount())
+    if (row < 0 || row >= rowCount())
         return;
 
     QString fileName = getFileName(row);
