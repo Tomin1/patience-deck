@@ -25,6 +25,7 @@
 #include <QSizeF>
 #include <QThread>
 #include <QtQuick/QQuickItem>
+#include "countableid.h"
 #include "engine.h"
 #include "enginedata.h"
 #include "manager.h"
@@ -35,7 +36,7 @@ class QCommandLineParser;
 class QSGTexture;
 class QQuickWindow;
 class SlotNode;
-class Table : public QQuickItem
+class Table : public QQuickItem, public CountableId
 {
     Q_OBJECT
     Q_PROPERTY(qreal minimumSideMargin READ minimumSideMargin

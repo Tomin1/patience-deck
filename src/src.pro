@@ -24,6 +24,7 @@ SOURCES += \
     patience/timer.cpp \
     patience/patience.cpp \
     table/card.cpp \
+    table/countableid.cpp \
     table/drag.cpp \
     table/feedbackevent.cpp \
     table/slot.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
     patience/patience.h \
     patience/timer.h \
     table/card.h \
+    table/countableid.h \
     table/drag.h \
     table/feedbackevent.h \
     table/slot.h \

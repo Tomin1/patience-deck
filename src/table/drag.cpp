@@ -26,8 +26,6 @@
 #include "slot.h"
 #include "table.h"
 
-quint32 Drag::s_count = 0;
-
 QElapsedTimer Drag::s_doubleClickTimer;
 
 const Card *Drag::s_lastCard = nullptr;
@@ -35,7 +33,6 @@ const Card *Drag::s_lastCard = nullptr;
 Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     : QQuickItem(card)
     , m_state(NoDrag)
-    , m_id(nextId())
     , m_mayBeADoubleClick(false)
     , m_table(table)
     , m_card(card)
@@ -90,7 +87,7 @@ void Drag::update(QMouseEvent *event)
     switch (m_state) {
     case AboutToDrag:
         m_state = StartingDrag;
-        emit doDrag(m_id, m_source->id(), m_source->asCardData(m_card));
+        emit doDrag(CountableId::id(), m_source->id(), m_source->asCardData(m_card));
         break;
     case Dragging: {
         QPointF point = m_card->mapToItem(m_table, event->pos());
@@ -116,10 +113,10 @@ void Drag::finish(QMouseEvent *event)
         m_state = Clicked;
         if (m_mayBeADoubleClick) {
             qCDebug(lcDrag) << "Detected double click on" << m_card;
-            emit doDoubleClick(m_id, m_source->id());
+            emit doDoubleClick(id(), m_source->id());
         } else {
             qCDebug(lcDrag) << "Detected click on" << m_card;
-            emit doClick(m_id, m_source->id());
+            emit doClick(id(), m_source->id());
         }
         return;
     }
@@ -161,7 +158,7 @@ void Drag::highlightOrDrop()
             // Cache miss, check
             m_couldDrop.insert(target->id(), Checking);
             qCDebug(lcDrag) << "Testing move from" << m_source << "to" << target;
-            emit doCheckDrop(m_id, m_source->id(), target->id(), toCardData(m_cards, m_state));
+            emit doCheckDrop(id(), m_source->id(), target->id(), toCardData(m_cards, m_state));
             [[fallthrough]];
         case Checking: // Signal for the same slot received twice, the correct signal should still arrive
             m_target--; // Check the slot again later
@@ -196,7 +193,7 @@ void Drag::drop(Slot *slot)
 {
     qCDebug(lcDrag) << "Moving from" << m_source << "to" << slot;
     m_state = Dropped;
-    emit doDrop(m_id, m_source->id(), slot->id(), toCardData(m_cards, m_state));
+    emit doDrop(id(), m_source->id(), slot->id(), toCardData(m_cards, m_state));
 }
 
 void Drag::cancel()
@@ -205,7 +202,7 @@ void Drag::cancel()
 
     if (m_state < Dropped) {
         if (m_state >= Dragging) { 
-            emit doCancelDrag(m_id, m_source->id(), toCardData(m_cards, Canceled));
+            emit doCancelDrag(id(), m_source->id(), toCardData(m_cards, Canceled));
             setParentItem(nullptr);
             m_source->put(m_cards);
             m_cards.clear();
@@ -219,7 +216,7 @@ void Drag::cancel()
 
 void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 {
-    if (id != m_id && slotId != m_source->id())
+    if (id != CountableId::id() && slotId != m_source->id())
         return;
 
     if (m_state == StartingDrag && could) {
@@ -237,7 +234,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 
         checkTargets();
     } else if (m_state == Canceled) {
-        emit doCancelDrag(m_id, m_source->id(), m_source->asCardData(m_card));
+        emit doCancelDrag(CountableId::id(), m_source->id(), m_source->asCardData(m_card));
         done();
     } else {
         cancel();
@@ -246,7 +243,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 
 void Drag::handleCouldDrop(quint32 id, int slotId, bool could)
 {
-    if (id != m_id)
+    if (id != CountableId::id())
         return;
 
     m_couldDrop.insert(slotId, could ? CanDrop : CantDrop);
@@ -257,7 +254,7 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
 {
     Q_UNUSED(slotId)
 
-    if (id != m_id)
+    if (id != CountableId::id())
         return;
 
     if (m_state >= Finished) {
@@ -281,7 +278,7 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
 {
     Q_UNUSED(slotId)
 
-    if (id != m_id)
+    if (id != CountableId::id())
         return;
 
     if (could) {
@@ -296,7 +293,7 @@ void Drag::handleDoubleClicked(quint32 id, int slotId, bool could)
 {
     Q_UNUSED(slotId)
 
-    if (id != m_id)
+    if (id != CountableId::id())
         return;
 
     if (could)
@@ -340,14 +337,6 @@ bool Drag::couldBeDoubleClick(const Card *card)
         s_doubleClickTimer.start();
         return false;
     }
-}
-
-quint32 Drag::nextId()
-{
-    quint32 id = ++s_count;
-    if (id == 0) // We wrapped around, 0 is not an acceptable value
-        id = ++s_count;
-    return id;
 }
 
 CardList Drag::toCardData(const QList<Card *> &cards, DragState state)

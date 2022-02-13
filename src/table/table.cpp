@@ -774,7 +774,7 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
             QPointF point = mapToItem(slot, event->pos());
             if (slot->contains(point)) {
                 qCDebug(lcTable) << "Detected click on" << slot;
-                emit doClick(-1, slot->id());
+                emit doClick(id(), slot->id());
             }
         }
     }

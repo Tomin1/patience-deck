@@ -21,13 +21,14 @@
 #include <QElapsedTimer>
 #include <QPointF>
 #include <QQuickItem>
+#include "countableid.h"
 #include "enginedata.h"
 
 class Card;
 class QMouseEvent;
 class Slot;
 class Table;
-class Drag : public QQuickItem
+class Drag : public QQuickItem, public CountableId
 {
     Q_OBJECT
 
@@ -86,10 +87,8 @@ private:
     void highlightOrDrop();
     void done();
     static bool couldBeDoubleClick(const Card *card);
-    static quint32 nextId();
     static CardList toCardData(const QList<Card *> &cards, DragState state);
 
-    static quint32 s_count;
     static QElapsedTimer s_doubleClickTimer;
     static const Card *s_lastCard;
 
