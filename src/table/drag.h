@@ -37,12 +37,9 @@ public:
     ~Drag();
 
     Card *card() const;
-    Slot *source() const;
 
     void update(QMouseEvent *event);
     void finish(QMouseEvent *event);
-    void drop(Slot *slot);
-    void cancel();
 
 signals:
     void doDrag(quint32 id, int slotId, const CardList &cards);
@@ -85,6 +82,8 @@ private:
     bool mayBeAClick(QMouseEvent *event);
     void checkTargets(bool force = false);
     void highlightOrDrop();
+    void drop(Slot *slot);
+    void cancel();
     void done();
     static bool couldBeDoubleClick(const Card *card);
     static CardList toCardData(const QList<Card *> &cards, DragState state);

@@ -74,11 +74,6 @@ Card *Drag::card() const
     return m_card;
 }
 
-Slot *Drag::source() const
-{
-    return m_source;
-}
-
 void Drag::update(QMouseEvent *event)
 {
     if (mayBeAClick(event))
