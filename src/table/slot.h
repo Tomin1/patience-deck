@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,12 +43,12 @@ public:
     typedef QList<Card *>::const_iterator const_iterator;
     const_iterator constBegin() const;
     const_iterator constEnd() const;
-    const_iterator constFind(Card *card) const;
+    const_iterator constFind(const Card *card) const;
 
     typedef QList<Card *>::iterator iterator;
     iterator begin();
     iterator end();
-    iterator find(Card *card);
+    iterator find(const Card *card);
     const_iterator firstExpanded();
 
     Slot(int id, SlotType type, double x, double y, int expansionDepth,
@@ -62,13 +62,13 @@ public:
     QPointF position() const;
     int count() const;
     bool isEmpty() const;
-    bool highlighted() const;
+    bool highlighted(const Card *card = nullptr) const;
 
     void insert(int index, Card *card);
     void set(int index, Card *card);
     Card *takeAt(int index);
     QList<Card *> takeAll();
-    void highlight();
+    void highlight(Card *card = nullptr);
     void removeHighlight();
 
     CardList asCardData(Card *first) const;
@@ -106,6 +106,7 @@ private:
     const_iterator m_firstExpanded;
     bool m_firstExpandedValid;
     bool m_highlighted;
+    Card *m_firstHighlightedCard;
 };
 
 QDebug operator<<(QDebug debug, const Slot *slot);

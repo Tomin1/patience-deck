@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ Slot::Slot(int id, SlotType type, double x, double y, int expansionDepth,
     , m_expansionDepth(expansionDepth)
     , m_firstExpandedValid(false)
     , m_highlighted(false)
+    , m_firstHighlightedCard(nullptr)
 {
 }
 
@@ -114,9 +115,19 @@ bool Slot::isEmpty() const
     return m_cards.isEmpty();
 }
 
-bool Slot::highlighted() const
+bool Slot::highlighted(const Card *card) const
 {
-    return m_highlighted;
+    if (!m_highlighted || !card)
+        return m_highlighted;
+
+    if (!m_firstHighlightedCard)
+        return top() == card;
+
+    for (auto it = constFind(m_firstHighlightedCard); it != constEnd(); ++it) {
+        if (*it == card)
+            return true;
+    }
+    return false;
 }
 
 void Slot::insert(int index, Card *card)
@@ -152,6 +163,8 @@ Card *Slot::takeAt(int index)
 {
     Card *card = m_cards.takeAt(index);
     m_firstExpandedValid = false;
+    if (card == m_firstHighlightedCard)
+        m_firstHighlightedCard = nullptr;
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed card from" << this;
@@ -165,24 +178,31 @@ QList<Card *> Slot::takeAll()
     QList<Card *> cards;
     m_cards.swap(cards);
     m_firstExpandedValid = false;
+    m_firstHighlightedCard = nullptr;
     qCDebug(lcSlot) << "Removed all cards from" << this;
     emit slotEmptied();
     return cards;
 }
 
-void Slot::highlight()
+void Slot::highlight(Card *card)
 {
     m_highlighted = true;
-    if (!isEmpty())
-        top()->update();
+    m_firstHighlightedCard = card;
+    if (!isEmpty()) {
+        for (auto it = find(card ?: top()); it != end(); ++it)
+            (*it)->update();
+    }
     qCDebug(lcSlot) << this << "is now highlighted";
 }
 
 void Slot::removeHighlight()
 {
     m_highlighted = false;
-    if (!isEmpty())
-        top()->update();
+    if (!isEmpty()) {
+        for (auto it = find(m_firstHighlightedCard ?: top()); it != end(); ++it)
+            (*it)->update();
+    }
+    m_firstHighlightedCard = nullptr;
     qCDebug(lcSlot) << this << "is no longer highlighted";
 }
 
@@ -213,6 +233,10 @@ QList<Card *> Slot::take(Card *first)
         tail.append(*it2);
     m_cards.erase(it, end());
     m_firstExpandedValid = false;
+    if (m_firstHighlightedCard) {
+        if (tail.contains(m_firstHighlightedCard))
+            m_firstHighlightedCard = nullptr;
+    }
     if (!m_table->preparing())
         updateLocations();
     qCDebug(lcSlot) << "Removed" << tail.count() << "cards from" << this;
@@ -310,7 +334,7 @@ Slot::const_iterator Slot::constEnd() const
     return m_cards.constEnd();
 }
 
-Slot::const_iterator Slot::constFind(Card *card) const
+Slot::const_iterator Slot::constFind(const Card *card) const
 {
     if (!card)
         return constBegin();
@@ -333,7 +357,7 @@ Slot::iterator Slot::end()
     return m_cards.end();
 }
 
-Slot::iterator Slot::find(Card *card)
+Slot::iterator Slot::find(const Card *card)
 {
     if (!card)
         return begin();

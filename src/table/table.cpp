@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -471,13 +471,13 @@ QList<Slot *> Table::getSlotsFor(const Card *card, Slot *source)
     return sorted;
 }
 
-void Table::highlight(Slot *slot)
+void Table::highlight(Slot *slot, Card *card)
 {
     if (m_highlightedSlot != slot) {
         if (m_highlightedSlot)
             m_highlightedSlot->removeHighlight();
         if (slot)
-            slot->highlight();
+            slot->highlight(card);
         m_highlightedSlot = slot;
         smudge(HighlightedSlot);
         update();

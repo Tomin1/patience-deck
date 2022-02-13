@@ -248,7 +248,7 @@ Slot *Card::slot() const
 bool Card::highlighted() const
 {
     Slot *slot = this->slot();
-    return slot && slot->highlighted() && slot->top() == this;
+    return slot && slot->highlighted(this);
 }
 
 QDebug operator<<(QDebug debug, const Card *card)
