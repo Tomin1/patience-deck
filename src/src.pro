@@ -27,6 +27,7 @@ SOURCES += \
     table/countableid.cpp \
     table/drag.cpp \
     table/feedbackevent.cpp \
+    table/selection.cpp \
     table/slot.cpp \
     table/table.cpp \
     table/texturerenderer.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
     table/countableid.h \
     table/drag.h \
     table/feedbackevent.h \
+    table/selection.h \
     table/slot.h \
     table/table.h \
     table/texturerenderer.h
