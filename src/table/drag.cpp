@@ -267,12 +267,14 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
         emit m_table->feedback()->dropSucceeded();
         m_state = Finished;
         m_table->store(m_cards);
-        m_cards.clear();
-        done();
     } else {
+        // Unlikely
         emit m_table->feedback()->dropFailed();
-        cancel();
+        m_state = Canceled;
+        m_source->put(m_cards);
     }
+    m_cards.clear();
+    done();
 }
 
 void Drag::handleClicked(quint32 id, int slotId, bool could)
