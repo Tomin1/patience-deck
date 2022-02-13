@@ -30,6 +30,7 @@
 #include "manager.h"
 #include "slot.h"
 
+class FeedbackEventAttachedType;
 class QCommandLineParser;
 class QSGTexture;
 class QQuickWindow;
@@ -93,6 +94,7 @@ public:
 
     QList<Slot *> getSlotsFor(const Card *card, Slot *source);
     void highlight(Slot *slot);
+    FeedbackEventAttachedType *feedback();
 
     void addSlot(Slot *slot);
     Slot *slot(int id) const;

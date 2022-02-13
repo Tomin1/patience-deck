@@ -26,14 +26,15 @@
 #include <QSGSimpleRectNode>
 #include <QSGTexture>
 #include <QStyleHints>
-#include "table.h"
-#include "constants.h"
 #include "card.h"
+#include "constants.h"
 #include "drag.h"
 #include "engine.h"
-#include "slot.h"
-#include "texturerenderer.h"
+#include "feedbackevent.h"
 #include "logging.h"
+#include "slot.h"
+#include "table.h"
+#include "texturerenderer.h"
 
 namespace {
 
@@ -777,6 +778,11 @@ void Table::mouseReleaseEvent(QMouseEvent *event)
             }
         }
     }
+}
+
+FeedbackEventAttachedType *Table::feedback()
+{
+    return qobject_cast<FeedbackEventAttachedType*>(qmlAttachedPropertiesObject<FeedbackEvent>(this));
 }
 
 QDebug operator<<(QDebug debug, const Table *table)

@@ -24,7 +24,6 @@
 #include "enginedata.h"
 
 class Card;
-class FeedbackEventAttachedType;
 class QMouseEvent;
 class Slot;
 class Table;
@@ -86,7 +85,6 @@ private:
     void checkTargets(bool force = false);
     void highlightOrDrop();
     void done();
-    FeedbackEventAttachedType *feedback();
     static bool couldBeDoubleClick(const Card *card);
     static quint32 nextId();
     static CardList toCardData(const QList<Card *> &cards, DragState state);

@@ -186,7 +186,7 @@ void Drag::highlightOrDrop()
         if (m_state < Dropping) {
             m_table->highlight(nullptr);
         } else {
-            emit feedback()->dropFailed();
+            emit m_table->feedback()->dropFailed();
             cancel();
         }
     }
@@ -266,13 +266,13 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     }
 
     if (could) {
-        emit feedback()->dropSucceeded();
+        emit m_table->feedback()->dropSucceeded();
         m_state = Finished;
         m_table->store(m_cards);
         m_cards.clear();
         done();
     } else {
-        emit feedback()->dropFailed();
+        emit m_table->feedback()->dropFailed();
         cancel();
     }
 }
@@ -285,7 +285,7 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
         return;
 
     if (could) {
-        emit feedback()->clicked();
+        emit m_table->feedback()->clicked();
         s_doubleClickTimer.invalidate();
     }
 
@@ -300,7 +300,7 @@ void Drag::handleDoubleClicked(quint32 id, int slotId, bool could)
         return;
 
     if (could)
-        emit feedback()->clicked();
+        emit m_table->feedback()->clicked();
 
     done();
 }
@@ -362,12 +362,6 @@ CardList Drag::toCardData(const QList<Card *> &cards, DragState state)
     if (list.isEmpty())
         qCCritical(lcDrag) << "Returning an empty list of CardData in state" << state;
     return list;
-}
-
-
-FeedbackEventAttachedType *Drag::feedback()
-{
-    return qobject_cast<FeedbackEventAttachedType*>(qmlAttachedPropertiesObject<FeedbackEvent>(m_table));
 }
 
 QDebug operator<<(QDebug debug, const Drag *drag)
