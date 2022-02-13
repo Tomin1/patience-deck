@@ -424,7 +424,6 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
         return;
     }
 
-    Q_UNUSED(id) // There is no signal to send back
     qCDebug(lcEngine) << "Canceling move, putting back" << cards.count() << "cards to slot" << slotId;
     d_ptr->m_cardSlots[slotId].append(cards); // Put the cards back
     d_ptr->discardMove();
