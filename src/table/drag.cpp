@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "drag.h"
 #include "feedbackevent.h"
 #include "logging.h"
+#include "selection.h"
 #include "slot.h"
 #include "table.h"
 
@@ -30,18 +31,19 @@ QElapsedTimer Drag::s_doubleClickTimer;
 
 const Card *Drag::s_lastCard = nullptr;
 
-Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
+Drag::Drag(QMouseEvent *event, Table *table, Card *card, Selection *selection)
     : QQuickItem(card)
-    , m_state(NoDrag)
-    , m_mayBeADoubleClick(false)
+    , m_state(selection && selection->state() < Selection::Finished ? WaitingForSelection : NoDrag)
+    , m_mayBeADoubleClick(couldBeDoubleClick(card))
     , m_table(table)
     , m_card(card)
-    , m_source(slot)
+    , m_source(card->slot())
+    , m_selection(m_state == WaitingForSelection ? selection : nullptr)
     , m_target(-1)
 {
     setParentItem(table);
-    setX(slot->x());
-    setY(slot->y());
+    setX(m_source->x());
+    setY(m_source->y());
 
     auto engine = Engine::instance();
     connect(this, &Drag::doDrag, engine, &Engine::drag);
@@ -56,22 +58,62 @@ Drag::Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card)
     connect(engine, &Engine::clicked, this, &Drag::handleClicked);
     connect(engine, &Engine::doubleClicked, this, &Drag::handleDoubleClicked);
 
-    m_mayBeADoubleClick = couldBeDoubleClick(card);
     m_startPoint = m_lastPoint = card->mapToItem(m_table, event->pos());
     m_timer.start();
 
-    qCDebug(lcDrag) << "Started drag of" << card << "for" << slot;
+    if (m_state == WaitingForSelection) {
+        connect(selection, &Selection::finished, this, [this, selection] {
+            if (m_state == Canceled) {
+                // User raised their finger before selection finished
+                qCDebug(lcDrag) << "Drag of" << m_card << "was canceled before" << selection << "finished";
+                done();
+                return;
+            }
+
+            switch (selection->state()) {
+            case Selection::Finished:
+                // Selection did the work for us
+                m_state = Finished;
+                qCDebug(lcDrag) << "Drag of" << m_card << "ended by" << selection;
+                done();
+                break;
+            case Selection::Canceled:
+                // No selection, let's drag the cards
+                qCDebug(lcDrag) << "Continuing drag of" << m_card << "after" << selection << "ended";
+                m_state = NoDrag;
+                break;
+            default:
+                qCCritical(lcDrag) << selection << "finished in unexpected state";
+                break;
+            }
+            m_selection = selection->clone();
+        });
+        if (selection->contains(card))
+            selection->finish(m_source);
+        else
+            selection->cancel();
+        qCDebug(lcDrag) << "Drag of" << m_card << "for" << m_source << "waiting for" << selection;
+    } else {
+        qCDebug(lcDrag) << "Started drag of" << m_card << "for" << m_source;
+    }
 }
 
 Drag::~Drag()
 {
     if (m_state < Finished)
         qCWarning(lcDrag) << "Drag was not finished or canceled when it was destroyed";
+    if (m_selection)
+        m_selection->deleteLater();
 }
 
 Card *Drag::card() const
 {
     return m_card;
+}
+
+Card *Drag::firstCard() const
+{
+    return m_selection ? m_selection->card() : m_card;
 }
 
 void Drag::update(QMouseEvent *event)
@@ -82,20 +124,17 @@ void Drag::update(QMouseEvent *event)
     switch (m_state) {
     case AboutToDrag:
         m_state = StartingDrag;
-        emit doDrag(CountableId::id(), m_source->id(), m_source->asCardData(m_card));
+        emit doDrag(CountableId::id(), m_source->id(), m_source->asCardData(firstCard()));
         break;
     case Dragging: {
-        QPointF point = m_card->mapToItem(m_table, event->pos());
-        QPointF move = point - m_lastPoint;
-        setX(x() + move.x());
-        setY(y() + move.y());
-        m_lastPoint = point;
+        move(m_card->mapToItem(m_table, event->pos()));
         checkTargets();
         break;
     }
     default:
         qCCritical(lcDrag) << "Invalid state in update:" << m_state;
         [[fallthrough]];
+    case WaitingForSelection:
     case StartingDrag:
     case Canceled:
         break;
@@ -118,6 +157,7 @@ void Drag::finish(QMouseEvent *event)
 
     switch (m_state) {
     case Dragging:
+        move(m_card->mapToItem(m_table, event->pos()));
         m_state = Dropping;
         checkTargets(true);
         break;
@@ -130,9 +170,17 @@ void Drag::finish(QMouseEvent *event)
     }
 }
 
+void Drag::move(const QPointF point)
+{
+    QPointF move = point - m_lastPoint;
+    setX(x() + move.x());
+    setY(y() + move.y());
+    m_lastPoint = point;
+}
+
 void Drag::checkTargets(bool force)
 {
-    auto targets = m_table->getSlotsFor(m_card, m_source);
+    auto targets = m_table->getSlotsFor(m_card, m_cards, m_source);
     if (force || m_targets != targets) {
         m_target = -1;
         m_targets = targets;
@@ -216,7 +264,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 
     if (m_state == StartingDrag && could) {
         m_state = Dragging;
-        m_cards = m_source->take(m_card);
+        m_cards = m_source->take(firstCard());
         if (m_cards.empty())
             qCCritical(lcDrag) << "Tried to drag empty stack of cards from slot" << m_source
                                << "starting from" << m_card;
@@ -230,7 +278,7 @@ void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
         checkTargets();
     } else if (m_state == Canceled) {
         if (could)
-            emit doCancelDrag(CountableId::id(), m_source->id(), m_source->asCardData(m_card));
+            emit doCancelDrag(CountableId::id(), m_source->id(), m_source->asCardData(firstCard()));
         done();
     } else {
         cancel();
@@ -282,6 +330,9 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
     if (could) {
         emit m_table->feedback()->clicked();
         s_doubleClickTimer.invalidate();
+    } else {
+        if (!m_selection || m_selection->card() != m_card)
+            m_table->select(m_card);
     }
 
     done();
@@ -308,7 +359,7 @@ void Drag::done()
 
 bool Drag::mayBeAClick(QMouseEvent *event)
 {
-    if (m_state > NoDrag)
+    if (m_state != NoDrag)
         return false;
 
     auto styleHints = QGuiApplication::styleHints();
@@ -356,6 +407,9 @@ QDebug operator<<(QDebug debug, const Drag *drag)
     if (drag) {
         debug.nospace() << "Drag(";
         switch (drag->m_state) {
+        case Drag::WaitingForSelection:
+            debug.nospace() << "WaitingForSelection";
+            break;
         case Drag::NoDrag:
             debug.nospace() << "NoDrag";
             break;

@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 class Card;
 class QMouseEvent;
+class Selection;
 class Slot;
 class Table;
 class Drag : public QQuickItem, public CountableId
@@ -33,7 +34,7 @@ class Drag : public QQuickItem, public CountableId
     Q_OBJECT
 
 public:
-    Drag(QMouseEvent *event, Table *table, Slot *slot, Card *card);
+    Drag(QMouseEvent *event, Table *table, Card *card, Selection *selection = nullptr);
     ~Drag();
 
     Card *card() const;
@@ -59,7 +60,8 @@ private slots:
 
 private:
     enum DragState {
-        NoDrag,
+        WaitingForSelection = -1,
+        NoDrag = 0,
         AboutToDrag,
         StartingDrag,
         Dragging,
@@ -83,8 +85,10 @@ private:
     void checkTargets(bool force = false);
     void highlightOrDrop();
     void drop(Slot *slot);
+    void move(const QPointF point);
     void cancel();
     void done();
+    Card *firstCard() const;
     static bool couldBeDoubleClick(const Card *card);
     static CardList toCardData(const QList<Card *> &cards, DragState state);
 
@@ -100,6 +104,7 @@ private:
     Table *m_table;
     Card *m_card;
     Slot *m_source;
+    Selection *m_selection;
     int m_target;
     QList<Slot *> m_targets;
     QList<Card *> m_cards;

@@ -93,7 +93,7 @@ public:
     QSizeF cardMargin() const;
     bool preparing() const;
 
-    QList<Slot *> getSlotsFor(const Card *card, Slot *source);
+    QList<Slot *> getSlotsFor(const Card *card, const QList<Card *> cards, Slot *source);
     void highlight(Slot *slot, Card *card = nullptr);
     FeedbackEventAttachedType *feedback();
 
@@ -102,6 +102,7 @@ public:
     void clear();
     void store(const QList<Card *> &cards);
     Drag *drag(QMouseEvent *event, Card *card);
+    void select(Card *card);
 
     typedef QMap<int, Slot *>::key_iterator iterator;
     iterator begin();
@@ -163,6 +164,9 @@ private:
     static void setMaterialForSlotNode(SlotNode *node);
     static void setGeometryForSlotNode(SlotNode *node, Slot *slot);
     void setHighlightForSlotNode(SlotNode *node, Slot *slot);
+    QRectF getBoundingRect(const QList<Card *> &cards);
+    QList<Slot *> getSlotsFor(const QRectF &rect, Slot *source);
+    Slot *findSlotAtPoint(const QPointF point) const;
 
     QMap<int, Slot *> m_slots;
     qreal m_minimumSideMargin;
@@ -185,7 +189,7 @@ private:
     QPointF m_startPoint;
 
     Manager m_manager;
-    Drag *m_drag;
+    QObject *m_interaction;
 
     QThread m_textureThread;
     QSGTexture *m_cardTexture;
