@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,7 +242,7 @@ void Card::mouseMoveEvent(QMouseEvent *event)
 
 Slot *Card::slot() const
 {
-    return dynamic_cast<Slot *>(parentItem());
+    return qobject_cast<Slot *>(parentItem());
 }
 
 bool Card::highlighted() const
