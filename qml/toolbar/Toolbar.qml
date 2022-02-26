@@ -55,6 +55,7 @@ Item {
 
     height: totalSpaceY
     width: shortSide
+    state: "non-vertical"
     states: [
         State {
             name: "dragged"
@@ -66,7 +67,14 @@ Item {
         State {
             name: "expanded"
             when: !vertical && expanded
+            extend: "non-vertical"
             PropertyChanges { target: toolbar; height: maximumSpaceY + handleWidth }
+        },
+        State {
+            // To ensure that title is visible also on portrait when the app is started in landscape
+            name: "non-vertical"
+            when: !vertical
+            PropertyChanges { target: title; visible: true }
         },
         State {
             name: "vertical dragged"
