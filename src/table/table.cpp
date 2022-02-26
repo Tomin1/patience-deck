@@ -801,10 +801,12 @@ void Table::mousePressEvent(QMouseEvent *event)
 
     Slot *slot = findSlotAtPoint(event->pos());
     if (Selection *selection = qobject_cast<Selection *>(m_interaction)) {
-        if (slot)
+        if (slot) {
             selection->finish(slot);
-        else
+        } else {
             selection->cancel();
+            emit feedback()->selectionChanged();
+        }
         m_timer.invalidate(); // Ensure that release event does nothing
     } else if (slot) {
         qCDebug(lcMouse) << "Found" << slot << "on click position";

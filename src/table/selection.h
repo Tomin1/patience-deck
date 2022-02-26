@@ -50,6 +50,8 @@ public:
     SelectionState state() const;
     Selection *clone() const;
 
+    void blockVibration();
+
     void finish(Slot *slot);
     void cancel();
 
@@ -80,6 +82,7 @@ private:
     Card *m_card;
     Slot *m_target;
     QList<Card *> m_cards;
+    bool m_vibrationBlocked;
 };
 
 #endif // SELECTION_H

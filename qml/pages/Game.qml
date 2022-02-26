@@ -160,6 +160,7 @@ Page {
                 FeedbackEvent.onClicked: feedback.playEffect()
                 FeedbackEvent.onDropSucceeded: feedback.playEffect()
                 FeedbackEvent.onDropFailed: feedback.playEffect(true)
+                FeedbackEvent.onSelectionChanged: feedback.playEffect(true)
 
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
             }

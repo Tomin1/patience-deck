@@ -33,9 +33,7 @@ signals:
     void clicked();
     void dropSucceeded();
     void dropFailed();
-
-private:
-    friend class Drag;
+    void selectionChanged();
 };
 
 class FeedbackEvent : public QObject

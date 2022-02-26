@@ -88,6 +88,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Card *card, Selection *selection)
             }
             m_selection = selection->clone();
         });
+        selection->blockVibration();
         if (selection->contains(card))
             selection->finish(m_source);
         else
@@ -333,6 +334,7 @@ void Drag::handleClicked(quint32 id, int slotId, bool could)
     } else {
         if (!m_selection || m_selection->card() != m_card)
             m_table->select(m_card);
+        emit m_table->feedback()->selectionChanged();
     }
 
     done();

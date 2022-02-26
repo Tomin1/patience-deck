@@ -30,6 +30,7 @@ Selection::Selection(Table *table, Slot *slot, Card *card)
     , m_source(slot)
     , m_card(card)
     , m_target(nullptr)
+    , m_vibrationBlocked(false)
 {
     auto engine = Engine::instance();
     connect(this, &Selection::doDrag, engine, &Engine::drag);
@@ -54,6 +55,7 @@ Selection::Selection(const Selection *other)
     , m_card(other->m_card)
     , m_target(other->m_target)
     , m_cards(other->m_cards)
+    , m_vibrationBlocked(other->m_vibrationBlocked)
 {
     qCDebug(lcSelection) << "Created a dead selection";
 }
@@ -117,6 +119,11 @@ bool Selection::contains(const Card *card) const
     return false;
 }
 
+void Selection::blockVibration()
+{
+    m_vibrationBlocked = true;
+}
+
 void Selection::finish(Slot *slot)
 {
     switch (m_state) {
@@ -151,7 +158,8 @@ void Selection::handleCouldDrop(quint32 id, int slotId, bool could)
         drop(m_target);
         qCDebug(lcSelection) << this << "dropping" << m_cards.count() << "cards to" << m_target;
     } else {
-        emit m_table->feedback()->dropFailed();
+        if (!m_vibrationBlocked)
+            emit m_table->feedback()->selectionChanged();
         qCDebug(lcSelection) << this << "can not drop to" << m_target;
         cancel();
     }
@@ -178,13 +186,15 @@ void Selection::handleDropped(quint32 id, int slotId, bool could)
 
     if (could) {
         qCDebug(lcSelection) << this << "finished dropping" << m_cards.count() << "cards to" << m_target;
+        // Success vibration is not blocked
         emit m_table->feedback()->dropSucceeded();
         m_state = Finished;
         m_table->store(m_cards);
     } else {
         // Unlikely
         qCCritical(lcSelection) << this << "failed dropping of" << m_cards.count() << "cards to" << m_target;
-        emit m_table->feedback()->dropFailed();
+        if (!m_vibrationBlocked)
+            emit m_table->feedback()->selectionChanged();
         m_state = Canceled;
         m_source->put(m_cards);
     }
