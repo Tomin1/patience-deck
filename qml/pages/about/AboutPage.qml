@@ -53,6 +53,8 @@ Page {
                         verticalCenter: parent.verticalCenter
                     }
                     source: Patience.getIconPath(Theme.iconSizeLauncher)
+                    sourceSize.height: Theme.iconSizeLauncher
+                    sourceSize.width: Theme.iconSizeLauncher
                 }
             }
 

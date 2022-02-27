@@ -27,6 +27,8 @@ CoverBackground {
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             source: Patience.getIconPath(Theme.iconSizeLauncher)
+            sourceSize.height: Theme.iconSizeLauncher
+            sourceSize.width: Theme.iconSizeLauncher
         }
 
         Item {
