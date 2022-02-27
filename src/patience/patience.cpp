@@ -15,20 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <glob.h>
+#include <memory>
 #include <QCoreApplication>
 #include <QDir>
 #include <QJSEngine>
 #include <QObject>
 #include <QQmlEngine>
-#include <memory>
-#include "patience.h"
 #include "constants.h"
 #include "gamelist.h"
 #include "logging.h"
+#include "patience.h"
 
 const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
 const QString HistoryConf = QStringLiteral("/history");
 const QString HarbourPrefix = QLatin1String("harbour-");
+const QString IconPathTemplate = QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png");
 
 Patience* Patience::s_game = nullptr;
 
@@ -320,8 +322,32 @@ void Patience::restoreSavedOrLoad(const QString &fallback)
 
 QString Patience::getIconPath(int size) const
 {
-    QString name = QCoreApplication::instance()->arguments().first().section('/', -1);;
-    return QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png").arg(size).arg(name);
+    static QString mostSuitable;
+    if (mostSuitable.isEmpty()) {
+        QString name = QCoreApplication::instance()->arguments().first().section('/', -1);
+        glob_t globbuf;
+        QByteArray nameGlob = IconPathTemplate.arg("*").arg(name).toLocal8Bit();
+        int bestSize = 86;
+        if (glob(nameGlob.constData(), GLOB_NOSORT, NULL, &globbuf) == 0) {
+            QStringList files;
+            for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+                int foundSize = atoi(globbuf.gl_pathv[i] + 25);
+                if (foundSize == size) {
+                    bestSize = size;
+                    break;
+                } else if (foundSize > size) {
+                    if (bestSize < size || foundSize < bestSize)
+                        bestSize = foundSize;
+                } else /* foundSize < size */ {
+                    if (foundSize > bestSize)
+                        bestSize = foundSize;
+                }
+            }
+        }
+        mostSuitable = IconPathTemplate.arg(bestSize).arg(name);
+        qCDebug(lcPatience) << "Found icon at" << mostSuitable;
+    }
+    return mostSuitable;
 }
 
 bool Patience::showLibraryLicenses() const
@@ -330,7 +356,7 @@ bool Patience::showLibraryLicenses() const
 }
 
 void Patience::catchFailure(QString message) {
-    qCritical() << "Engine failed!" << message;
+    qCCritical(lcPatience) << "Engine failed!" << message;
     m_engineFailed = true;
     emit engineFailedChanged();
     m_timer.stop();
