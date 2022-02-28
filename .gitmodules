@@ -1,3 +1,6 @@
 [submodule "aisleriot"]
 	path = aisleriot
 	url = https://gitlab.gnome.org/GNOME/aisleriot.git
+[submodule "translations"]
+	path = translations
+	url = git@github.com:Tomin1/patience-deck-l10n.git

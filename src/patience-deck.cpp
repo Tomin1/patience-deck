@@ -41,6 +41,11 @@ int main(int argc, char *argv[])
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
 
+    // Add Qt translations
+    QTranslator *translator = new QTranslator();
+    translator->load(QLocale::system(), "patience-deck", "-", SailfishApp::pathTo("translations").toLocalFile(), ".qm");
+    app->installTranslator(translator);
+
     QCommandLineParser parser;
     parser.setApplicationDescription("A collection of patience games.");
     auto helpOption = parser.addHelpOption();

@@ -4,9 +4,6 @@ Makefile
 moc_*.cpp
 moc_*.h
 *.list
-*.qm
-/translations/patience-deck.ts
-/translations/harbour-patience-deck.ts
 /RPMS/
 patience-deck
 harbour-patience-deck
