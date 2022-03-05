@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libintl.h>
 #include <QDir>
 #include <QSet>
 #include "logging.h"
@@ -116,6 +117,7 @@ QHash<int, QByteArray> GameList::s_roleNames = {
     { Qt::DisplayRole, "display" },
     { FileNameRole, "filename" },
     { NameRole, "name" },
+    { TranslatedRole, "translated" },
     { SupportedRole, "supported" },
     { SectionRole, "section" },
     { FavoriteRole, "favorite" },
@@ -162,6 +164,8 @@ QVariant GameList::data(const QModelIndex &index, int role) const
         return getFileName(index.row());
     case NameRole:
         return name(getFileName(index.row()));
+    case TranslatedRole:
+        return translated(getFileName(index.row()));
     case SupportedRole:
         return isSupported(getFileName(index.row()));
     case SectionRole:
@@ -181,12 +185,17 @@ QString GameList::displayable(const QString &fileName)
         if (startOfWord) {
             displayName[i] = QChar(displayName[i]).toUpper();
             startOfWord = false;
-        } else if (displayName[i] == QChar('-')) {
+        } else if (displayName[i] == '-') {
             startOfWord = true;
-            displayName[i] = QChar(' ');
+            displayName[i] = ' ';
         }
     }
     return displayName;
+}
+
+QString GameList::translated(const QString &fileName)
+{
+    return QString(gettext(displayable(fileName).toUtf8().constData()));
 }
 
 QString GameList::name(const QString &fileName)
