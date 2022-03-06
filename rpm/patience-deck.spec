@@ -20,9 +20,10 @@ BuildRequires:  git-core
 BuildRequires:  python3-base
 BuildRequires:  python3-lxml
 BuildRequires:  librsvg-tools
+BuildRequires:  gettext-devel
 
 %if %{with harbour}
-BuildRequires: automake autoconf libtool gettext-devel
+BuildRequires: automake autoconf libtool
 %define __provides_exclude_from ^%{_datadir}/.*$
 %define __requires_exclude ^libcrypt|libffi|libgc|libgmp|libguile|libltdl|libunistring.*$
 %else

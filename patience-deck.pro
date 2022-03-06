@@ -73,3 +73,25 @@ engineering_english_install.path = /usr/share/$$(NAME)/translations
 QMAKE_EXTRA_TARGETS += engineering_english
 PRE_TARGETDEPS += engineering_english
 INSTALLS += engineering_english_install
+
+# Aisleriot translations
+include(translations/translations.pri)
+for (lang, LANGUAGES) {
+    po_file = $$PWD/aisleriot/po/$${lang}.po
+    mo_dir = $$shadowed(translations/mo/$${lang}/)
+    mo_file = $${mo_dir}/aisleriot.mo
+
+    aisleriot_mo_$${lang}.commands = mkdir -p $$mo_dir $$escape_expand(\n\t)
+    aisleriot_mo_$${lang}.commands +=msggrep --location="games/*.scm" --location="src/game-names.h" $$po_file | msgfmt -o $$mo_file /dev/stdin
+    aisleriot_mo_$${lang}.depends = $$po_file
+    aisleriot_mo_$${lang}.output = FORCE
+
+    aisleriot_mo_$${lang}_install.CONFIG = no_check_exist
+    aisleriot_mo_$${lang}_install.depends = aisleriot_mo_$${lang}
+    aisleriot_mo_$${lang}_install.files = $$mo_file
+    aisleriot_mo_$${lang}_install.path = /usr/share/$$(NAME)/translations/$${lang}/LC_MESSAGES
+
+    QMAKE_EXTRA_TARGETS += aisleriot_mo_$${lang}
+    PRE_TARGETDEPS += aisleriot_mo_$$lang
+    INSTALLS += aisleriot_mo_$${lang}_install
+}

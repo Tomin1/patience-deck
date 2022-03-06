@@ -19,6 +19,8 @@
 #include <QtQuick>
 #endif
 
+#include <libintl.h>
+#include <locale.h>
 #include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QQuickView>
@@ -37,6 +39,7 @@
 
 int main(int argc, char *argv[])
 {
+    setlocale(LC_ALL, "");
     qputenv("GUILE_AUTO_COMPILE", "0");
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
@@ -45,6 +48,11 @@ int main(int argc, char *argv[])
     QTranslator *translator = new QTranslator();
     translator->load(QLocale::system(), "patience-deck", "-", SailfishApp::pathTo("translations").toLocalFile(), ".qm");
     app->installTranslator(translator);
+
+    // Add Aisleriot translations
+    bindtextdomain("aisleriot", SailfishApp::pathTo("translations").toLocalFile().toLocal8Bit().constData());
+    bind_textdomain_codeset("aisleriot", "UTF-8");
+    textdomain("aisleriot");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("A collection of patience games.");
