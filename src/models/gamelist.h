@@ -60,6 +60,7 @@ public:
 
 private:
     static MGConfItem *showAllConf();
+    static bool lessThan(const QString &a, const QString &b);
 
     static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
