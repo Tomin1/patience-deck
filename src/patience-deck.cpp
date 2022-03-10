@@ -45,6 +45,9 @@ int main(int argc, char *argv[])
     QScopedPointer<QQuickView> view(SailfishApp::createView());
 
     // Add Qt translations
+    QTranslator *eeTranslator = new QTranslator();
+    eeTranslator->load("patience-deck", SailfishApp::pathTo("translations").toLocalFile(), ".qm");
+    app->installTranslator(eeTranslator);
     QTranslator *translator = new QTranslator();
     translator->load(QLocale::system(), "patience-deck", "-", SailfishApp::pathTo("translations").toLocalFile(), ".qm");
     app->installTranslator(translator);
