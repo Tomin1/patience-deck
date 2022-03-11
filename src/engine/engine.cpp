@@ -775,7 +775,7 @@ void EnginePrivate::updateDealable()
 void EnginePrivate::recordMove(int slotId)
 {
     qCDebug(lcEngine) << "Start recording move for slot" << slotId
-                      << "with" << m_cardSlots[slotId].count() << "cards";
+                      << "with" << m_cardSlots.value(slotId).count() << "cards";
 
     if (m_recordingMove)
         qCCritical(lcEngine) << "There was already a move ongoing";
@@ -783,7 +783,7 @@ void EnginePrivate::recordMove(int slotId)
 
     SCM args[2];
     args[0] = scm_from_int(slotId);
-    args[1] = Scheme::slotToSCM(m_cardSlots[slotId]);
+    args[1] = Scheme::slotToSCM(m_cardSlots.value(slotId));
 
     if (!makeSCMCall(QStringLiteral("record-move"), args, 2, nullptr))
         die("Can not record move");
@@ -913,19 +913,32 @@ void EnginePrivate::addSlot(int id, const CardList &cards, SlotType type,
                             double x, double y, int expansionDepth,
                             bool expandedDown, bool expandedRight)
 {
-    m_cardSlots.insert(id, cards);
+    if (id < 0) {
+        qCCritical(lcEngine) << "Invalid slot id" << id;
+        die("Invalid slot id");
+        return;
+    }
+    if (id != m_cardSlots.size())
+        qCWarning(lcEngine) << "Unexpected slot id while adding slots! Got" << id
+                            << "but expected" << m_cardSlots.size();
+    if (id >= m_cardSlots.size())
+        m_cardSlots.resize(id + 1);
+    m_cardSlots[id] = cards;
     emit engine()->newSlot(id, cards, type, x, y, expansionDepth, expandedDown, expandedRight);
 }
 
-const CardList &EnginePrivate::getSlot(int slot)
+const CardList &EnginePrivate::getSlot(int slot) const
 {
-    return m_cardSlots[slot];
+    static CardList empty;
+    if (slot < 0 || slot >= m_cardSlots.size())
+        return empty;
+    return m_cardSlots.at(slot);
 }
 
 void EnginePrivate::setCards(int id, const CardList &cards)
 {
     if (cards.isEmpty()) {
-        if (!m_cardSlots[id].isEmpty()) {
+        if (!m_cardSlots.at(id).isEmpty()) {
             qCDebug(lcEngine) << "Clearing slot" << id;
             CardData none;
             emit engine()->action(Engine::ClearingAction, id, -1, none);
@@ -935,23 +948,24 @@ void EnginePrivate::setCards(int id, const CardList &cards)
     }
 
     auto it = cards.constEnd();
-    int i = m_cardSlots[id].count() - 1;
+    int i = m_cardSlots.at(id).count() - 1;
     while (it-- != cards.constBegin() && i >= 0) {
-        if (m_cardSlots[id][i].equalValue(*it)) {
-            if ((*it).show != m_cardSlots[id][i].show) {
+        auto card = m_cardSlots.at(id).at(i);
+        if (card.equalValue(*it)) {
+            if ((*it).show != card.show) {
                 qCDebug(lcEngine) << "Flipping" << *it << "in slot" << id << "at index" << i;
                 emit engine()->action(Engine::FlippingAction, id, i, *it);
                 m_cardSlots[id][i].show = (*it).show;
             }
             i--;
         } else {
-            qCDebug(lcEngine) << "Removing" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
+            qCDebug(lcEngine) << "Removing" << card << "from slot" << id << "from index" << i;
             emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
             i--; ++it;
         }
     }
     for (; i >= 0; i--) {
-        qCDebug(lcEngine) << "Remove" << m_cardSlots[id][i] << "from slot" << id << "from index" << i;
+        qCDebug(lcEngine) << "Remove" << m_cardSlots.at(id).at(i) << "from slot" << id << "from index" << i;
         emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
     }
     ++it;
@@ -961,7 +975,7 @@ void EnginePrivate::setCards(int id, const CardList &cards)
         m_cardSlots[id].insert(0, *it);
     }
 
-    if (m_cardSlots[id] != cards)
+    if (m_cardSlots.at(id) != cards)
         die("Cards don't match!");
 }
 

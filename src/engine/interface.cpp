@@ -308,7 +308,7 @@ SCM Interface::addCardSlot(SCM slotData)
 SCM Interface::getCardSlot(SCM slotId)
 {
     auto *engine = EnginePrivate::instance();
-    const CardList slot = engine->getSlot(scm_to_int(slotId));
+    const CardList &slot = engine->getSlot(scm_to_int(slotId));
     return scm_cons(slotId, scm_cons(Scheme::slotToSCM(slot), SCM_EOL));
 }
 

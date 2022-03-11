@@ -20,10 +20,10 @@
 
 #include <functional>
 #include <libguile.h>
-#include <QHash>
 #include <QList>
 #include <QObject>
 #include <QTimer>
+#include <QVector>
 #include <random>
 #include "enginedata.h"
 
@@ -98,7 +98,7 @@ public:
     void addSlot(int id, const CardList &cards, SlotType type,
                  double x, double y, int expansionDepth,
                  bool expandedDown, bool expandedRight);
-    const CardList &getSlot(int slot);
+    const CardList &getSlot(int slot) const;
     void setCards(int id, const CardList &cards);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
@@ -126,7 +126,7 @@ private:
 #endif
 
     QTimer *m_delayedCallTimer;
-    QHash<int, CardList> m_cardSlots;
+    QVector<CardList> m_cardSlots;
     SCM m_lambdas[LambdaCount];
     GameFeatures m_features;
     GameState m_state;
