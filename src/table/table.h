@@ -20,11 +20,11 @@
 
 #include <QColor>
 #include <QImage>
-#include <QMap>
 #include <QPointF>
 #include <QSizeF>
 #include <QThread>
 #include <QtQuick/QQuickItem>
+#include <QVector>
 #include "countableid.h"
 #include "engine.h"
 #include "enginedata.h"
@@ -104,7 +104,7 @@ public:
     Drag *drag(QMouseEvent *event, Card *card);
     void select(Card *card);
 
-    typedef QMap<int, Slot *>::key_iterator iterator;
+    typedef QVector<Slot *>::iterator iterator;
     iterator begin();
     iterator end();
 
@@ -168,7 +168,7 @@ private:
     QList<Slot *> getSlotsFor(const QRectF &rect, Slot *source);
     Slot *findSlotAtPoint(const QPointF point) const;
 
-    QMap<int, Slot *> m_slots;
+    QVector<Slot *> m_slots;
     qreal m_minimumSideMargin;
     qreal m_sideMargin;
     QSizeF m_margin;

@@ -174,8 +174,7 @@ bool Manager::handleQueued(const Action &action) {
 void Manager::handleClearData()
 {
     m_preparing = true;
-    for (int slotId : *m_table) {
-        Slot *slot = m_table->slot(slotId);
+    for (Slot *slot : *m_table) {
         for (Card *card : slot->takeAll()) {
             if (card) {
                 card->shred();

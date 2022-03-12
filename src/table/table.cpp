@@ -503,7 +503,9 @@ void Table::highlight(Slot *slot, Card *card)
 void Table::addSlot(Slot *slot)
 {
     connect(slot, &Slot::slotEmptied, this, &Table::handleSlotEmptied);
-    m_slots.insert(slot->id(), slot);
+    if (slot->id() >= m_slots.size())
+        m_slots.resize(slot->id() + 1);
+    m_slots[slot->id()] = slot;
     smudge(SlotCount);
 }
 
@@ -582,7 +584,7 @@ void Table::handleSetExpansionToDown(int id, double expansion)
     if (!preparing()) {
         qCWarning(lcTable) << "Trying to change expansion to down while Table is not being prepared";
     } else {
-        Slot *slot = m_slots[id];
+        Slot *slot = m_slots.at(id);
         if (slot->expandedRight()) {
             qCWarning(lcTable) << "Can not set delta for expansion to down when expansion to right is set";
         } else if (slot->expandedDown()) {
@@ -598,7 +600,7 @@ void Table::handleSetExpansionToRight(int id, double expansion)
     if (!preparing()) {
         qCWarning(lcTable) << "Trying to change expansion to right while Table is not being prepared";
     } else {
-        Slot *slot = m_slots[id];
+        Slot *slot = m_slots.at(id);
         if (slot->expandedDown()) {
             qCWarning(lcTable) << "Can not set delta for expansion to right when expansion to down is set";
         } else if (slot->expandedRight()) {
@@ -778,12 +780,12 @@ void Table::handleEngineFailure()
 
 Table::iterator Table::begin()
 {
-    return m_slots.keyBegin();
+    return m_slots.begin();
 }
 
 Table::iterator Table::end()
 {
-    return m_slots.keyEnd();
+    return m_slots.end();
 }
 
 Slot *Table::findSlotAtPoint(const QPointF point) const
