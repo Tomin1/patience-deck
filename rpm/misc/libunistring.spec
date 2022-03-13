@@ -26,10 +26,7 @@ Development files for programs using libunistring.
 %setup -q -n %{name}-%{version}
 
 %build
-# TODO: Check if adding LDPATH=/usr/bin/gconv is enough to get this
-# building right on x86, now needs it in ld.so.conf.d. See also
-# https://bugs.gentoo.org/24349
-%configure --disable-static --disable-rpath
+%configure --disable-static --disable-rpath --prefix=%{_prefix}
 make %{?_smp_mflags}
 
 %install

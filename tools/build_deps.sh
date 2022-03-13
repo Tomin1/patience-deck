@@ -192,7 +192,7 @@ build_guile() {
  # When compiling with GCC on some OSs (Solaris, AIX), _Complex_I doesn't
  # work; in the reported cases so far, 1.0fi works well instead.  According
 EOF
-        LD_LIBRARY_PATH=${_LIBDIR}
+        LD_LIBRARY_PATH=/usr/lib/gconv:${_LIBDIR}
         PKG_CONFIG_PATH=${_LIBDIR}/pkgconfig
         autoreconf -i -f
         sed '/^\s*acl_libdirstem2=/s/=/=lib/' -i configure

@@ -83,13 +83,18 @@ _output-prefix_ step. In addition to _patience-deck_ package you must install
 also _gc_, _libunistring_ and _guile22_ packages to the device.
 
 #### Note for i486 targets
-Currently there seems to be a bug in glibc that breaks iconv but only on i486
-targets. The only working way to build working libunistring and guile is to add
-_/usr/lib/gconv_ to _/etc/ld.so.conf.d/gconv.conf_ in the target directory
-structure on Platform SDK. This workaround does not seem to work on Sailfish SDK
-at all and thus the build instructions above can not be used. This is not needed
-for harbour builds as there is a working workaround for it already in
-_tools/build\_deps.sh_ and that works also on Sailfish SDK.
+There are two problems with building guile for i486. See below for workarounds.
+
+Firstly there seems to be a bug in glibc that breaks iconv but only on i486
+targets. This has been worked around with _LD\_LIBRARY\_PATH_ adjustments on
+spec files. Alternatively it could be worked around by adding _/usr/lib/gconv_
+to _/etc/ld.so.conf.d/gconv.conf_ in the target directory
+
+Secondly there is a bug in Sailfish SDK that breaks running complex binaries
+within workspace. If you are building generic version apply [this
+change](https://github.com/sailfishos/scratchbox2/commit/d14b047a9438e5a740981cd5620f1a6af2b6c2e3)
+to sb2 command of your build engine to make that work. This is not needed with
+Platform SDK.
 
 ### Building harbour version
 [Harbour](https://harbour.jolla.com/) aka _Jolla Store_ compatible packaging

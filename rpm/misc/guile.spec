@@ -48,6 +48,7 @@ install the guile package.
 %autosetup -p1 -n guile-%version
 
 %build
+export LD_LIBRARY_PATH=/usr/lib/gconv
 
 autoreconf -fiv
 %configure --disable-static --disable-error-on-warning --program-suffix=%{?mver}
