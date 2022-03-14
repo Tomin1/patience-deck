@@ -85,7 +85,7 @@ build_libunistring() {
     then
         echo "Building libunistring..."
         pushd ${LIBUNISTRING}/
-        LD_LIBRARY_PATH=/usr/bin/gconv
+        LD_LIBRARY_PATH=/usr/lib/gconv
         ./configure \
                 --disable-rpath \
                 --disable-static \
