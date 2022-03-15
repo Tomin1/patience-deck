@@ -26,6 +26,7 @@ Development files for programs using libunistring.
 %setup -q -n %{name}-%{version}
 
 %build
+export LD_LIBRARY_PATH=/usr/lib/gconv
 %configure --disable-static --disable-rpath --prefix=%{_prefix}
 make %{?_smp_mflags}
 

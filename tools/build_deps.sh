@@ -86,12 +86,14 @@ build_libunistring() {
         echo "Building libunistring..."
         pushd ${LIBUNISTRING}/
         LD_LIBRARY_PATH=/usr/lib/gconv
+        export LD_LIBRARY_PATH
         ./configure \
                 --disable-rpath \
                 --disable-static \
                 --prefix="/usr/share/harbour-patience-deck/"
         make $@
         make DESTDIR=${_PREFIX}/ install
+        export -n LD_LIBRARY_PATH
         popd
         echo "Built libunistring"
     else
@@ -194,6 +196,8 @@ build_guile() {
 EOF
         LD_LIBRARY_PATH=/usr/lib/gconv:${_LIBDIR}
         PKG_CONFIG_PATH=${_LIBDIR}/pkgconfig
+        export LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH
         autoreconf -i -f
         sed '/^\s*acl_libdirstem2=/s/=/=lib/' -i configure
         ./configure \
@@ -211,6 +215,8 @@ EOF
         echo '#define HAVE_GC_MOVE_DISAPPEARING_LINK 1' >> config.h
         make $@
         make DESTDIR=${_PREFIX}/ install
+        export -n LD_LIBRARY_PATH
+        export -n PKG_CONFIG_PATH
         popd
         echo "Built guile"
     else
