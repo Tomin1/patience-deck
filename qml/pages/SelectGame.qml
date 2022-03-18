@@ -36,7 +36,7 @@ Page {
 
             Label {
                 x: Theme.horizontalPageMargin
-                text: translated
+                text: display
                 anchors.verticalCenter: parent.verticalCenter
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
             }

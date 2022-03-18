@@ -168,7 +168,7 @@ QString Patience::gameName() const
 {
     if (m_gameFile.isEmpty() || m_gameFile.endsWith('-'))
         return QString();
-    return GameList::displayable(m_gameFile);
+    return GameList::translated(m_gameFile);
 }
 
 QString Patience::gameFile() const

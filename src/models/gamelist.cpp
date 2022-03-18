@@ -114,10 +114,11 @@ QSet<QString> GameList::s_allowlist = {
 };
 
 QHash<int, QByteArray> GameList::s_roleNames = {
-    { Qt::DisplayRole, "display" },
+    { Qt::DisplayRole, "display" }, // alias to translated
     { FileNameRole, "filename" },
     { NameRole, "name" },
     { TranslatedRole, "translated" },
+    { CapitalizedRole, "capitalized" },
     { SupportedRole, "supported" },
     { SectionRole, "section" },
     { FavoriteRole, "favorite" },
@@ -161,13 +162,14 @@ QVariant GameList::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case DisplayRole:
-        return displayable(getFileName(index.row()));
+    case TranslatedRole:
+        return translated(getFileName(index.row()));
     case FileNameRole:
         return getFileName(index.row());
     case NameRole:
         return name(getFileName(index.row()));
-    case TranslatedRole:
-        return translated(getFileName(index.row()));
+    case CapitalizedRole:
+        return capitalized(getFileName(index.row()));
     case SupportedRole:
         return isSupported(getFileName(index.row()));
     case SectionRole:
@@ -179,7 +181,7 @@ QVariant GameList::data(const QModelIndex &index, int role) const
     }
 }
 
-QString GameList::displayable(const QString &fileName)
+QString GameList::capitalized(const QString &fileName)
 {
     QString displayName(name(fileName));
     bool startOfWord = true;
@@ -197,7 +199,7 @@ QString GameList::displayable(const QString &fileName)
 
 QString GameList::translated(const QString &fileName)
 {
-    return QString(gettext(displayable(fileName).toUtf8().constData()));
+    return QString(gettext(capitalized(fileName).toUtf8().constData()));
 }
 
 QString GameList::name(const QString &fileName)

@@ -26,7 +26,7 @@ class GameList : public QAbstractListModel
     Q_OBJECT
 
 public:
-    static QString displayable(const QString &fileName);
+    static QString capitalized(const QString &fileName);
     static QString translated(const QString &fileName);
     static QString name(const QString &fileName);
     static bool isSupported(const QString &fileName);
@@ -46,6 +46,7 @@ public:
         FileNameRole = Qt::UserRole,
         NameRole,
         TranslatedRole,
+        CapitalizedRole,
         SupportedRole,
         SectionRole,
         FavoriteRole,
