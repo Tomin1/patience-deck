@@ -16,6 +16,7 @@
  */
 
 #include <glob.h>
+#include <libintl.h>
 #include <memory>
 #include <QCoreApplication>
 #include <QDir>
@@ -275,13 +276,22 @@ QString Patience::aisleriotAuthors() const
     }
 
     QTextStream in(&file);
-    QString authors;
+    QString authors = file.readAll();
     while (!in.atEnd()) {
         QString line = in.readLine();
         authors += line.left(line.lastIndexOf(QStringLiteral(" <")));
         authors += '\n';
     }
+    authors.truncate(authors.length() - 1);
     return authors;
+}
+
+QString Patience::aisleriotTranslatorInfo() const
+{
+    const char *info = gettext("translator-credits");
+    if (!info || strcmp(info, "translator-credits") == 0)
+        return QString();
+    return QString(info);
 }
 
 bool Patience::showAllGames() const

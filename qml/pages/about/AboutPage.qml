@@ -25,6 +25,20 @@ Page {
 
     allowedOrientations: Orientation.All
 
+    // These are placeholders for some future texts so that you may translate them already
+    //: Button to open the list of Patience Deck contributors (not implemented yet)
+    //% "Contributors"
+    property string contributors_: qsTrId("patience-bt-contributors")
+    //: Page header for the list of Patience Deck contributors (not implemented yet)
+    //% "Contributors of Patience Deck"
+    property string contributors2_: qsTrId("patience-he-contributors")
+    //: Section header for list of developers of Patience Deck (not implemented yet)
+    //% "Developers"
+    property string developers_: qsTrId("patience-se-developers")
+    //: Section header for list of translators of Patience Deck (not implemented yet)
+    //% "Translators"
+    property string translators_: qsTrId("patience-se-translators")
+
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: content.height
@@ -62,7 +76,7 @@ Page {
                 linkColor: Theme.primaryColor
                 //% "Patience Deck is a collection of %1 supported patience games for Sailfish OS. "
                 //% "It reimplements game engine from <a href=%2>GNOME Aisleriot</a> and utilises "
-                //% "its implementations of patience games including manual pages and artwork."
+                //% "its implementations of patience games including translations, manual pages and artwork."
                 text: qsTrId("patience-la-about_text")
                     .arg(Patience.gamesCount)
                     .arg("\"https://wiki.gnome.org/Apps/Aisleriot\"")
@@ -165,17 +179,35 @@ Page {
 
                 Column {
                     id: authorsContent
+
+                    bottomPadding: Theme.paddingLarge
+                    spacing: Theme.paddingMedium
                     width: parent.width
 
                     PageHeader {
                         //% "Thanks to"
                         title: qsTrId("patience-he-thanks_to")
-                        //% "GNOME Aislertiot authors"
+                        //% "GNOME Aisleriot authors"
                         description: qsTrId("patience-de-aisleriot_authors")
                     }
 
                     Paragraph {
                         text: Patience.aisleriotAuthors
+                    }
+
+                    SectionHeader {
+                        //: Section to show Aisleriot translator/translation information, substitute
+                        //: word language with the name of the language of the translation.
+                        //: Original is pretty generic on purpose, feel free to translate this to
+                        //: something works for the result
+                        //% "Aisleriot translator information for language"
+                        text: qsTrId("patience-se-translator-information")
+                        visible: Patience.aisleriotTranslatorInfo !== ""
+                    }
+
+                    Paragraph {
+                        text: Patience.aisleriotTranslatorInfo
+                        visible: Patience.aisleriotTranslatorInfo !== ""
                     }
                 }
 

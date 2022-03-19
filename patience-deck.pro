@@ -82,7 +82,7 @@ for (lang, LANGUAGES) {
     mo_file = $${mo_dir}/aisleriot.mo
 
     aisleriot_mo_$${lang}.commands = mkdir -p $$mo_dir $$escape_expand(\n\t)
-    aisleriot_mo_$${lang}.commands +=msggrep --location="games/*.scm" --location="src/game-names.h" $$po_file | msgfmt -o $$mo_file /dev/stdin
+    aisleriot_mo_$${lang}.commands +=msggrep --msgid --regexp="translator-credits" --location="games/*.scm" --location="src/game-names.h" $$po_file | msgfmt -o $$mo_file /dev/stdin
     aisleriot_mo_$${lang}.depends = $$po_file
     aisleriot_mo_$${lang}.output = FORCE
 

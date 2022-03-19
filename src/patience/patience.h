@@ -42,6 +42,7 @@ class Patience : public QObject
     Q_PROPERTY(bool showScore READ showScore NOTIFY showScoreChanged);
     Q_PROPERTY(bool showDeal READ showDeal NOTIFY showDealChanged);
     Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
+    Q_PROPERTY(QString aisleriotTranslatorInfo READ aisleriotTranslatorInfo CONSTANT)
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
@@ -91,6 +92,7 @@ public:
     void setPaused(bool paused);
     QString message() const;
     QString aisleriotAuthors() const;
+    QString aisleriotTranslatorInfo() const;
     bool showAllGames() const;
     void setShowAllGames(bool show);
     QStringList history() const;
