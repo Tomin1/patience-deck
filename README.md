@@ -108,14 +108,6 @@ The following instructions are for _SailfishOS-4.1.0.24-aarch64_ target but
 substitute your own depending on which version of Sailfish or which
 architecture you are targeting.
 
-If you haven't installed _guile22-devel_ package to your target snapshot, you
-need to patch your _mb2_ command or use a workaround as the current version of
-the SDK has a bug with dependency handling. You can just comment out
-_BuildRequires_ for _guile22-devel_ as a workaround. Alternatively apply the
-change from [here](https://github.com/sailfishos/sdk-setup/pull/260).
-Installing _guile22-devel_ package also works but to do that you must first
-follow instructions to build the support libraries for the generic version.
-
 First set your target:
 
     $ sfdk config --push target SailfishOS-4.1.0.24-aarch64
@@ -148,3 +140,8 @@ _patience-deck_ or _harbour-patience-deck_. If you have added your device on
 your SDK settings and selected the correct device, you can deploy easily:
 
     $ sfdk deploy --sdk patience-deck
+
+### Translations
+Translations are hosted on [another
+repository](https://github.com/Tomin1/patience-deck-l10n). Please go there to
+find more information about creating and updating translations.
