@@ -21,17 +21,19 @@ usage() {
 
 clean() {
     git reset --hard HEAD
-    sb2 make clean || :
     rm -f Makefile *.list
     find data/ qml/ src/ tools/ translations/ \( \
         -name Makefile -o \
         -name '*.list' -o \
         -name '*.o' -o \
         -name '*patience-deck.qm' -o \
-        -name '*patience-deck.ts' -o \
+        -name '*patience-deck-*.qm' -o \
         -name '*patience-deck' -o \
         -name 'moc_*.cpp' \) -delete -print
     pushd aisleriot/
+    git reset --hard HEAD
+    popd
+    pushd translations/
     git reset --hard HEAD
     popd
 }
