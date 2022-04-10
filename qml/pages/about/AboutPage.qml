@@ -235,13 +235,15 @@ Page {
                         text: Patience.aisleriotAuthors
                     }
 
-                    SectionHeader {
+                    Paragraph {
                         //: Section to show Aisleriot translator/translation information, substitute
                         //: word language with the name of the language of the translation.
                         //: Original is pretty generic on purpose, feel free to translate this to
                         //: something works for the result
                         //% "Aisleriot translator information for language"
                         text: qsTrId("patience-se-translator-information")
+                        topPadding: Theme.paddingMedium
+                        horizontalAlignment: Text.AlignRight
                         visible: Patience.aisleriotTranslatorInfo !== ""
                     }
 
