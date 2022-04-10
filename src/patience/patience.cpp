@@ -266,24 +266,24 @@ QString Patience::message() const
     return m_message;
 }
 
-QString Patience::aisleriotAuthors() const
+QString Patience::readFile(const QString &path) const
 {
-    QFile file(Constants::DataDirectory + QStringLiteral("/AUTHORS"));
+    QFile file(path);
 
     if (!file.open(QIODevice::ReadOnly)) {
         qCWarning(lcPatience) << "Can not open" << file.fileName() << "for reading";
         return QString();
     }
 
-    QTextStream in(&file);
-    QString authors = file.readAll();
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        authors += line.left(line.lastIndexOf(QStringLiteral(" <")));
-        authors += '\n';
-    }
-    authors.truncate(authors.length() - 1);
-    return authors;
+    QString content = file.readAll();
+    if (content.endsWith('\n'))
+        content.truncate(content.length() - 1);
+    return content;
+}
+
+QString Patience::aisleriotAuthors() const
+{
+    return readFile(Constants::DataDirectory + QStringLiteral("/AUTHORS"));
 }
 
 QString Patience::aisleriotTranslatorInfo() const
@@ -292,6 +292,11 @@ QString Patience::aisleriotTranslatorInfo() const
     if (!info || strcmp(info, "translator-credits") == 0)
         return QString();
     return QString(info);
+}
+
+QString Patience::translators() const
+{
+    return readFile(Constants::DataDirectory + QStringLiteral("/TRANSLATORS"));
 }
 
 bool Patience::showAllGames() const

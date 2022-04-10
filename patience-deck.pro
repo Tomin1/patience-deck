@@ -95,3 +95,7 @@ for (lang, LANGUAGES) {
     PRE_TARGETDEPS += aisleriot_mo_$$lang
     INSTALLS += aisleriot_mo_$${lang}_install
 }
+
+translators_file.files = translations/TRANSLATORS
+translators_file.path = /usr/share/$$(NAME)/data/
+INSTALLS += translators_file

@@ -43,6 +43,7 @@ class Patience : public QObject
     Q_PROPERTY(bool showDeal READ showDeal NOTIFY showDealChanged);
     Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
     Q_PROPERTY(QString aisleriotTranslatorInfo READ aisleriotTranslatorInfo CONSTANT)
+    Q_PROPERTY(QString translators READ translators CONSTANT)
     Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
@@ -93,6 +94,7 @@ public:
     QString message() const;
     QString aisleriotAuthors() const;
     QString aisleriotTranslatorInfo() const;
+    QString translators() const;
     bool showAllGames() const;
     void setShowAllGames(bool show);
     QStringList history() const;
@@ -148,6 +150,7 @@ private slots:
 private:
     explicit Patience(QObject *parent = nullptr);
     void setState(GameState state);
+    QString readFile(const QString &path) const;
 
     QThread m_engineThread;
     bool m_engineFailed;

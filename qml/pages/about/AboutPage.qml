@@ -25,20 +25,6 @@ Page {
 
     allowedOrientations: Orientation.All
 
-    // These are placeholders for some future texts so that you may translate them already
-    //: Button to open the list of Patience Deck contributors (not implemented yet)
-    //% "Contributors"
-    property string contributors_: qsTrId("patience-bt-contributors")
-    //: Page header for the list of Patience Deck contributors (not implemented yet)
-    //% "Contributors of Patience Deck"
-    property string contributors2_: qsTrId("patience-he-contributors")
-    //: Section header for list of developers of Patience Deck (not implemented yet)
-    //% "Developers"
-    property string developers_: qsTrId("patience-se-developers")
-    //: Section header for list of translators of Patience Deck (not implemented yet)
-    //% "Translators"
-    property string translators_: qsTrId("patience-se-translators")
-
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: content.height
@@ -90,19 +76,21 @@ Page {
             }
 
             Paragraph {
-                //% "Main developer: %1"
-                text: qsTrId("patience-la-see_also_manuals")
-                    .arg("Tomi Leppänen")
-                spacing: Theme.paddingSmall
-            }
-
-            Paragraph {
                 linkColor: Theme.primaryColor
                 //% "You may obtain source code and report bugs on Github: <a href=%2>%1</a>"
                 text: qsTrId("patience-la-source_code_report_bugs_github")
                     .arg("github.com/Tomin1/patience-deck")
                     .arg("\"https://github.com/Tomin1/patience-deck/\"")
                 onLinkActivated: Qt.openUrlExternally(link)
+                spacing: Theme.paddingMedium
+            }
+
+            Button {
+                //: Button to open the list of Patience Deck contributors
+                //% "Contributors"
+                text: qsTrId("patience-bt-contributors")
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: pageStack.push(contributorsPage)
             }
 
             SectionHeader {
@@ -165,6 +153,58 @@ Page {
         }
 
         VerticalScrollDecorator {}
+    }
+
+    Component {
+        id: contributorsPage
+
+        Page {
+            allowedOrientations: Orientation.All
+
+            SilicaFlickable {
+                anchors.fill: parent
+                contentHeight: contributorsContent.height
+
+                Column {
+                    id: contributorsContent
+
+                    bottomPadding: Theme.paddingLarge
+                    spacing: Theme.paddingMedium
+                    width: parent.width
+
+                    PageHeader {
+                        //: Page header for the list of Patience Deck contributors
+                        //% "Contributors of Patience Deck"
+                        title: qsTrId("patience-he-contributors")
+                    }
+
+                    SectionHeader {
+                        //: Section header for list of developers of Patience Deck
+                        //% "Developers"
+                        text: qsTrId("patience-se-developers")
+                    }
+
+                    Paragraph {
+                        //% "Main developer: %1"
+                        text: qsTrId("patience-la-see_also_manuals")
+                            .arg("Tomi Leppänen")
+                        spacing: Theme.paddingSmall
+                    }
+
+                    SectionHeader {
+                        //: Section header for list of translators of Patience Deck
+                        //% "Translators"
+                        text: qsTrId("patience-se-translators")
+                    }
+
+                    Paragraph {
+                        text: Patience.translators
+                    }
+                }
+
+                VerticalScrollDecorator { }
+            }
+        }
     }
 
     Component {
