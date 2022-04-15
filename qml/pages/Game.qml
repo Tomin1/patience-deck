@@ -28,8 +28,6 @@ import "components"
 Page {
     id: page
 
-    property int longSide: Math.max(page.height, page.width)
-    property int shortSide: Math.min(page.height, page.width)
     property bool active: page.status === PageStatus.Active
     property bool needsGameStart
 
@@ -48,12 +46,6 @@ Page {
             Patience.startNewGame()
             needsGameStart = false
         }
-    }
-
-    Component.onCompleted: {
-        // Break bindings
-        page.shortSide = Math.min(page.height, page.width)
-        page.longSide = Math.max(page.height, page.width)
     }
 
     Connections {
@@ -80,13 +72,13 @@ Page {
 
                 x: toolbar.width
                 y: 0
-                height: shortSide - messageBar.height
-                width: longSide - toolbar.width
+                height: Screen.width - messageBar.height
+                width: Screen.height - toolbar.width
             }
             PropertyChanges {
                 target: table
-                height: shortSide - messageBar.height
-                width: longSide - toolbar.totalSpaceX
+                height: Screen.width - messageBar.height
+                width: Screen.height - toolbar.totalSpaceX
                 horizontalMargin: Theme.paddingLarge
                 verticalMargin: Theme.paddingSmall
             }
@@ -134,16 +126,16 @@ Page {
             clip: toolbar.expanded || toolbar.animating
             x: 0
             y: toolbar.height
-            height: longSide - messageBar.height - toolbar.height
-            width: shortSide
+            height: Screen.height - messageBar.height - toolbar.height
+            width: Screen.width
 
             Table {
                 id: table
 
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
 
-                height: longSide - toolbar.totalSpaceY - messageBar.height
-                width: shortSide
+                height: Screen.height - toolbar.totalSpaceY - messageBar.height
+                width: Screen.width
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 minimumSideMargin: Theme.horizontalPageMargin
