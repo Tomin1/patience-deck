@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Generate a different set of cards
-# Copyright (C) 2021 Tomi Leppänen
+# Copyright (C) 2021-2022 Tomi Leppänen
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,27 +76,64 @@ def position(elem):
     y = float(elem.get('y', 0))
     return x, y
 
-SPLIT_PATH = re.compile(r'[A-Za-z\s]+')
-POINT = re.compile(r'(?P<x>-?[\d\.]+)(?:,(?P<y>-?[\d\.]+))?')
+POINT = re.compile(r'([A-Za-z])((?: ?-?[\d\.]+(?:,-?[\d\.]+)?)*)?')
+COORDINATE = re.compile(r'(-?[\d\.]+)(?:,(-?[\d\.]+))?')
 
 def iterate_path_points(elem):
     assert elem.tag == '{http://www.w3.org/2000/svg}path', f"{elem.get('id', elem.tag)} is not a path"
-    points = SPLIT_PATH.split(elem.get('d', 'M0,0'))
-    for point in points:
-        if point:
-            p = POINT.match(point)
-            assert p is not None, f"Invalid point in {elem.get('id')}: {point}"
-            yield float(p.group('x')), float(p.group('y') if p.group('y') is not None else p.group('x'))
+    for point in POINT.findall(elem.get('d', 'M0,0')):
+        command, coordinates = point
+        yield command, [tuple(map(float, filter(lambda c: c != '', c))) for c in COORDINATE.findall(coordinates)]
 
 @functools.lru_cache
 def calculate_extremes(elem):
     if elem.tag == '{http://www.w3.org/2000/svg}path':
-        min_x, min_y, max_x, max_y = 2**32-1, 2**32-1, 0, 0
-        for x, y in iterate_path_points(elem):
-            min_x = min(min_x, x)
-            min_y = min(min_y, y)
-            max_x = max(max_x, x)
-            max_y = max(max_y, y)
+        c_x, c_y, min_x, min_y, max_x, max_y = 0, 0, 2**32-1, 2**32-1, 0, 0
+        for command, pos in iterate_path_points(elem):
+            if command in ('z', 'Z'):
+                pass # NOP
+            elif command in ('l', 'L', 'm', 'M'):
+                x, y = pos[0]
+                if command == 'l' or command == 'm':
+                    c_x += x
+                    c_y += y
+                elif command == 'L' or command == 'M':
+                    c_x = x
+                    c_y = y
+                min_x = min(min_x, c_x)
+                min_y = min(min_y, c_y)
+                max_x = max(max_x, c_x)
+                max_y = max(max_y, c_y)
+            elif command in ('h', 'H', 'v', 'V'):
+                for a in pos:
+                    if a[0]:
+                        if command == 'h':
+                            c_x += a[0]
+                        elif command == 'H':
+                            c_x = a[0]
+                        elif command == 'v':
+                            c_y += a[0]
+                        elif command == 'V':
+                            c_y = a[0]
+                    min_x = min(min_x, c_x)
+                    min_y = min(min_y, c_y)
+                    max_x = max(max_x, c_x)
+                    max_y = max(max_y, c_y)
+            elif command in ('A', 'a', 'c', 'C'):
+                # FIXME: This only considers end points
+                x, y = pos[2 if command in ('c', 'C') else 4]
+                if command == 'a' or command == 'c':
+                    c_x += x
+                    c_y += y
+                elif command == 'A' or command == 'C':
+                    c_x = x
+                    c_y = y
+                min_x = min(min_x, c_x)
+                min_y = min(min_y, c_y)
+                max_x = max(max_x, c_x)
+                max_y = max(max_y, c_y)
+            else:
+                print(f"Unsupported command: {command} {pos}")
         return min_x, min_y, max_x, max_y
     elif elem.tag == '{http://www.w3.org/2000/svg}g':
         return float(elem.get('x', 0)), float(elem.get('y', 0)), 0, 0
@@ -203,40 +240,63 @@ def move(tree, elem, dx, dy, copy_tree):
         assert zero(xt + dx - xt2), f"{name} moved by wrong amount {xt + dx - xt2:.03g} in x tree"
         assert zero(yt + dy - yt2), f"{name} moved by wrong amount {yt + dy - yt2:.03g} in y tree"
 
+def substitute(elem, attr, value):
+    elem.set(attr, value)
+
+def adjust(elem, style, value):
+    styles = elem.get('style').split(';')
+    for i, current in enumerate(styles):
+        if current.startswith(style + ':'):
+            break
+    if value[0] == "×":
+        value = float(styles[i].split(':', 1)[1]) * float(value[1:])
+    styles[i] = f"{style}:{value:.03g}"
+    elem.set('style', ";".join(styles))
+
+def modify_element(tree, copy_tree, params, element, actions):
+    appended = []
+    for elem in element.iterchildren():
+        for action in actions.get(elem.get('id'), []):
+            command = action[0]
+            if command == 'D':
+                element.remove(elem)
+            elif command == 'C':
+                assert len(params[action]) in (2, 4), f"Wrong number of params for {action}, expected 2 or 4"
+                appended.append((elem, *params[action]))
+            elif command == 'M':
+                assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
+                dx, dy = params[action]
+                move(tree, elem, dx, dy, copy_tree)
+            elif command == 'S':
+                assert len(params[action]) in (2, 3, 4), f"Wrong number of params for {action}, expected 2, 3 or 4"
+                substitute(elem, *params[action])
+            elif command == 'A':
+                assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
+                adjust(elem, *params[action])
+        if elem.tag == '{http://www.w3.org/2000/svg}g':
+            modify_element(tree, copy_tree, params, elem, actions)
+    for elem, *pos in appended:
+        used = elem.get('id')
+        attrib = { '{http://www.w3.org/1999/xlink}href': '#' + used }
+        if len(pos) == 2:
+            dx, dy = pos
+            attrib['transform'] = f"translate({dx:.04f},{dy:.04f})"
+        elif len(pos) == 4:
+            x, y = calculate_position(tree, used, elem)
+            w, h = calculate_size(tree, elem)
+            dx, dy, u, v = pos
+            attrib['transform'] = (f"matrix({u:.04f},0,0,{v:.04f},"
+                                   f"{u * -x + x - (u * w - w) / 2 + dx:.04f},"
+                                   f"{v * -y + y - (v * h - h) / 2 + dy:.04f})")
+        elem.addnext(elem.makeelement('use', attrib))
+
 def modify(tree, copy_tree, actions):
     root = tree.getroot()
-    params = dict(filter(lambda x: x[0][0] in ('C', 'M'), actions.items()))
+    params = dict(filter(lambda x: x[0][0] in ('A', 'C', 'M', 'S'), actions.items()))
     for card in root:
         name = card.get('id')
-        if name not in actions.keys():
-            continue
-        appended = []
-        for elem in card.iterchildren():
-            for action in actions[name].get(elem.get('id'), []):
-                command = action[0]
-                if command == 'D':
-                    card.remove(elem)
-                elif command == 'C':
-                    assert len(params[action]) in (2, 4), f"Wrong number of params for {action}, expected 2 or 4"
-                    appended.append((elem, *params[action]))
-                elif command == 'M':
-                    assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
-                    dx, dy = params[action]
-                    move(tree, elem, dx, dy, copy_tree)
-        for elem, *pos in appended:
-            used = elem.get('id')
-            attrib = { '{http://www.w3.org/1999/xlink}href': '#' + used }
-            if len(pos) == 2:
-                dx, dy = pos
-                attrib['transform'] = f"translate({dx:.04f},{dy:.04f})"
-            elif len(pos) == 4:
-                x, y = calculate_position(tree, used, elem)
-                w, h = calculate_size(tree, elem)
-                dx, dy, u, v = pos
-                attrib['transform'] = (f"matrix({u:.04f},0,0,{v:.04f},"
-                                       f"{u * -x + x - (u * w - w) / 2 + dx:.04f},"
-                                       f"{v * -y + y - (v * h - h) / 2 + dy:.04f})")
-            elem.addnext(elem.makeelement('use', attrib))
+        if name in actions.keys():
+            modify_element(tree, copy_tree, params, card, actions[name])
 
 def main():
     parser = argparse.ArgumentParser()
