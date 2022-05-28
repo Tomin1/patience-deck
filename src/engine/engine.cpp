@@ -20,7 +20,7 @@
 #include <QRegularExpression>
 #include "constants.h"
 #include "engine.h"
-#include "engine_p.h"
+#include "engineinternals.h"
 #include "gameoptionmodel.h"
 #include "interface.h"
 #include "logging.h"
@@ -89,7 +89,7 @@ QDebug operator<<(QDebug debug, const CardData *data)
     return debug.space();
 }
 
-EnginePrivate::EnginePrivate(QObject *parent)
+EngineInternals::EngineInternals(QObject *parent)
     : QObject(parent)
     , m_delayedCallTimer(nullptr)
     , m_features(NoFeatures)
@@ -100,7 +100,7 @@ EnginePrivate::EnginePrivate(QObject *parent)
 {
 }
 
-EnginePrivate::~EnginePrivate()
+EngineInternals::~EngineInternals()
 {
     if (m_delayedCallTimer) {
         m_delayedCallTimer->stop();
@@ -108,7 +108,7 @@ EnginePrivate::~EnginePrivate()
     }
 }
 
-EnginePrivate *EnginePrivate::instance()
+EngineInternals *EngineInternals::instance()
 {
     if (!Engine::s_engine)
         qCCritical(lcEngine) << "Engine must have been created when calling instance()";
@@ -128,7 +128,7 @@ Engine *Engine::instance()
 
 Engine::Engine(QObject *parent)
     : QObject(parent)
-    , d_ptr(new EnginePrivate(this))
+    , d_ptr(new EngineInternals(this))
     , m_action(0)
 #ifndef ENGINE_EXERCISER
     , m_stateConf(Constants::ConfPath + StateConf)
@@ -228,7 +228,7 @@ void Engine::loadGame(const QString &gameFile, bool restored)
         d_ptr->die("Loading new game failed");
     } else {
         qCDebug(lcEngine) << "Loaded" << gameFile;
-        d_ptr->m_state = restored ? EnginePrivate::RestoredState : EnginePrivate::LoadedState;
+        d_ptr->m_state = restored ? EngineInternals::RestoredState : EngineInternals::LoadedState;
         d_ptr->m_gameFile = gameFile;
 #ifndef ENGINE_EXERCISER
         GameOptionList options = d_ptr->getGameOptions();
@@ -245,13 +245,13 @@ void Engine::loadGame(const QString &gameFile, bool restored)
 }
 
 void Engine::start() {
-    startEngine(d_ptr->m_state != EnginePrivate::RestoredState);
+    startEngine(d_ptr->m_state != EngineInternals::RestoredState);
 }
 
 void Engine::startEngine(bool newSeed)
 {
     qCDebug(lcEngine) << "Starting engine";
-    if (d_ptr->m_state == EnginePrivate::UninitializedState) {
+    if (d_ptr->m_state == EngineInternals::UninitializedState) {
         d_ptr->die("Game must be initialized first");
         return;
     }
@@ -263,7 +263,7 @@ void Engine::startEngine(bool newSeed)
             qCInfo(lcEngine) << "No moves left at the beginning, starting over";
 
         d_ptr->resetGenerator(newSeed);
-        d_ptr->m_state = EnginePrivate::BeginState;
+        d_ptr->m_state = EngineInternals::BeginState;
         bool error = false;
         scm_c_catch(SCM_BOOL_T, Scheme::startNewGame, d_ptr,
                     Scheme::catchHandler, &error, Scheme::preUnwindHandler, &error);
@@ -276,7 +276,7 @@ void Engine::startEngine(bool newSeed)
         newSeed = true; // If we need to try again, use a new seed anyway
     } while (d_ptr->isGameOver() && count++ < MaxRetries);
 
-    d_ptr->m_state = EnginePrivate::RunningState;
+    d_ptr->m_state = EngineInternals::RunningState;
     emit gameStarted();
 
     d_ptr->testGameOver();
@@ -284,7 +284,7 @@ void Engine::startEngine(bool newSeed)
 
 void Engine::restart()
 {
-    if (d_ptr->m_state < EnginePrivate::BeginState)
+    if (d_ptr->m_state < EngineInternals::BeginState)
         d_ptr->die("Game has not been started yet. Can not restart!");
     else
         startEngine(false);
@@ -296,8 +296,8 @@ void Engine::undoMove()
         qCWarning(lcEngine) << "Can not undo move while an action or a delayed call is ongoing";
         return;
     }
-    if (d_ptr->m_state == EnginePrivate::GameOverState) {
-        d_ptr->m_state = EnginePrivate::RunningState;
+    if (d_ptr->m_state == EngineInternals::GameOverState) {
+        d_ptr->m_state = EngineInternals::RunningState;
         emit gameContinued();
     }
 
@@ -342,7 +342,7 @@ void Engine::getHint()
 {
     SCM data;
     QString message = QStringLiteral("Hints are not supported");
-    if (!d_ptr->makeSCMCall(EnginePrivate::HintLambda, nullptr, 0, &data)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::HintLambda, nullptr, 0, &data)) {
         d_ptr->die("Can not get hint");
         return;
     }
@@ -395,7 +395,7 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
     args[1] = Scheme::slotToSCM(cards);
 
     SCM rv;
-    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonPressedLambda, args, 2, &rv)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ButtonPressedLambda, args, 2, &rv)) {
         d_ptr->die("Can not start drag");
         return false;
     }
@@ -435,7 +435,7 @@ bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
     bool could = false;
     if (m_action != id)
         qCWarning(lcEngine) << "Tried to check drop for wrong action" << id << ", current" << m_action;
-    else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
+    else if (!d_ptr->hasFeature(EngineInternals::FeatureDroppable))
         qCDebug(lcEngine) << "No droppable feature";
     else if (cards.isEmpty())
         qCWarning(lcEngine) << "Tried to drop empty stack of cards";
@@ -453,7 +453,7 @@ bool Engine::checkDrop(quint32 id, int startSlotId, int endSlotId, const CardLis
     args[2] = scm_from_int(endSlotId);
 
     SCM rv;
-    if (!d_ptr->makeSCMCall(EnginePrivate::DroppableLambda, args, 3, &rv)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::DroppableLambda, args, 3, &rv)) {
         d_ptr->die("Can not check if dropping is allowed");
         return false;
     }
@@ -469,7 +469,7 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     bool could = false;
     if (m_action != id)
         qCWarning(lcEngine) << "Tried to drop cards for wrong action" << id << ", current" << m_action;
-    else if (!d_ptr->hasFeature(EnginePrivate::FeatureDroppable))
+    else if (!d_ptr->hasFeature(EngineInternals::FeatureDroppable))
         qCDebug(lcEngine) << "No droppable feature";
     else if (cards.isEmpty())
         qCWarning(lcEngine) << "Tried to drop empty stack of cards";
@@ -491,7 +491,7 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
     args[2] = scm_from_int(endSlotId);
 
     SCM rv;
-    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonReleasedLambda, args, 3, &rv)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ButtonReleasedLambda, args, 3, &rv)) {
         d_ptr->die("Can not drop");
         return false;
     }
@@ -531,7 +531,7 @@ bool Engine::click(quint32 id, int slotId)
     args[0] = scm_from_int(slotId);
 
     SCM rv;
-    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonClickedLambda, args, 1, &rv)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ButtonClickedLambda, args, 1, &rv)) {
         d_ptr->die("Can not click");
         return false;
     }
@@ -567,7 +567,7 @@ bool Engine::doubleClick(quint32 id, int slotId)
     args[0] = scm_from_int(slotId);
 
     SCM rv;
-    if (!d_ptr->makeSCMCall(EnginePrivate::ButtonDoubleClickedLambda, args, 1, &rv)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ButtonDoubleClickedLambda, args, 1, &rv)) {
         d_ptr->die("Can not double click");
         return false;
     }
@@ -588,7 +588,7 @@ void Engine::requestGameOptions()
     emit gameOptions(d_ptr->getGameOptions());
 }
 
-GameOptionList EnginePrivate::getGameOptions()
+GameOptionList EngineInternals::getGameOptions()
 {
     SCM optionsList;
     if (!makeSCMCall(GetOptionsLambda, NULL, 0, &optionsList)) {
@@ -644,7 +644,7 @@ bool Engine::setGameOption(const GameOption &option)
     qCDebug(lcOptions) << "Setting" << option.displayName << "at" << option.index << "to" << option.set;
 
     SCM optionsList;
-    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get game option");
         return false;
     }
@@ -663,7 +663,7 @@ bool Engine::setGameOption(const GameOption &option)
 
     scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
 
-    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ApplyOptionsLambda, &optionsList, 1, NULL)) {
         qCWarning(lcEngine) << "Can not apply option! Not setting game options";
         return false;
     }
@@ -676,7 +676,7 @@ bool Engine::setGameOptions(const GameOptionList &options)
 {
     qCDebug(lcOptions) << "Setting" << options.count() << "options";
     SCM optionsList;
-    if (!d_ptr->makeSCMCall(EnginePrivate::GetOptionsLambda, NULL, 0, &optionsList)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get options");
         return false;
     }
@@ -701,7 +701,7 @@ bool Engine::setGameOptions(const GameOptionList &options)
         scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
     }
 
-    if (!d_ptr->makeSCMCall(EnginePrivate::ApplyOptionsLambda, &optionsList, 1, NULL)) {
+    if (!d_ptr->makeSCMCall(EngineInternals::ApplyOptionsLambda, &optionsList, 1, NULL)) {
         qCWarning(lcEngine) << "Can not apply options! Not setting game options";
         scm_dynwind_end();
         return false;
@@ -724,8 +724,8 @@ void Engine::resetSavedState()
 
 void Engine::restoreSavedState()
 {
-    if (d_ptr->m_state < EnginePrivate::GameOverState
-            && d_ptr->m_state > EnginePrivate::UninitializedState) {
+    if (d_ptr->m_state < EngineInternals::GameOverState
+            && d_ptr->m_state > EngineInternals::UninitializedState) {
         qCWarning(lcEngine) << "Engine running, can not set seed";
     } else {
         auto state = readSavedState(m_stateConf);
@@ -761,18 +761,18 @@ Engine::ReadSavedState Engine::readSavedState(const MGConfItem &stateConf)
 }
 #endif // ENGINE_EXERCISER
 
-void EnginePrivate::updateDealable()
+void EngineInternals::updateDealable()
 {
     SCM rv;
     if (hasFeature(FeatureDealable)) {
-        if (!makeSCMCall(EnginePrivate::DealableLambda, nullptr, 0, &rv))
+        if (!makeSCMCall(EngineInternals::DealableLambda, nullptr, 0, &rv))
             die("Can not check dealable");
         else
             setCanDeal(scm_is_true(rv));
     }
 }
 
-void EnginePrivate::recordMove(int slotId)
+void EngineInternals::recordMove(int slotId)
 {
     qCDebug(lcEngine) << "Start recording move for slot" << slotId
                       << "with" << m_cardSlots.value(slotId).count() << "cards";
@@ -791,7 +791,7 @@ void EnginePrivate::recordMove(int slotId)
     scm_remember_upto_here_2(args[0], args[1]);
 }
 
-void EnginePrivate::endMove(bool fromDelayedCall)
+void EngineInternals::endMove(bool fromDelayedCall)
 {
     qCDebug(lcEngine) << "End recorded move";
     if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
@@ -809,7 +809,7 @@ void EnginePrivate::endMove(bool fromDelayedCall)
     testGameOver();
 }
 
-void EnginePrivate::discardMove()
+void EngineInternals::discardMove()
 {
     qCDebug(lcEngine) << "Discard recorded move";
     if (!makeSCMCall(QStringLiteral("discard-move"), nullptr, 0, nullptr))
@@ -820,7 +820,7 @@ void EnginePrivate::discardMove()
     m_recordingMove = false;
 }
 
-bool EnginePrivate::isGameOver()
+bool EngineInternals::isGameOver()
 {
     SCM rv;
     // This is called GAME_OVER_LAMBDA in GNOME Aisleriot
@@ -830,7 +830,7 @@ bool EnginePrivate::isGameOver()
     return !scm_is_true(rv);
 }
 
-bool EnginePrivate::isWinningGame()
+bool EngineInternals::isWinningGame()
 {
     SCM rv;
     if (!makeSCMCall(WinningGameLambda, nullptr, 0, &rv))
@@ -838,12 +838,12 @@ bool EnginePrivate::isWinningGame()
     return scm_is_true(rv);
 }
 
-bool EnginePrivate::isInitialized()
+bool EngineInternals::isInitialized()
 {
     return m_state > BeginState;
 }
 
-void EnginePrivate::clear(bool resetData)
+void EngineInternals::clear(bool resetData)
 {
     if (resetData) {
         m_state = UninitializedState;
@@ -857,7 +857,7 @@ void EnginePrivate::clear(bool resetData)
     emit engine()->clearData();
 }
 
-void EnginePrivate::testGameOver()
+void EngineInternals::testGameOver()
 {
     if (m_state < GameOverState) {
         if (isGameOver()) {
@@ -867,49 +867,49 @@ void EnginePrivate::testGameOver()
     }
 }
 
-void EnginePrivate::setCanUndo(bool canUndo)
+void EngineInternals::setCanUndo(bool canUndo)
 {
     qCDebug(lcEngine) << (canUndo ? "Can" : "Can't") << "undo";
     emit engine()->canUndo(canUndo);
 }
 
-void EnginePrivate::setCanRedo(bool canRedo)
+void EngineInternals::setCanRedo(bool canRedo)
 {
     qCDebug(lcEngine) << (canRedo ? "Can" : "Can't") << "redo";
     emit engine()->canRedo(canRedo);
 }
 
-void EnginePrivate::setCanDeal(bool canDeal)
+void EngineInternals::setCanDeal(bool canDeal)
 {
     qCDebug(lcEngine) << (canDeal ? "Can" : "Can't") << "deal";
     emit engine()->canDeal(canDeal);
 }
 
-void EnginePrivate::setScore(int score)
+void EngineInternals::setScore(int score)
 {
     qCDebug(lcEngine) << "Score updated to" << score;
     emit engine()->score(score);
 }
 
-void EnginePrivate::setMessage(QString message)
+void EngineInternals::setMessage(QString message)
 {
     qCDebug(lcEngine) << "Message changed to" << message;
     emit engine()->message(message);
 }
 
-void EnginePrivate::setWidth(double width)
+void EngineInternals::setWidth(double width)
 {
     qCDebug(lcEngine) << "Width changed to" << width;
     emit engine()->widthChanged(width);
 }
 
-void EnginePrivate::setHeight(double height)
+void EngineInternals::setHeight(double height)
 {
     qCDebug(lcEngine) << "Height changed to" << height;
     emit engine()->heightChanged(height);
 }
 
-void EnginePrivate::addSlot(int id, const CardList &cards, SlotType type,
+void EngineInternals::addSlot(int id, const CardList &cards, SlotType type,
                             double x, double y, int expansionDepth,
                             bool expandedDown, bool expandedRight)
 {
@@ -927,7 +927,7 @@ void EnginePrivate::addSlot(int id, const CardList &cards, SlotType type,
     emit engine()->newSlot(id, cards, type, x, y, expansionDepth, expandedDown, expandedRight);
 }
 
-const CardList &EnginePrivate::getSlot(int slot) const
+const CardList &EngineInternals::getSlot(int slot) const
 {
     static CardList empty;
     if (slot < 0 || slot >= m_cardSlots.size())
@@ -935,7 +935,7 @@ const CardList &EnginePrivate::getSlot(int slot) const
     return m_cardSlots.at(slot);
 }
 
-void EnginePrivate::setCards(int id, const CardList &cards)
+void EngineInternals::setCards(int id, const CardList &cards)
 {
     if (cards.isEmpty()) {
         if (!m_cardSlots.at(id).isEmpty()) {
@@ -979,45 +979,45 @@ void EnginePrivate::setCards(int id, const CardList &cards)
         die("Cards don't match!");
 }
 
-void EnginePrivate::setExpansionToDown(int id, double expansion)
+void EngineInternals::setExpansionToDown(int id, double expansion)
 {
     emit Engine::instance()->setExpansionToDown(id, expansion);
 }
 
-void EnginePrivate::setExpansionToRight(int id, double expansion)
+void EngineInternals::setExpansionToRight(int id, double expansion)
 {
     emit Engine::instance()->setExpansionToRight(id, expansion);
 }
 
-void EnginePrivate::setLambda(EnginePrivate::Lambda lambda, SCM func)
+void EngineInternals::setLambda(EngineInternals::Lambda lambda, SCM func)
 {
     m_lambdas[lambda] = func;
 }
 
-uint EnginePrivate::getFeatures()
+uint EngineInternals::getFeatures()
 {
     return m_features;
 }
 
-void EnginePrivate::setFeatures(uint features)
+void EngineInternals::setFeatures(uint features)
 {
-    qCDebug(lcEngine) << "Setting features to" << static_cast<EnginePrivate::GameFeatures>(features);
-    m_features = static_cast<EnginePrivate::GameFeatures>(features);
+    qCDebug(lcEngine) << "Setting features to" << static_cast<EngineInternals::GameFeatures>(features);
+    m_features = static_cast<EngineInternals::GameFeatures>(features);
     emit engine()->showScore(!hasFeature(FeatureScoreHidden));
     emit engine()->showDeal(hasFeature(FeatureDealable));
 }
 
-bool EnginePrivate::hasFeature(GameFeature feature)
+bool EngineInternals::hasFeature(GameFeature feature)
 {
     return m_features.testFlag(feature);
 }
 
-int EnginePrivate::getTimeout()
+int EngineInternals::getTimeout()
 {
     return m_timeout;
 }
 
-void EnginePrivate::setTimeout(int timeout)
+void EngineInternals::setTimeout(int timeout)
 {
     if (m_timeout != timeout) {
         m_timeout = timeout;
@@ -1025,12 +1025,12 @@ void EnginePrivate::setTimeout(int timeout)
     }
 }
 
-bool EnginePrivate::hasDelayedCall() const
+bool EngineInternals::hasDelayedCall() const
 {
     return m_delayedCallTimer;
 }
 
-bool EnginePrivate::setupDelayedCall(std::function<void()> callback, std::function<void()> destructCallback)
+bool EngineInternals::setupDelayedCall(std::function<void()> callback, std::function<void()> destructCallback)
 {
     if (m_delayedCallTimer)
         return false;
@@ -1050,7 +1050,7 @@ bool EnginePrivate::setupDelayedCall(std::function<void()> callback, std::functi
     return true;
 }
 
-void EnginePrivate::clearDelayedCall()
+void EngineInternals::clearDelayedCall()
 {
     if (m_delayedCallTimer) {
         m_delayedCallTimer->stop();
@@ -1059,12 +1059,12 @@ void EnginePrivate::clearDelayedCall()
     }
 }
 
-quint32 EnginePrivate::getRandomValue(quint32 first, quint32 last) {
+quint32 EngineInternals::getRandomValue(quint32 first, quint32 last) {
     std::uniform_int_distribution<quint32> distribution(first, last);
     return distribution(m_generator);
 }
 
-void EnginePrivate::resetGenerator(bool generateNewSeed)
+void EngineInternals::resetGenerator(bool generateNewSeed)
 {
     static std::random_device seedGenerator;
     if (generateNewSeed)
@@ -1072,17 +1072,17 @@ void EnginePrivate::resetGenerator(bool generateNewSeed)
     m_generator = std::mt19937(m_seed);
 }
 
-void EnginePrivate::die(const char *message)
+void EngineInternals::die(const char *message)
 {
     emit engine()->engineFailure(QString(message));
 }
 
-bool EnginePrivate::makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval)
+bool EngineInternals::makeSCMCall(Lambda lambda, SCM *args, size_t n, SCM *retval)
 {
     return makeSCMCall(m_lambdas[lambda], args, n, retval);
 }
 
-bool EnginePrivate::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
+bool EngineInternals::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
 {
     Interface::Call call = { lambda, args, n };
     bool error = false;
@@ -1099,7 +1099,7 @@ bool EnginePrivate::makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval)
     return true;
 }
 
-bool EnginePrivate::makeSCMCall(QString name, SCM *args, size_t n, SCM *retval)
+bool EngineInternals::makeSCMCall(QString name, SCM *args, size_t n, SCM *retval)
 {
     SCM lambda = scm_c_eval_string(name.toUtf8().data());
     if (!makeSCMCall(lambda, args, n, retval))
@@ -1108,7 +1108,7 @@ bool EnginePrivate::makeSCMCall(QString name, SCM *args, size_t n, SCM *retval)
     return true;
 }
 
-Engine *EnginePrivate::engine()
+Engine *EngineInternals::engine()
 {
     return static_cast<Engine *>(parent());
 }

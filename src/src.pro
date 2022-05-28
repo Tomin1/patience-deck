@@ -38,7 +38,7 @@ HEADERS += \
     common/logging.h \
     engine/enginedata.h \
     engine/engine.h \
-    engine/engine_p.h \
+    engine/engineinternals.h \
     engine/interface.h \
     manager/manager.h \
     manager/queue.h \

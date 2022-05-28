@@ -22,7 +22,7 @@
 #include "helper.h"
 #include "checker.h"
 #include "engine.h"
-#include "engine_p.h"
+#include "engineinternals.h"
 
 EngineHelper::EngineHelper(QObject *parent)
     : QObject(parent)
@@ -53,7 +53,7 @@ bool EngineHelper::parseArgs()
 
     if (parser.isSet("seed")) {
         bool ok;
-        EnginePrivate::instance()->m_seed = parser.value("seed").toULongLong(&ok);
+        EngineInternals::instance()->m_seed = parser.value("seed").toULongLong(&ok);
         if (!ok)
             return false;
     }
@@ -101,7 +101,7 @@ void EngineHelper::handleNewSlot(int id, const CardList &cards, int type, double
 
 quint32 EngineHelper::getSeed() const
 {
-    return static_cast<quint32>(EnginePrivate::instance()->m_seed);
+    return static_cast<quint32>(EngineInternals::instance()->m_seed);
 }
 
 void EngineHelper::move(const QVariantMap &from, const QVariantMap &to)
@@ -163,7 +163,7 @@ CardData EngineHelper::toCard(const QVariantMap &map)
 
 int EngineHelper::findSlot(const CardData &needle)
 {
-    auto engine = EnginePrivate::instance();
+    auto engine = EngineInternals::instance();
     for (auto it = engine->m_cardSlots.constBegin(); it != engine->m_cardSlots.constEnd(); it++) {
         for (const auto &card : it.value()) {
             if (needle.equalValue(card))
@@ -175,7 +175,7 @@ int EngineHelper::findSlot(const CardData &needle)
 
 int EngineHelper::findSlotByType(Slots type, bool emptyRequired)
 {
-    auto engine = EnginePrivate::instance();
+    auto engine = EngineInternals::instance();
     for (auto it = m_slotTypes.constBegin(); it != m_slotTypes.constEnd(); it++) {
         if (it.value() == type) {
             if (!emptyRequired || engine->m_cardSlots[it.key()].isEmpty())
@@ -187,7 +187,7 @@ int EngineHelper::findSlotByType(Slots type, bool emptyRequired)
 
 CardList EngineHelper::getCards(int slot, const CardData &first)
 {
-    auto engine = EnginePrivate::instance();
+    auto engine = EngineInternals::instance();
     CardList cards = engine->m_cardSlots[slot];
     int i = cards.indexOf(first);
     return cards.mid(i);

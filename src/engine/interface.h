@@ -20,7 +20,7 @@
 
 #include <libguile.h>
 #include <QString>
-#include "engine_p.h"
+#include "engineinternals.h"
 
 namespace Interface {
 

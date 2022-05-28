@@ -17,7 +17,7 @@
 
 #include <QRegularExpression>
 #include "enginedata.h"
-#include "engine_p.h"
+#include "engineinternals.h"
 #include "interface.h"
 #include "logging.h"
 
@@ -162,10 +162,10 @@ SCM Scheme::slotToSCM(const CardList &slot)
 
 SCM Scheme::startNewGame(void *data)
 {
-    EnginePrivate *engine = static_cast<EnginePrivate *>(data);
+    EngineInternals *engine = static_cast<EngineInternals *>(data);
 
     SCM size = SCM_UNDEFINED;
-    engine->makeSCMCall(EnginePrivate::NewGameLambda, nullptr, 0, &size);
+    engine->makeSCMCall(EngineInternals::NewGameLambda, nullptr, 0, &size);
     engine->setWidth(scm_to_double(SCM_CAR(size)));
     engine->setHeight(scm_to_double(SCM_CADR(size)));
     scm_remember_upto_here_1(size);
@@ -210,20 +210,20 @@ void *Interface::init(void *data)
 
 SCM Interface::setFeatureWord(SCM features)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setFeatures(scm_to_uint(features));
     return SCM_EOL;
 }
 
 SCM Interface::getFeatureWord()
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     return scm_from_uint(engine->getFeatures());
 }
 
 SCM Interface::setStatusbarMessage(SCM newMessage)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     if (!scm_is_string(newMessage)) {
         qCWarning(lcScheme) << "Game wants to set message which is not a string";
         return SCM_EOL;
@@ -242,7 +242,7 @@ SCM Interface::setStatusbarMessage(SCM newMessage)
 
 SCM Interface::resetSurface()
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     qCDebug(lcScheme) << "Reseting surface";
     engine->clear();
     return SCM_EOL;
@@ -250,7 +250,7 @@ SCM Interface::resetSurface()
 
 SCM Interface::addCardSlot(SCM slotData)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     if (engine->isInitialized()) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
                          scm_list_1(scm_from_utf8_string("Cannot add a new slot after the game has started.")));
@@ -307,28 +307,28 @@ SCM Interface::addCardSlot(SCM slotData)
 
 SCM Interface::getCardSlot(SCM slotId)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     const CardList &slot = engine->getSlot(scm_to_int(slotId));
     return scm_cons(slotId, scm_cons(Scheme::slotToSCM(slot), SCM_EOL));
 }
 
 SCM Interface::setCards(SCM slotId, SCM newCards)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setCards(scm_to_int(slotId), Scheme::cardsFromSlot(newCards));
     return SCM_BOOL_T;
 }
 
 SCM Interface::setSlotYExpansion(SCM slotId, SCM value)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setExpansionToDown(scm_to_int(slotId), scm_to_double(value));
     return SCM_EOL;
 }
 
 SCM Interface::setSlotXExpansion(SCM slotId, SCM value)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setExpansionToRight(scm_to_int(slotId), scm_to_double(value));
     return SCM_EOL;
 }
@@ -337,36 +337,36 @@ SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLam
                          SCM clickedLambda, SCM doubleClickedLambda, SCM movesLeftLambda,
                          SCM winningGameLambda, SCM hintLambda, SCM rest)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     qCDebug(lcScheme) << "Setting all lambdas";
-    engine->setLambda(EnginePrivate::NewGameLambda, startGameLambda);
-    engine->setLambda(EnginePrivate::ButtonPressedLambda, pressedLambda);
-    engine->setLambda(EnginePrivate::ButtonReleasedLambda, releasedLambda);
-    engine->setLambda(EnginePrivate::ButtonClickedLambda, clickedLambda);
-    engine->setLambda(EnginePrivate::ButtonDoubleClickedLambda, doubleClickedLambda);
-    engine->setLambda(EnginePrivate::MovesLeftLambda, movesLeftLambda);
-    engine->setLambda(EnginePrivate::WinningGameLambda, winningGameLambda);
-    engine->setLambda(EnginePrivate::HintLambda, hintLambda);
+    engine->setLambda(EngineInternals::NewGameLambda, startGameLambda);
+    engine->setLambda(EngineInternals::ButtonPressedLambda, pressedLambda);
+    engine->setLambda(EngineInternals::ButtonReleasedLambda, releasedLambda);
+    engine->setLambda(EngineInternals::ButtonClickedLambda, clickedLambda);
+    engine->setLambda(EngineInternals::ButtonDoubleClickedLambda, doubleClickedLambda);
+    engine->setLambda(EngineInternals::MovesLeftLambda, movesLeftLambda);
+    engine->setLambda(EngineInternals::WinningGameLambda, winningGameLambda);
+    engine->setLambda(EngineInternals::HintLambda, hintLambda);
 
-    engine->setLambda(EnginePrivate::GetOptionsLambda, SCM_CAR(rest));
+    engine->setLambda(EngineInternals::GetOptionsLambda, SCM_CAR(rest));
     rest = SCM_CDR(rest);
-    engine->setLambda(EnginePrivate::ApplyOptionsLambda, SCM_CAR(rest));
+    engine->setLambda(EngineInternals::ApplyOptionsLambda, SCM_CAR(rest));
     rest = SCM_CDR(rest);
-    engine->setLambda(EnginePrivate::TimeoutLambda, SCM_CAR(rest));
+    engine->setLambda(EngineInternals::TimeoutLambda, SCM_CAR(rest));
     rest = SCM_CDR(rest);
 
-    if (engine->hasFeature(EnginePrivate::FeatureDroppable)) {
-        engine->setLambda(EnginePrivate::DroppableLambda, SCM_CAR(rest));
+    if (engine->hasFeature(EngineInternals::FeatureDroppable)) {
+        engine->setLambda(EngineInternals::DroppableLambda, SCM_CAR(rest));
         rest = SCM_CDR(rest);
     } else {
-        engine->setLambda(EnginePrivate::DroppableLambda, SCM_UNDEFINED);
+        engine->setLambda(EngineInternals::DroppableLambda, SCM_UNDEFINED);
     }
 
-    if (engine->hasFeature(EnginePrivate::FeatureDealable)) {
-        engine->setLambda(EnginePrivate::DealableLambda, SCM_CAR(rest));
+    if (engine->hasFeature(EngineInternals::FeatureDealable)) {
+        engine->setLambda(EngineInternals::DealableLambda, SCM_CAR(rest));
         rest = SCM_CDR(rest);
     } else {
-        engine->setLambda(EnginePrivate::DealableLambda, SCM_UNDEFINED);
+        engine->setLambda(EngineInternals::DealableLambda, SCM_UNDEFINED);
     }
 
     return SCM_EOL;
@@ -375,14 +375,14 @@ SCM Interface::setLambda(SCM startGameLambda, SCM pressedLambda, SCM releasedLam
 SCM Interface::setLambdaX(SCM symbol, SCM lambda)
 {
     qCDebug(lcScheme) << "Setting a lambda";
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     // Basically copy-paste from aisleriot/src/game.c:scm_set_lambda_x
     // TODO: maybe rewrite to use hash table instead
 
     const char *lambdaName = LambdaNames;
-    for (int i = 0; i < EnginePrivate::LambdaCount; ++i) {
+    for (int i = 0; i < EngineInternals::LambdaCount; ++i) {
         if (scm_is_true(scm_equal_p(symbol, scm_from_locale_symbol(lambdaName)))) {
-            engine->setLambda(static_cast<EnginePrivate::Lambda>(i), lambda);
+            engine->setLambda(static_cast<EngineInternals::Lambda>(i), lambda);
             return SCM_EOL;
         }
 
@@ -395,7 +395,7 @@ SCM Interface::setLambdaX(SCM symbol, SCM lambda)
 
 SCM Interface::getRandomValue(SCM range)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     return scm_from_uint32(engine->getRandomValue(0, scm_to_int(range)-1));
 }
 
@@ -407,7 +407,7 @@ SCM Interface::clickToMoveP(void)
 
 SCM Interface::updateScore(SCM newScore)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     char *score = scm_to_utf8_string(newScore);
     bool ok;
     int value = QString::fromUtf8(score).remove(QRegularExpression("[^0-9]")).toInt(&ok);
@@ -423,13 +423,13 @@ SCM Interface::updateScore(SCM newScore)
 
 SCM Interface::getTimeout(void)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     return scm_from_int(engine->getTimeout());
 }
 
 SCM Interface::setTimeout(SCM newTimeout)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setTimeout(scm_to_int(newTimeout));
     qCDebug(lcScheme) << "Set timeout to" << engine->getTimeout();
     return newTimeout;
@@ -437,7 +437,7 @@ SCM Interface::setTimeout(SCM newTimeout)
 
 SCM Interface::delayedCall(SCM callback)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     qCDebug(lcScheme) << "Creating delayed call";
     if (engine->hasDelayedCall()) {
         return scm_throw(scm_from_locale_symbol("aisleriot-invalid-call"),
@@ -454,21 +454,21 @@ SCM Interface::delayedCall(SCM callback)
 
 SCM Interface::undoSetSensitive(SCM state)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setCanUndo(scm_is_true(state));
     return SCM_EOL;
 }
 
 SCM Interface::redoSetSensitive(SCM state)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setCanRedo(scm_is_true(state));
     return SCM_EOL;
 }
 
 SCM Interface::dealableSetSensitive(SCM state)
 {
-    auto *engine = EnginePrivate::instance();
+    auto *engine = EngineInternals::instance();
     engine->setCanDeal(scm_is_true(state));
     return SCM_EOL;
 }

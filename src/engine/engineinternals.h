@@ -29,7 +29,7 @@
 
 class Engine;
 class EngineHelper;
-class EnginePrivate : public QObject
+class EngineInternals : public QObject
 {
     Q_OBJECT
 
@@ -72,9 +72,9 @@ public:
     };
     Q_ENUM(GameState)
 
-    explicit EnginePrivate(QObject *parent = nullptr);
-    ~EnginePrivate();
-    static EnginePrivate *instance();
+    explicit EngineInternals(QObject *parent = nullptr);
+    ~EngineInternals();
+    static EngineInternals *instance();
 
     GameOptionList getGameOptions();
     void updateDealable();

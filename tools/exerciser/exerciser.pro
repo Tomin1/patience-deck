@@ -31,7 +31,7 @@ HEADERS += \
     src/checker.h \
     src/helper.h \
     ../../src/engine/engine.h \
-    ../../src/engine/engine_p.h \
+    ../../src/engine/engineinternals.h \
     ../../src/engine/enginedata.h \
     ../../src/engine/interface.h \
     ../../src/manager/queue.h \

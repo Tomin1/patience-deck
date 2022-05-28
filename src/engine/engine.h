@@ -29,7 +29,7 @@
 class QCommandLineParser;
 
 class EngineHelper;
-class EnginePrivate;
+class EngineInternals;
 class Engine : public QObject
 {
     Q_OBJECT
@@ -113,7 +113,7 @@ signals:
     void moveEnded();
 
 private:
-    friend EnginePrivate;
+    friend EngineInternals;
 
 #ifdef ENGINE_EXERCISER
     friend EngineHelper;
@@ -141,7 +141,7 @@ private:
 
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
-    EnginePrivate *d_ptr;
+    EngineInternals *d_ptr;
     quint32 m_action;
 #ifndef ENGINE_EXERCISER
     MGConfItem m_stateConf;
