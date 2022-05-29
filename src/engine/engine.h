@@ -48,6 +48,7 @@ public:
         RemovalAction,
         FlippingAction,
         ClearingAction,
+        MoveEndedAction,
     };
     Q_ENUM(ActionType)
 

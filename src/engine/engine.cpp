@@ -25,8 +25,11 @@
 #include "interface.h"
 #include "logging.h"
 
+namespace {
 const int MaxRetries = 10;
 const int DelayedCallDelay = 50;
+const CardData none = CardData();
+} // namespace
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
 const QString StateConf = QStringLiteral("/state");
 
@@ -296,6 +299,7 @@ void Engine::undoMove()
         qCWarning(lcEngine) << "Can not undo move while an action or a delayed call is ongoing";
         return;
     }
+
     if (d_ptr->m_state == EngineInternals::GameOverState) {
         d_ptr->m_state = EngineInternals::RunningState;
         emit gameContinued();
@@ -306,6 +310,7 @@ void Engine::undoMove()
         return;
     }
 
+    emit action(Engine::MoveEndedAction, -1, -1, none);
     emit moveEnded();
     d_ptr->updateDealable();
 }
@@ -316,13 +321,16 @@ void Engine::redoMove()
         qCWarning(lcEngine) << "Can not redo move while an action or a delayed call is ongoing";
         return;
     }
+
     if (!d_ptr->makeSCMCall(QStringLiteral("redo"), nullptr, 0, nullptr)) {
         d_ptr->die("Can not redo move");
-    } else {
-        emit moveEnded();
-        d_ptr->updateDealable();
-        d_ptr->testGameOver();
+        return;
     }
+
+    emit action(Engine::MoveEndedAction, -1, -1, none);
+    emit moveEnded();
+    d_ptr->updateDealable();
+    d_ptr->testGameOver();
 }
 
 void Engine::dealCard()
@@ -331,11 +339,12 @@ void Engine::dealCard()
         qCWarning(lcEngine) << "Can not deal a card while an action or a delayed call is ongoing";
         return;
     }
+
     d_ptr->recordMove(-1);
     if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
         d_ptr->die("Can not deal card");
-    else
-        d_ptr->endMove();
+
+    d_ptr->endMove();
 }
 
 void Engine::getHint()
@@ -797,7 +806,7 @@ void EngineInternals::endMove(bool fromDelayedCall)
     if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
         die("Can not end move");
     else
-        emit engine()->moveEnded();
+        emit engine()->action(Engine::MoveEndedAction, -1, -1, none);
 
     if (!fromDelayedCall) {
         if (!m_recordingMove)
@@ -806,6 +815,8 @@ void EngineInternals::endMove(bool fromDelayedCall)
     }
 
     updateDealable();
+    if (!hasDelayedCall())
+        emit engine()->moveEnded();
     testGameOver();
 }
 
@@ -940,7 +951,6 @@ void EngineInternals::setCards(int id, const CardList &cards)
     if (cards.isEmpty()) {
         if (!m_cardSlots.at(id).isEmpty()) {
             qCDebug(lcEngine) << "Clearing slot" << id;
-            CardData none;
             emit engine()->action(Engine::ClearingAction, id, -1, none);
             m_cardSlots[id].clear();
         }

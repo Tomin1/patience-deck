@@ -31,7 +31,6 @@ Manager::Manager(Table *table)
     connect(engine, &Engine::action, this, &Manager::handleAction);
     connect(engine, &Engine::clearData, this, &Manager::handleClearData);
     connect(engine, &Engine::gameStarted, this, &Manager::handleGameStarted);
-    connect(engine, &Engine::moveEnded, this, &Manager::handleMoveEnded);
 }
 
 bool Manager::preparing() const
@@ -63,11 +62,12 @@ void Manager::handleNewSlot(int id, const CardList &dataList, int type,
 
 void Manager::handleAction(Engine::ActionType action, int slotId, int index, const CardData &data)
 {
-    if (m_preparing) {
+    if (action == Engine::MoveEndedAction)
+        handleMoveEnded();
+    else if (m_preparing)
         handleImmediately(action, slotId, index, data);
-    } else {
+    else
         m_queue.queue(action, slotId, index, data);
-    }
 }
 
 void Manager::handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &data)
@@ -101,6 +101,9 @@ void Manager::handleImmediately(Engine::ActionType action, int slotId, int index
             }
             break;
         }
+    case Engine::MoveEndedAction:
+        // Unreachable
+        break;
     }
 }
 
@@ -170,6 +173,9 @@ bool Manager::handleQueued(const Action &action) {
             qCDebug(lcManager) << "Cleared" << cards.count() << "cards from" << slot << "at" << action.index;
             break;
         }
+    case Engine::MoveEndedAction:
+        // Unreachable
+        break;
     }
     return handled;
 }

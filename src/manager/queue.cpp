@@ -309,6 +309,10 @@ QDebug operator<<(QDebug debug, const Action &action)
         break;
     case Engine::ClearingAction:
         debug.nospace() << "clearing slot " << action.slot;
+        break;
+    case Engine::MoveEndedAction:
+        debug.nospace() << "move ended action";
+        break;
     }
     return debug.space();
 }
