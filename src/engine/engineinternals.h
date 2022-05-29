@@ -72,7 +72,7 @@ public:
     };
     Q_ENUM(GameState)
 
-    explicit EngineInternals(QObject *parent = nullptr);
+    explicit EngineInternals(Engine *engine);
     ~EngineInternals();
     static EngineInternals *instance();
 

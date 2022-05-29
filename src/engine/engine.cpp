@@ -92,8 +92,8 @@ QDebug operator<<(QDebug debug, const CardData *data)
     return debug.space();
 }
 
-EngineInternals::EngineInternals(QObject *parent)
-    : QObject(parent)
+EngineInternals::EngineInternals(Engine *engine)
+    : QObject(engine)
     , m_delayedCallTimer(nullptr)
     , m_features(NoFeatures)
     , m_state(UninitializedState)
@@ -1120,5 +1120,5 @@ bool EngineInternals::makeSCMCall(QString name, SCM *args, size_t n, SCM *retval
 
 Engine *EngineInternals::engine()
 {
-    return static_cast<Engine *>(parent());
+    return qobject_cast<Engine *>(parent());
 }
