@@ -49,8 +49,14 @@ public:
         FlippingAction,
         ClearingAction,
         MoveEndedAction,
+        ActionTypeMask = InsertionAction | RemovalAction | FlippingAction | ClearingAction | MoveEndedAction,
+        EngineActionFlag = ActionTypeMask + 1,
     };
     Q_ENUM(ActionType)
+    Q_DECLARE_FLAGS(ActionTypeFlags, ActionType)
+    Q_FLAG(ActionTypeFlags)
+
+    static ActionType actionType(ActionTypeFlags action);
 
 public slots:
     void init();
@@ -100,7 +106,7 @@ signals:
                  int expansionDepth, bool expandedDown, bool expandedRight);
     void setExpansionToDown(int id, double expansion);
     void setExpansionToRight(int id, double expansion);
-    void action(Engine::ActionType action, int slotId, int index, const CardData &card);
+    void action(Engine::ActionTypeFlags action, int slotId, int index, const CardData &card);
     void clearData();
     void widthChanged(double width);
     void heightChanged(double height);
@@ -148,5 +154,7 @@ private:
     MGConfItem m_stateConf;
 #endif // ENGINE_EXERCISER
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Engine::ActionTypeFlags);
 
 #endif // ENGINE_H

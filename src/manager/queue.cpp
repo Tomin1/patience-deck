@@ -313,6 +313,10 @@ QDebug operator<<(QDebug debug, const Action &action)
     case Engine::MoveEndedAction:
         debug.nospace() << "move ended action";
         break;
+    default:
+        // Unreachable
+        debug.nospace() << "invalid action for slot " << action.slot;
+        break;
     }
     return debug.space();
 }

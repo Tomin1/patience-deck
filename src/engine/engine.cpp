@@ -140,6 +140,7 @@ Engine::Engine(QObject *parent)
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
     qRegisterMetaType<ActionType>();
+    qRegisterMetaType<ActionTypeFlags>();
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
 #ifndef ENGINE_EXERCISER
@@ -166,6 +167,25 @@ void Engine::initWithDirectory(const QString &gameDirectory)
 Engine::~Engine()
 {
     s_engine = nullptr;
+}
+
+Engine::ActionType Engine::actionType(ActionTypeFlags actionFlags)
+{
+    switch (actionFlags & ActionTypeMask) {
+    default:
+        qCCritical(lcEngine) << "Unknown action type" << actionFlags;
+        [[fallthrough]];
+    case InsertionAction:
+        return InsertionAction;
+    case RemovalAction:
+        return RemovalAction;
+    case FlippingAction:
+        return FlippingAction;
+    case ClearingAction:
+        return ClearingAction;
+    case MoveEndedAction:
+        return MoveEndedAction;
+    }
 }
 
 #ifndef ENGINE_EXERCISER
@@ -310,7 +330,7 @@ void Engine::undoMove()
         return;
     }
 
-    emit action(Engine::MoveEndedAction, -1, -1, none);
+    emit action(d_ptr->flags(Engine::MoveEndedAction), -1, -1, none);
     emit moveEnded();
     d_ptr->updateDealable();
 }
@@ -327,7 +347,7 @@ void Engine::redoMove()
         return;
     }
 
-    emit action(Engine::MoveEndedAction, -1, -1, none);
+    emit action(d_ptr->flags(Engine::MoveEndedAction), -1, -1, none);
     emit moveEnded();
     d_ptr->updateDealable();
     d_ptr->testGameOver();
@@ -413,8 +433,9 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
 
     if (scm_is_true(rv)) {
         // Remove cards from the slot, assumes that they are removed from the end
+        auto actionFlags = d_ptr->flags(Engine::RemovalAction, true);
         for (int i = cards.count(); i > 0; i--)
-            d_ptr->m_cardSlots[slotId].removeLast();
+            emit action(actionFlags, slotId, d_ptr->m_cardSlots[slotId].count() - 1, d_ptr->m_cardSlots[slotId].takeLast());
     }
 
     could = scm_is_true(rv);
@@ -434,7 +455,12 @@ void Engine::cancelDrag(quint32 id, int slotId, const CardList &cards)
     }
 
     qCDebug(lcEngine) << "Canceling move, putting back" << cards.count() << "cards to slot" << slotId;
-    d_ptr->m_cardSlots[slotId].append(cards); // Put the cards back
+    // Put the cards back
+    auto actionFlags = d_ptr->flags(Engine::InsertionAction, true);
+    int base = d_ptr->m_cardSlots[slotId].count();
+    for (int i = 0; i < cards.count(); i++)
+        emit action(actionFlags, slotId, base + i, cards.at(i));
+    d_ptr->m_cardSlots[slotId].append(cards);
     d_ptr->discardMove();
     m_action = 0;
 }
@@ -770,6 +796,14 @@ Engine::ReadSavedState Engine::readSavedState(const MGConfItem &stateConf)
 }
 #endif // ENGINE_EXERCISER
 
+Engine::ActionTypeFlags EngineInternals::flags(Engine::ActionType action, bool engineAction) const
+{
+    Engine::ActionTypeFlags flags = action;
+    if (engineAction)
+        flags |= Engine::EngineActionFlag;
+    return flags;
+}
+
 void EngineInternals::updateDealable()
 {
     SCM rv;
@@ -806,7 +840,7 @@ void EngineInternals::endMove(bool fromDelayedCall)
     if (!makeSCMCall(QStringLiteral("end-move"), nullptr, 0, nullptr))
         die("Can not end move");
     else
-        emit engine()->action(Engine::MoveEndedAction, -1, -1, none);
+        emit engine()->action(flags(Engine::MoveEndedAction), -1, -1, none);
 
     if (!fromDelayedCall) {
         if (!m_recordingMove)
@@ -951,7 +985,7 @@ void EngineInternals::setCards(int id, const CardList &cards)
     if (cards.isEmpty()) {
         if (!m_cardSlots.at(id).isEmpty()) {
             qCDebug(lcEngine) << "Clearing slot" << id;
-            emit engine()->action(Engine::ClearingAction, id, -1, none);
+            emit engine()->action(flags(Engine::ClearingAction), id, -1, none);
             m_cardSlots[id].clear();
         }
         return;
@@ -964,24 +998,24 @@ void EngineInternals::setCards(int id, const CardList &cards)
         if (card.equalValue(*it)) {
             if ((*it).show != card.show) {
                 qCDebug(lcEngine) << "Flipping" << *it << "in slot" << id << "at index" << i;
-                emit engine()->action(Engine::FlippingAction, id, i, *it);
+                emit engine()->action(flags(Engine::FlippingAction), id, i, *it);
                 m_cardSlots[id][i].show = (*it).show;
             }
             i--;
         } else {
             qCDebug(lcEngine) << "Removing" << card << "from slot" << id << "from index" << i;
-            emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
+            emit engine()->action(flags(Engine::RemovalAction), id, i, m_cardSlots[id].takeAt(i));
             i--; ++it;
         }
     }
     for (; i >= 0; i--) {
         qCDebug(lcEngine) << "Remove" << m_cardSlots.at(id).at(i) << "from slot" << id << "from index" << i;
-        emit engine()->action(Engine::RemovalAction, id, i, m_cardSlots[id].takeAt(i));
+        emit engine()->action(flags(Engine::RemovalAction), id, i, m_cardSlots[id].takeAt(i));
     }
     ++it;
     while (it-- != cards.constBegin()) {
         qCDebug(lcEngine) << "Appending" << *it << "to slot" << id << "to index 0";
-        emit engine()->action(Engine::InsertionAction, id, 0, *it);
+        emit engine()->action(flags(Engine::InsertionAction), id, 0, *it);
         m_cardSlots[id].insert(0, *it);
     }
 

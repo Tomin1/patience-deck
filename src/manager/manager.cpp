@@ -60,14 +60,15 @@ void Manager::handleNewSlot(int id, const CardList &dataList, int type,
     }
 }
 
-void Manager::handleAction(Engine::ActionType action, int slotId, int index, const CardData &data)
+void Manager::handleAction(Engine::ActionTypeFlags action, int slotId, int index, const CardData &data)
 {
-    if (action == Engine::MoveEndedAction)
+    Engine::ActionType type = Engine::actionType(action);
+    if (type == Engine::MoveEndedAction)
         handleMoveEnded();
     else if (m_preparing)
-        handleImmediately(action, slotId, index, data);
-    else
-        m_queue.queue(action, slotId, index, data);
+        handleImmediately(type, slotId, index, data);
+    else if (!(action & Engine::EngineActionFlag))
+        m_queue.queue(type, slotId, index, data);
 }
 
 void Manager::handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &data)
@@ -102,6 +103,7 @@ void Manager::handleImmediately(Engine::ActionType action, int slotId, int index
             break;
         }
     case Engine::MoveEndedAction:
+    default:
         // Unreachable
         break;
     }
@@ -174,6 +176,7 @@ bool Manager::handleQueued(const Action &action) {
             break;
         }
     case Engine::MoveEndedAction:
+    default:
         // Unreachable
         break;
     }

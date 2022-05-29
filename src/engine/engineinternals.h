@@ -25,9 +25,9 @@
 #include <QTimer>
 #include <QVector>
 #include <random>
+#include "engine.h"
 #include "enginedata.h"
 
-class Engine;
 class EngineHelper;
 class EngineInternals : public QObject
 {
@@ -124,6 +124,8 @@ private:
 #ifdef ENGINE_EXERCISER
     friend EngineHelper;
 #endif
+
+    Engine::ActionTypeFlags flags(Engine::ActionType action, bool engineAction = false) const;
 
     QTimer *m_delayedCallTimer;
     QVector<CardList> m_cardSlots;

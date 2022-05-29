@@ -41,7 +41,7 @@ public:
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
                        int expansionDepth, bool expandedDown, bool expandedRight);
-    void handleAction(Engine::ActionType action, int slotId, int index, const CardData &card);
+    void handleAction(Engine::ActionTypeFlags action, int slotId, int index, const CardData &card);
     void handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &card);
     void handleClearData();
     void handleGameStarted();
