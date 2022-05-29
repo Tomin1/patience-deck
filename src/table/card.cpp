@@ -244,7 +244,7 @@ QDebug operator<<(QDebug debug, const Card *card)
         debug.nospace() << card->show();
         debug.nospace() << ")";
     } else {
-        debug.nospace() << "invalid card";
+        debug.nospace() << "placeholder card";
     }
     return debug.space();
 }

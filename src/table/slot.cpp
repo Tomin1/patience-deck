@@ -140,7 +140,7 @@ void Slot::insert(int index, Card *card)
     // TODO: Do adjustments once move ends
     if (!m_table->preparing())
         updateLocations();
-    qCDebug(lcSlot) << "Inserted card to" << this;
+    qCDebug(lcSlot) << "Inserted" << card << "to" << this;
 }
 
 void Slot::set(int index, Card *card)
@@ -155,7 +155,7 @@ void Slot::set(int index, Card *card)
         // TODO: Do adjustments once move ends
         if (!m_table->preparing())
             updateLocations();
-        qCDebug(lcSlot) << "Replaced card at" << this << "index" << index;
+        qCDebug(lcSlot) << "Replaced" << card << "at" << this << "index" << index;
     }
 }
 
@@ -167,7 +167,7 @@ Card *Slot::takeAt(int index)
         m_firstHighlightedCard = nullptr;
     if (!m_table->preparing())
         updateLocations();
-    qCDebug(lcSlot) << "Removed card from" << this;
+    qCDebug(lcSlot) << "Removed" << card << "from" << this;
     if (isEmpty())
         emit slotEmptied();
     return card;

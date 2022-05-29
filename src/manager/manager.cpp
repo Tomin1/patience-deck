@@ -137,6 +137,7 @@ bool Manager::handleQueued(const Action &action) {
                     qCCritical(lcManager) << "Wrong card taken! Was" << card << "should be" << action.data;
                 card->moveTo(m_table);
                 m_queue.store(card);
+                qCDebug(lcManager) << "Removed" << card << "from" << slot << "at" << action.index;
             } else {
                 qCDebug(lcManager) << "Removed placeholder from" << slot << "at" << action.index;
             }
@@ -153,6 +154,7 @@ bool Manager::handleQueued(const Action &action) {
                     qCCritical(lcManager) << "Rank or suit doesn't match to" << action.data
                                           << "for" << card << "in" << slot << "at index" << action.index;
                 card->update();
+                qCDebug(lcManager) << "Flipped" << card << "from" << slot << "at" << action.index;
             } else {
                 m_queue.flipQueued(slot->id(), action.index, action.data);
             }
@@ -165,6 +167,7 @@ bool Manager::handleQueued(const Action &action) {
             m_queue.clearQueued(slot->id());
             store(cards);
             handled = true;
+            qCDebug(lcManager) << "Cleared" << cards.count() << "cards from" << slot << "at" << action.index;
             break;
         }
     }
@@ -201,6 +204,7 @@ void Manager::handleGameStarted()
 
 void Manager::handleMoveEnded()
 {
+    qCInfo(lcManager) << "Move ended, clearing queue";
     for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
         if (!handleQueued(*it))
             it.requeue();
