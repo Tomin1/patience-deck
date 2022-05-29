@@ -7,6 +7,7 @@ moc_*.h
 /RPMS/
 patience-deck
 harbour-patience-deck
+/data/anglo*.svg
 /installroot/
 /tools/convert
 /tools/exerciser/games/

@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = src translations
+SUBDIRS = src translations data
 TARGET=$$(NAME)
 
 CONFIG += sailfishapp
@@ -8,7 +8,6 @@ DISTFILES += \
     qml/*.qml \
     qml/*/*.qml \
     qml/*/*/*.qml \
-    qml/images/*.svg \
     rpm/patience-deck.spec \
     translations/*.ts \
     patience-deck.desktop
@@ -31,21 +30,12 @@ manual.path = /usr/share/$$(NAME)/help/
 figures.files = aisleriot/help/C/figures/*.png
 figures.path = /usr/share/$$(NAME)/help/figures/
 
-data.files = aisleriot/cards/anglo.svg
-data.path = /usr/share/$$(NAME)/data/
-data.path = /usr/share/$$(NAME)/data/
-
-buttons.files = $$files(data/buttons/*.svg)
-buttons.files -= data/buttons/icon-m-blank.svg
-buttons.path = /usr/share/$$(NAME)/buttons/
-
 copying.files = COPYING.GPL3 \
     aisleriot/COPYING.GFDL \
-    aisleriot/COPYING.GFDL1.3 \
-    data/COPYING.README
+    aisleriot/COPYING.GFDL1.3
 copying.path = /usr/share/$$(NAME)/
 
-INSTALLS += games api data buttons manual figures copying
+INSTALLS += games api manual figures copying
 
 # Translations
 TS_FILE = $$PWD/translations/patience-deck.ts
