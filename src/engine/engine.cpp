@@ -17,7 +17,6 @@
 
 #include <QCommandLineParser>
 #include <QDebug>
-#include <QRegularExpression>
 #include "constants.h"
 #include "engine.h"
 #include "engineinternals.h"
@@ -28,10 +27,10 @@
 namespace {
 const int MaxRetries = 10;
 const int DelayedCallDelay = 50;
+const int DelayedCallDelayOnReplay = 0;
 const CardData none = CardData();
 } // namespace
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
-const QString StateConf = QStringLiteral("/state");
 
 CardData::CardData()
     : suit(static_cast<Suit>(-1))
@@ -92,6 +91,11 @@ QDebug operator<<(QDebug debug, const CardData *data)
     return debug.space();
 }
 
+bool EngineInternals::replaying() const
+{
+    return m_recorder.replaying();
+}
+
 EngineInternals::EngineInternals(Engine *engine)
     : QObject(engine)
     , m_delayedCallTimer(nullptr)
@@ -100,6 +104,8 @@ EngineInternals::EngineInternals(Engine *engine)
     , m_timeout(0)
     , m_seed(std::mt19937::default_seed)
     , m_recordingMove(false)
+    , m_recorder(engine)
+    , m_makeFirstMove(false)
 {
 }
 
@@ -133,9 +139,6 @@ Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EngineInternals(this))
     , m_action(0)
-#ifndef ENGINE_EXERCISER
-    , m_stateConf(Constants::ConfPath + StateConf)
-#endif // ENGINE_EXERCISER
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
@@ -143,13 +146,11 @@ Engine::Engine(QObject *parent)
     qRegisterMetaType<ActionTypeFlags>();
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
-#ifndef ENGINE_EXERCISER
-    connect(&m_stateConf, &MGConfItem::valueChanged, this, [&]() {
-        qCDebug(lcEngine) << (m_stateConf.value().isValid()
-                              ? "Saved engine state" : "Reset saved state");
-    });
-#endif // ENGINE_EXERCISER
     connect(this, &Engine::clearData, this, [this] { m_action = 0; });
+    connect(&d_ptr->m_recorder, &Recorder::replayingGame,
+            d_ptr, &EngineInternals::handleReplayGame, Qt::DirectConnection);
+    connect(&d_ptr->m_recorder, &Recorder::replayCompleted,
+            d_ptr, &EngineInternals::handleReplayCompleted, Qt::DirectConnection);
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
@@ -188,51 +189,15 @@ Engine::ActionType Engine::actionType(ActionTypeFlags actionFlags)
     }
 }
 
-#ifndef ENGINE_EXERCISER
 void Engine::addArguments(QCommandLineParser *parser)
 {
-    parser->addOptions({
-        {{"g", "game"}, "Set game file to load", "filename"},
-        {{"s", "seed"}, "Set initial seed to load", "integer"},
-        {{"o", "options"}, "Indices of options to set before loading game", "options"}
-    });
+    Recorder::addArguments(parser);
 }
 
 void Engine::setArguments(QCommandLineParser *parser)
 {
-    MGConfItem stateConf(Constants::ConfPath + StateConf);
-    ReadSavedState state = readSavedState(stateConf);
-    if (parser->isSet("game"))
-        state.gameFile = parser->value("game");
-    if (parser->isSet("seed")) {
-        state.seed = parser->value("seed").toInt();
-        state.hasSeed = true;
-    }
-    if (parser->isSet("game") || parser->isSet("seed")) {
-        if (state.hasSeed)
-            stateConf.set(QStringLiteral("%1;%2").arg(state.gameFile).arg(state.seed));
-        else
-            stateConf.set(QStringLiteral("%1").arg(state.gameFile));
-        stateConf.sync();
-    }
-
-    if (!state.gameFile.isEmpty() && parser->isSet("options")) {
-        GameOptionList options;
-        QRegularExpression sep("[;, ]");
-        for (const QString &value : parser->value("options").split(sep, QString::SkipEmptyParts)) {
-            bool ok = true;
-            int index = value.toInt(&ok);
-            if (ok) {
-                GameOption option;
-                option.index = index;
-                option.set = true;
-                options << option;
-            }
-        }
-        GameOptionModel::saveOptions(state.gameFile, options);
-    }
+    Recorder::setArguments(parser);
 }
-#endif // ENGINE_EXERCISER
 
 void Engine::load(const QString &gameFile)
 {
@@ -297,12 +262,18 @@ void Engine::startEngine(bool newSeed)
         }
 
         newSeed = true; // If we need to try again, use a new seed anyway
-    } while (d_ptr->isGameOver() && count++ < MaxRetries);
+    } while (d_ptr->isGameOver() && count++ < MaxRetries && !d_ptr->replaying());
 
     d_ptr->m_state = EngineInternals::RunningState;
-    emit gameStarted();
-
-    d_ptr->testGameOver();
+    if (d_ptr->m_makeFirstMove) {
+        if (!d_ptr->hasDelayedCall()) {
+            d_ptr->m_makeFirstMove = false;
+            d_ptr->m_recorder.replayMove();
+        }
+    } else {
+        emit gameStarted();
+        d_ptr->testGameOver();
+    }
 }
 
 void Engine::restart()
@@ -330,6 +301,7 @@ void Engine::undoMove()
         return;
     }
 
+    d_ptr->m_recorder.undo();
     emit action(d_ptr->flags(Engine::MoveEndedAction), -1, -1, none);
     emit moveEnded();
     d_ptr->updateDealable();
@@ -347,6 +319,7 @@ void Engine::redoMove()
         return;
     }
 
+    d_ptr->m_recorder.redo();
     emit action(d_ptr->flags(Engine::MoveEndedAction), -1, -1, none);
     emit moveEnded();
     d_ptr->updateDealable();
@@ -363,7 +336,8 @@ void Engine::dealCard()
     d_ptr->recordMove(-1);
     if (!d_ptr->makeSCMCall(QStringLiteral("do-deal-next-cards"), nullptr, 0, nullptr))
         d_ptr->die("Can not deal card");
-
+    else
+        d_ptr->m_recorder.recordDeal();
     d_ptr->endMove();
 }
 
@@ -537,12 +511,14 @@ bool Engine::drop(quint32 id, int startSlotId, int endSlotId, const CardList &ca
 
     emit dropped(id, endSlotId, could);
 
-    if (could)
-        d_ptr->endMove();
-    else
-        d_ptr->discardMove();
-
     m_action = 0;
+    if (could) {
+        d_ptr->m_recorder.recordDrop(startSlotId, endSlotId, cards.length());
+        d_ptr->endMove();
+    } else {
+        d_ptr->discardMove();
+    }
+
     return could;
 }
 
@@ -575,10 +551,12 @@ bool Engine::click(quint32 id, int slotId)
 
     emit clicked(id, slotId, scm_is_true(rv));
 
-    if (scm_is_true(rv))
+    if (scm_is_true(rv)) {
+        d_ptr->m_recorder.recordClick(slotId);
         d_ptr->endMove();
-    else
+    } else {
         d_ptr->discardMove();
+    }
     return scm_is_true(rv);
 }
 
@@ -611,10 +589,12 @@ bool Engine::doubleClick(quint32 id, int slotId)
 
     emit doubleClicked(id, slotId, scm_is_true(rv));
 
-    if (scm_is_true(rv))
+    if (scm_is_true(rv)) {
+        d_ptr->m_recorder.recordDoubleClick(slotId);
         d_ptr->endMove();
-    else
+    } else {
         d_ptr->discardMove();
+    }
     return scm_is_true(rv);
 }
 
@@ -746,61 +726,69 @@ bool Engine::setGameOptions(const GameOptionList &options)
     return true;
 }
 
-#ifndef ENGINE_EXERCISER
-void Engine::saveState()
-{
-    m_stateConf.set(QStringLiteral("%1;%2").arg(d_ptr->m_gameFile).arg(d_ptr->m_seed));
-}
-
-void Engine::resetSavedState()
-{
-    m_stateConf.set(d_ptr->m_gameFile);
-}
-
 void Engine::restoreSavedState()
 {
     if (d_ptr->m_state < EngineInternals::GameOverState
             && d_ptr->m_state > EngineInternals::UninitializedState) {
         qCWarning(lcEngine) << "Engine running, can not set seed";
-    } else {
-        auto state = readSavedState(m_stateConf);
-        if (state.valid) {
-            if (state.hasSeed)
-                d_ptr->m_seed = state.seed;
-            if (state.seedOk)
-                loadGame(state.gameFile, state.hasSeed);
-            emit restoreCompleted(state.seedOk);
-        } else {
-            qCDebug(lcEngine) << "Engine state was not stored, not restored";
-            emit restoreCompleted(false);
-        }
+        return;
     }
+
+    d_ptr->m_makeFirstMove = true;
+    d_ptr->m_recorder.startReplay();
 }
 
-Engine::ReadSavedState Engine::readSavedState(const MGConfItem &stateConf)
+void Engine::saveState()
 {
-    ReadSavedState saved;
-    auto state = stateConf.value();
-    if (state.isValid()) {
-        auto parts = state.toString().split(';');
-        saved.valid = !parts.at(0).isEmpty();
-        if (saved.valid) {
-            saved.gameFile = parts.at(0);
-            if (parts.count() >= 2) {
-                saved.hasSeed = true;
-                saved.seed = parts.at(1).toULongLong(&saved.seedOk);
-            }
-        }
-    }
-    return saved;
+    d_ptr->m_recorder.save();
 }
-#endif // ENGINE_EXERCISER
+
+CardList Engine::cards(int slotId, int count) const
+{
+    const CardList &slot = d_ptr->getSlot(slotId);
+    return slot.mid(count > 0 ? slot.count() - count : 0);
+}
+
+void EngineInternals::handleReplayGame(const QString &gameFile, bool hasSeed, uint_fast32_t seed, qint64 time)
+{
+    if (hasSeed)
+        m_seed = seed;
+    engine()->loadGame(gameFile, hasSeed);
+    if (time)
+        emit engine()->restoreStarted(time);
+    qCDebug(lcEngine) << "Restored game" << gameFile << (hasSeed ? "with" : "without") << "seed" << seed;
+}
+
+void EngineInternals::handleReplayCompleted(Recorder::CompletionStatus status)
+{
+    m_makeFirstMove = false;
+    switch (status) {
+    case Recorder::NeedsRestart:
+        emit engine()->restoreCompleted(true, false);
+        qCWarning(lcEngine) << "Replay failed and engine needs restart";
+        engine()->restart();
+        break;
+    case Recorder::Success:
+        emit engine()->restoreCompleted(true, true);
+        qCDebug(lcEngine) << "Replay succeeded";
+        emit engine()->gameStarted();
+        // Test game over a bit later to avoid mixing signal order
+        QTimer::singleShot(0, this, [this]() { testGameOver(); });
+        break;
+    case Recorder::Failed:
+        emit engine()->restoreCompleted(false, false);
+        qCDebug(lcEngine) << "Replay failed";
+        break;
+    }
+}
 
 Engine::ActionTypeFlags EngineInternals::flags(Engine::ActionType action, bool engineAction) const
 {
     Engine::ActionTypeFlags flags = action;
     if (engineAction)
         flags |= Engine::EngineActionFlag;
+    if (replaying())
+        flags |= Engine::ReplayActionFlag;
     return flags;
 }
 
@@ -851,7 +839,10 @@ void EngineInternals::endMove(bool fromDelayedCall)
     updateDealable();
     if (!hasDelayedCall())
         emit engine()->moveEnded();
-    testGameOver();
+    if (!replaying())
+        testGameOver();
+    else
+        isGameOver();
 }
 
 void EngineInternals::discardMove()
@@ -1086,11 +1077,15 @@ bool EngineInternals::setupDelayedCall(std::function<void()> callback, std::func
         m_delayedCallTimer = nullptr;
 
         callback();
+        if (m_makeFirstMove && !m_delayedCallTimer) {
+            m_makeFirstMove = false;
+            m_recorder.replayMove();
+        }
     });
 
     QObject::connect(m_delayedCallTimer, &QObject::destroyed, this, destructCallback);
 
-    m_delayedCallTimer->start(DelayedCallDelay);
+    m_delayedCallTimer->start(replaying() ? DelayedCallDelayOnReplay : DelayedCallDelay);
     return true;
 }
 
@@ -1114,6 +1109,7 @@ void EngineInternals::resetGenerator(bool generateNewSeed)
     if (generateNewSeed)
         m_seed = seedGenerator();
     m_generator = std::mt19937(m_seed);
+    m_recorder.setSeed(m_seed);
 }
 
 void EngineInternals::die(const char *message)

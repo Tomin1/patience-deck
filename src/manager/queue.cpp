@@ -281,6 +281,18 @@ typename QSet<C>::iterator Queue<C>::endRecent()
     return m_recentlyAdded.end();
 }
 
+template<class C>
+typename QMultiHash<SuitAndRank, C>::iterator Queue<C>::beginStored()
+{
+    return m_cards.begin();
+}
+
+template<class C>
+typename QMultiHash<SuitAndRank, C>::iterator Queue<C>::endStored()
+{
+    return m_cards.end();
+}
+
 Action::Action(Engine::ActionType type, int slot, int index, const CardData &data)
     : type(type)
     , slot(slot)

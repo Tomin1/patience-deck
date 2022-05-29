@@ -15,6 +15,7 @@ DEFINES += VERSION=$(VERSION)
 SOURCES += \
     engine/engine.cpp \
     engine/interface.cpp \
+    engine/recorder.cpp \
     common/logging.cpp \
     manager/manager.cpp \
     manager/queue.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     engine/engine.h \
     engine/engineinternals.h \
     engine/interface.h \
+    engine/recorder.h \
     manager/manager.h \
     manager/queue.h \
     models/gamelist.h \

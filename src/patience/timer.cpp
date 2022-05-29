@@ -137,3 +137,8 @@ qint64 Timer::sinceLastStarted() const
         return QDateTime::currentMSecsSinceEpoch() - m_lastStarted;
     return 0;
 }
+
+void Timer::setElapsedMSecs(qint64 elapsed)
+{
+    m_elapsed = elapsed - sinceLastStarted();
+}

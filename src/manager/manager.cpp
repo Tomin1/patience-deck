@@ -65,9 +65,9 @@ void Manager::handleAction(Engine::ActionTypeFlags action, int slotId, int index
     Engine::ActionType type = Engine::actionType(action);
     if (type == Engine::MoveEndedAction)
         handleMoveEnded();
-    else if (m_preparing)
+    else if (m_preparing && !(action & Engine::ReplayActionFlag))
         handleImmediately(type, slotId, index, data);
-    else if (!(action & Engine::EngineActionFlag))
+    else if (!(action & Engine::EngineActionFlag) || m_preparing)
         m_queue.queue(type, slotId, index, data);
 }
 
@@ -236,4 +236,11 @@ void Manager::store(const QList<Card *> &cards)
             qCWarning(lcManager) << "Skipped placeholder card";
         }
     }
+}
+
+void Manager::updateDimensions()
+{
+    auto size = m_table->cardSize();
+    for (auto it = m_queue.beginStored(); it != m_queue.endStored(); ++it)
+        (*it)->setSize(size);
 }

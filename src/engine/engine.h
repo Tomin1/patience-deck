@@ -18,10 +18,6 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#ifndef ENGINE_EXERCISER
-#include <MGConfItem>
-#endif
-
 #include <QObject>
 #include <QString>
 #include "enginedata.h"
@@ -38,10 +34,8 @@ public:
 
     static Engine *instance();
 
-#ifndef ENGINE_EXERCISER
     static void addArguments(QCommandLineParser *parser);
     static void setArguments(QCommandLineParser *parser);
-#endif // ENGINE_EXERCISER
 
     enum ActionType {
         InsertionAction,
@@ -51,12 +45,15 @@ public:
         MoveEndedAction,
         ActionTypeMask = InsertionAction | RemovalAction | FlippingAction | ClearingAction | MoveEndedAction,
         EngineActionFlag = ActionTypeMask + 1,
+        ReplayActionFlag = EngineActionFlag << 1,
     };
     Q_ENUM(ActionType)
     Q_DECLARE_FLAGS(ActionTypeFlags, ActionType)
     Q_FLAG(ActionTypeFlags)
 
     static ActionType actionType(ActionTypeFlags action);
+
+    CardList cards(int slotId, int count) const;
 
 public slots:
     void init();
@@ -77,11 +74,8 @@ public slots:
     void requestGameOptions();
     bool setGameOption(const GameOption &option);
     bool setGameOptions(const GameOptionList &options);
-#ifndef ENGINE_EXERCISER
-    void saveState();
-    void resetSavedState();
     void restoreSavedState();
-#endif // ENGINE_EXERCISER
+    void saveState();
 
 signals:
     void canUndo(bool canUndo);
@@ -95,7 +89,8 @@ signals:
     void gameLoaded(const QString &gameFile);
     void gameStarted();
     void gameContinued();
-    void restoreCompleted(bool success);
+    void restoreStarted(qint64 time);
+    void restoreCompleted(bool restored, bool success);
     void gameOver(bool won);
     void gameOptions(GameOptionList options);
 
@@ -124,23 +119,6 @@ private:
 
 #ifdef ENGINE_EXERCISER
     friend EngineHelper;
-
-#else
-    struct ReadSavedState {
-        bool valid;
-        QString gameFile;
-        quint32 seed;
-        bool hasSeed;
-        bool seedOk;
-
-        ReadSavedState()
-            : valid(false)
-            , seed(0)
-            , hasSeed(false)
-            , seedOk(true) {}
-    };
-
-    static ReadSavedState readSavedState(const MGConfItem &stateConf);
 #endif // ENGINE_EXERCISER
 
     void loadGame(const QString &gameFile, bool restored);
@@ -150,9 +128,6 @@ private:
     static Engine *s_engine;
     EngineInternals *d_ptr;
     quint32 m_action;
-#ifndef ENGINE_EXERCISER
-    MGConfItem m_stateConf;
-#endif // ENGINE_EXERCISER
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Engine::ActionTypeFlags);

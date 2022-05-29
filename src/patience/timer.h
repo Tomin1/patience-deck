@@ -43,13 +43,14 @@ public:
     void extend();
     TimerStatus status() const;
     QString elapsed() const;
+    qint64 elapsedMSecs() const;
+    void setElapsedMSecs(qint64);
 
 signals:
     void tick();
     void statusChanged();
 
 private:
-    qint64 elapsedMSecs() const;
     qint64 sinceLastStarted() const;
 
     TimerStatus m_status;

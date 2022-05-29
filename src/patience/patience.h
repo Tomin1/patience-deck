@@ -59,7 +59,9 @@ public:
     enum GameState {
         UninitializedState,
         LoadedState,
+        RestartingState,
         StartingState,
+        RestoringState,
         RunningState,
         GameOverState,
         WonState,
@@ -88,6 +90,7 @@ public:
     int score() const;
     bool showScore() const;
     QString elapsedTime() const;
+    qint64 elapsedTimeMs() const;
     GameState state() const;
     bool paused() const;
     void setPaused(bool paused);
@@ -127,9 +130,8 @@ signals:
     void doRedoMove();
     void doDealCard();
     void doGetHint();
-    void doSaveEngineState();
-    void doResetSavedEngineState();
     void doRestoreSavedEngineState();
+    void doSaveEngineState();
 
 private slots:
     void catchFailure(QString message);
@@ -145,7 +147,8 @@ private slots:
     void handleMessageChanged(const QString &message);
     void handleShowScore(bool show);
     void handleShowDeal(bool show);
-    void handleRestoreCompleted(bool success);
+    void handleRestoreStarted(qint64 time);
+    void handleRestoreCompleted(bool restored, bool success);
 
 private:
     explicit Patience(QObject *parent = nullptr);

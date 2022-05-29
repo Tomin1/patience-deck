@@ -704,6 +704,7 @@ void Table::updateCardSize()
 
     for (Slot *slot : m_slots)
         slot->updateDimensions();
+    m_manager.updateDimensions();
 
     smudge(SlotSize);
     if (!preparing())

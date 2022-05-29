@@ -78,6 +78,7 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::showScore, this, &Patience::handleShowScore);
     connect(engine, &Engine::showDeal, this, &Patience::handleShowDeal);
     connect(engine, &Engine::moveEnded, this, &Patience::cardMoved);
+    connect(engine, &Engine::restoreStarted, this, &Patience::handleRestoreStarted);
     connect(engine, &Engine::restoreCompleted, this, &Patience::handleRestoreCompleted);
     connect(engine, &Engine::engineFailure, this, &Patience::catchFailure);
     connect(this, &Patience::cardMoved, this, &Patience::handleCardMoved);
@@ -88,9 +89,8 @@ Patience::Patience(QObject *parent)
     connect(this, &Patience::doRedoMove, engine, &Engine::redoMove);
     connect(this, &Patience::doDealCard, engine, &Engine::dealCard);
     connect(this, &Patience::doGetHint, engine, &Engine::getHint);
-    connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
-    connect(this, &Patience::doResetSavedEngineState, engine, &Engine::resetSavedState);
     connect(this, &Patience::doRestoreSavedEngineState, engine, &Engine::restoreSavedState);
+    connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
     connect(&m_historyConf, &MGConfItem::valueChanged, this, [&] {
         qCDebug(lcPatience) << "Saved history:" << m_historyConf.value().toString();
     });
@@ -210,6 +210,11 @@ QString Patience::elapsedTime() const
     return m_timer.elapsed();
 }
 
+qint64 Patience::elapsedTimeMs() const
+{
+    return m_timer.elapsedMSecs();
+}
+
 Patience::GameState Patience::state() const
 {
     return m_state;
@@ -221,10 +226,13 @@ void Patience::setState(GameState state)
         qCDebug(lcPatience) << "Setting game state to" << state;
         switch (state) {
         case UninitializedState:
+        case RestoringState:
+        case RestartingState:
             break;
         case LoadedState:
         case StartingState:
-            m_timer.reset();
+            if (m_state != RestoringState)
+                m_timer.reset();
             break;
         case RunningState: {
             if (m_state <= StartingState)
@@ -254,6 +262,7 @@ void Patience::setPaused(bool paused)
         if (paused) {
             if (m_timer.status() == Timer::TimerRunning)
                 m_timer.pause();
+            emit doSaveEngineState();
         } else {
             if (m_timer.status() == Timer::TimerPaused)
                 m_timer.unpause();
@@ -400,15 +409,12 @@ void Patience::handleGameLoaded(const QString &gameFile)
 void Patience::handleGameStarted()
 {
     qCDebug(lcPatience) << "Game started";
-    emit doSaveEngineState();
-    setState(StartingState);
+    setState(state() == RestoringState ? RunningState : StartingState);
 }
 
 void Patience::handleGameContinued()
 {
     qCDebug(lcPatience) << "Game continued";
-    if (state() == WonState)
-        emit doSaveEngineState();
     setState(RunningState);
 }
 
@@ -422,8 +428,6 @@ void Patience::handleGameOver(bool won)
 {
     qCDebug(lcPatience) << "Game" << (won ? "won" : "over");
     setState(won ? WonState : GameOverState);
-    if (won)
-        emit doResetSavedEngineState();
 }
 
 void Patience::handleCanUndoChanged(bool canUndo)
@@ -489,8 +493,19 @@ void Patience::handleShowDeal(bool show)
     }
 }
 
-void Patience::handleRestoreCompleted(bool success)
+void Patience::handleRestoreStarted(qint64 time)
 {
+    qCDebug(lcPatience) << "Game restore started";
+    m_timer.setElapsedMSecs(time);
+    emit elapsedTimeChanged();
+    setState(RestoringState);
+}
+
+void Patience::handleRestoreCompleted(bool restored, bool success)
+{
+    qCDebug(lcPatience) << "Game" << (restored ? "restored," : "not restored,") << "success:" << success;
+    if (restored && !success)
+        setState(RestartingState);
     if (!success && m_gameFile.endsWith('-')) {
         auto fallback = m_gameFile.left(m_gameFile.length()-1);
         qCDebug(lcPatience) << "Could not restore game, load instead"

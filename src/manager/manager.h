@@ -37,6 +37,7 @@ public:
 
     bool preparing() const;
     void store(const QList<Card *> &cards);
+    void updateDimensions();
 
 private slots:
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,

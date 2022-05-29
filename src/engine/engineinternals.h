@@ -27,6 +27,7 @@
 #include <random>
 #include "engine.h"
 #include "enginedata.h"
+#include "recorder.h"
 
 class EngineHelper;
 class EngineInternals : public QObject
@@ -119,6 +120,10 @@ public:
     bool makeSCMCall(SCM lambda, SCM *args, size_t n, SCM *retval);
     bool makeSCMCall(QString name, SCM *args, size_t n, SCM *retval);
 
+private slots:
+    void handleReplayGame(const QString &gameFile, bool hasSeed, uint_fast32_t seed, qint64 time);
+    void handleReplayCompleted(Recorder::CompletionStatus status);
+
 private:
     friend Engine;
 #ifdef ENGINE_EXERCISER
@@ -126,6 +131,7 @@ private:
 #endif
 
     Engine::ActionTypeFlags flags(Engine::ActionType action, bool engineAction = false) const;
+    bool replaying() const;
 
     QTimer *m_delayedCallTimer;
     QVector<CardList> m_cardSlots;
@@ -138,6 +144,8 @@ private:
     std::mt19937 m_generator;
     bool m_recordingMove;
     quint32 m_action;
+    Recorder m_recorder;
+    bool m_makeFirstMove;
 
     Engine *engine();
 };

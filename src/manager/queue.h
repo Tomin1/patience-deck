@@ -87,6 +87,9 @@ public:
     typename QSet<C>::iterator beginRecent();
     typename QSet<C>::iterator endRecent();
 
+    typename QMultiHash<SuitAndRank, C>::iterator beginStored();
+    typename QMultiHash<SuitAndRank, C>::iterator endStored();
+
 private:
     std::list<Action> m_actions;
     QMap<int, std::list<Action>> m_laterActions;

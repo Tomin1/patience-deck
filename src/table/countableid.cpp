@@ -18,7 +18,8 @@
 #include "countableid.h"
 
 // Zero is special, it's never allowed as an id
-QVector<quint32> CountableId::s_ids = { 0 };
+// (quint32)-1 is reserved for recorder
+QVector<quint32> CountableId::s_ids = { 0, (quint32)-1 };
 
 quint32 CountableId::s_count = 0;
 
