@@ -1,10 +1,6 @@
 TEMPLATE = aux
 
-anglo.files = aisleriot/cards/anglo.svg
-anglo.path = /usr/share/$$(NAME)/data/
-INSTALLS += anglo
-
-CARD_JSON = anglo-optimized.json anglo-simplified.json
+CARD_JSON = anglo.json anglo-optimized.json anglo-simplified.json
 
 card_style.output = ${QMAKE_FILE_BASE}.svg
 card_style.commands = ../tools/card_style_converter.py ${QMAKE_FILE_NAME} \

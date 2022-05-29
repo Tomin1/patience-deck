@@ -1,0 +1,89 @@
+{
+    "A_stroke": ["stroke-width", "×1.6"],
+    "club_1": {
+        "path22603": ["A_stroke"]
+    },
+    "club_2": {
+        "path22591": ["A_stroke"]
+    },
+    "club_3": {
+        "path22587": ["A_stroke"],
+        "path22589": ["A_stroke"]
+    },
+    "club_4": {
+        "path22583": ["A_stroke"]
+    },
+    "club_5": {
+        "path22579": ["A_stroke"],
+        "path22581": ["A_stroke"]
+    },
+    "club_6": {
+        "path22575": ["A_stroke"]
+    },
+    "club_7": {
+        "path22573": ["A_stroke"]
+    },
+    "club_8": {
+        "path22571": ["A_stroke"]
+    },
+    "club_9": {
+        "path22569": ["A_stroke"]
+    },
+    "club_10": {
+        "path22567": ["A_stroke"],
+        "path29088": ["A_stroke"]
+    },
+    "club_jack": {
+        "path22593": ["A_stroke"]
+    },
+    "club_queen": {
+        "path22597": ["A_stroke"],
+        "path22599": ["A_stroke"]
+    },
+    "club_king": {
+        "path22601": ["A_stroke"]
+    },
+    "diamond_1": {
+        "path6008": ["A_stroke"]
+    },
+    "diamond_2": {
+        "path5968": ["A_stroke"]
+    },
+    "diamond_3": {
+        "path5972": ["A_stroke"],
+        "path5974": ["A_stroke"]
+    },
+    "diamond_4": {
+        "path5976": ["A_stroke"]
+    },
+    "diamond_5": {
+        "path5980": ["A_stroke"],
+        "path5982": ["A_stroke"]
+    },
+    "diamond_6": {
+        "path5984": ["A_stroke"]
+    },
+    "diamond_7": {
+        "path5986": ["A_stroke"]
+    },
+    "diamond_8": {
+        "path5988": ["A_stroke"]
+    },
+    "diamond_9": {
+        "path5990": ["A_stroke"]
+    },
+    "diamond_10": {
+        "path5994": ["A_stroke"],
+        "path5996": ["A_stroke"]
+    },
+    "diamond_jack": {
+        "path6006": ["A_stroke"]
+    },
+    "diamond_queen": {
+        "path6000": ["A_stroke"],
+        "path6002": ["A_stroke"]
+    },
+    "diamond_king": {
+        "path6004": ["A_stroke"]
+    }
+}
