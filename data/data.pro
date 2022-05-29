@@ -27,3 +27,12 @@ INSTALLS += buttons
 copying.files = COPYING.README
 copying.path = /usr/share/$$(NAME)/
 INSTALLS += copying
+
+authors.commands = ../tools/generate_authors.py \
+        --authors=../aisleriot/AUTHORS \
+        --manual=../aisleriot/help/C \
+        --games=../aisleriot/games \
+        --append=\"Aike Reyer\" $(INSTALL_ROOT)/usr/share/$$(NAME)/data/AUTHORS
+authors.CONFIG = no_check_exist
+authors.path = /usr/share/$$(NAME)/data
+INSTALLS += authors

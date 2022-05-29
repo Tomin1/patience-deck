@@ -117,13 +117,6 @@ mv %{buildroot}%{_datadir}/%{name}/qml/patience-deck.qml \
    %{buildroot}%{_datadir}/%{name}/qml/harbour-patience-deck.qml
 %endif
 
-python3 tools/generate_authors.py \
-        --authors=aisleriot/AUTHORS \
-        --manual=aisleriot/help/C \
-        --games=aisleriot/games \
-        --append="Aike Reyer" \
-        %{buildroot}%{_datadir}/%{name}/data/AUTHORS
-
 %files
 %defattr(-,root,root,-)
 %{_bindir}/%{name}
