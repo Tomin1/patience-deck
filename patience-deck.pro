@@ -20,6 +20,9 @@ games.files -= aisleriot/games/card-monkey.scm
 games.files -= aisleriot/games/template.scm
 games.files -= aisleriot/games/test.scm
 games.path = /usr/share/$$(NAME)/games/
+chmod_games.depends = install_games
+chmod_games.path = $$games.path
+chmod_games.extra = chmod -x $(INSTALL_ROOT)/usr/share/$(NAME)/games/*.scm
 
 api.files = aisleriot/games/api.scm
 api.path = /usr/share/$$(NAME)/games/aisleriot/
@@ -35,7 +38,7 @@ copying.files = COPYING.GPL3 \
     aisleriot/COPYING.GFDL1.3
 copying.path = /usr/share/$$(NAME)/
 
-INSTALLS += games api manual figures copying
+INSTALLS += games chmod_games api manual figures copying
 
 # Translations
 TS_FILE = $$PWD/translations/patience-deck.ts

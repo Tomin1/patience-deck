@@ -59,8 +59,6 @@ export NAME="%{name}"
 
 %qmake5_install
 
-chmod -x %{buildroot}/%{_datadir}/%{name}/games/*.scm
-
 desktop-file-install \
     --dir %{buildroot}%{_datadir}/applications \
 %if %{with harbour}
