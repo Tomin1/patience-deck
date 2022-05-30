@@ -36,3 +36,14 @@ authors.commands = ../tools/generate_authors.py \
 authors.CONFIG = no_check_exist
 authors.path = /usr/share/$$(NAME)/data
 INSTALLS += authors
+
+ICON_SIZES = 86 108 128 172
+for (size, ICON_SIZES) {
+    icons.commands += mkdir -p \
+            $(INSTALL_ROOT)/usr/share/icons/hicolor/$${size}x$${size}/apps/ $$escape_expand(\n\t)
+    icons.commands += rsvg-convert --width=$${size} --height=$${size} \
+            --output $(INSTALL_ROOT)/usr/share/icons/hicolor/$${size}x$${size}/apps/$$(NAME).png \
+            patience-deck.svg $$escape_expand(\n\t)
+}
+icons.path = /usr/share/icons/hicolor
+INSTALLS += icons

@@ -69,14 +69,6 @@ desktop-file-install \
 %endif
      patience-deck.desktop
 
-for size in 86 108 128 172
-do
-    mkdir -p %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/
-    rsvg-convert --width=$size --height=$size --output \
-        %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/%{name}.png \
-        data/patience-deck.svg
-done
-
 %if %{with harbour}
 mkdir -p %{buildroot}%{_datadir}/%{name}/lib/
 cp -P %{_builddir}/libs/%{_arch}/built%{_datadir}/%{name}/lib/libgc.so* \
