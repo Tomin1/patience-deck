@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ENGINE_P_H
-#define ENGINE_P_H
+#ifndef ENGINEINTERNALS_H
+#define ENGINEINTERNALS_H
 
 #include <functional>
 #include <libguile.h>
@@ -142,4 +142,4 @@ private:
     Engine *engine();
 };
 
-#endif // ENGINE_P_H
+#endif // ENGINEINTERNALS_H
