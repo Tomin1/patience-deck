@@ -340,6 +340,7 @@ int Patience::gamesCount() const
 
 void Patience::restoreSavedOrLoad(const QString &fallback)
 {
+    qCDebug(lcPatience) << "Asking engine to restore saved game";
     m_gameFile = fallback + '-';
     emit doRestoreSavedEngineState();
 }

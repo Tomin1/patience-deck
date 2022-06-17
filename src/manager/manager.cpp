@@ -63,6 +63,7 @@ void Manager::handleNewSlot(int id, const CardList &dataList, int type,
 void Manager::handleAction(Engine::ActionTypeFlags action, int slotId, int index, const CardData &data)
 {
     Engine::ActionType type = Engine::actionType(action);
+    qCDebug(lcManager) << "Handling" << action << "while" << (m_preparing ? "preparing" : "not preparing");
     if (type == Engine::MoveEndedAction)
         handleMoveEnded();
     else if (m_preparing && !(action & Engine::ReplayActionFlag))

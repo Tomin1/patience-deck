@@ -146,12 +146,14 @@ Recorder::~Recorder()
 
 void Recorder::startReplay()
 {
+    qCDebug(lcRecorder) << "Starting replay";
     if (!load())
         emit replayCompleted(Failed);
 }
 
 void Recorder::replayMove()
 {
+    qCDebug(lcRecorder) << "Replaying first move";
     m_replaying = 1;
     replaySingle();
 }
@@ -184,6 +186,11 @@ bool Recorder::load()
 
 void Recorder::replaySingle()
 {
+    if (!m_replaying) {
+        qCCritical(lcRecorder) << "Tried to replay a move while not replaying";
+        return;
+    }
+
     if (m_replaying > (uint)m_records.count()) {
         emit replayCompleted(Success);
         m_replaying = 0;
