@@ -19,6 +19,7 @@
 #include "logging.h"
 
 Q_LOGGING_CATEGORY(lcPatience, "site.tomin.patience", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcTestMode, "site.tomin.patience.test", QtInfoMsg);
 Q_LOGGING_CATEGORY(lcTable, "site.tomin.patience.table", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcDrag, "site.tomin.patience.table.drag", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcSelection, "site.tomin.patience.table.selection", QtWarningMsg);

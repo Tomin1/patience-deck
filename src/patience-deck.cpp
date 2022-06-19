@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020  Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     Engine::addArguments(&parser);
     Table::addArguments(&parser);
     TextureRenderer::addArguments(&parser);
+    Patience::addArguments(&parser);
 
     parser.process(*app);
     if (parser.isSet(helpOption))
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
     Engine::setArguments(&parser);
     Table::setArguments(&parser);
     TextureRenderer::setArguments(&parser);
+    Patience::setArguments(&parser);
 
     qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
     qmlRegisterType<Table>("Patience", 1, 0, "Table");

@@ -32,6 +32,7 @@
 #include "engine.h"
 #include "feedbackevent.h"
 #include "logging.h"
+#include "patience.h"
 #include "selection.h"
 #include "slot.h"
 #include "table.h"
@@ -118,6 +119,8 @@ Table::Table(QQuickItem *parent)
     connect(this, &Table::heightChanged, this, &Table::handleSizeChanged);
     connect(this, &Table::widthChanged, this, &Table::handleSizeChanged);
     connect(this, &Table::doClick, engine, &Engine::click);
+
+    Patience::instance()->newTable(this);
 }
 
 Table::~Table()

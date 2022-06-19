@@ -251,4 +251,9 @@ Page {
     }
 
     Settings { id: settings }
+
+    TouchBlocker {
+        anchors.fill: parent
+        enabled: Patience.testMode
+    }
 }

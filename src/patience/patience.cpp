@@ -19,21 +19,27 @@
 #include <libintl.h>
 #include <memory>
 #include <QCoreApplication>
+#include <QCommandLineParser>
 #include <QDir>
 #include <QJSEngine>
 #include <QObject>
 #include <QQmlEngine>
+#include <QTimer>
 #include "constants.h"
 #include "gamelist.h"
 #include "logging.h"
 #include "patience.h"
+#include "table.h"
 
 const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
 const QString HistoryConf = QStringLiteral("/history");
 const QString HarbourPrefix = QLatin1String("harbour-");
 const QString IconPathTemplate = QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png");
+const int TestModeDelay = 200;
 
 Patience* Patience::s_game = nullptr;
+
+Patience::TestModeFlags Patience::s_testMode = TestModeDisabled;
 
 Patience* Patience::instance()
 {
@@ -61,6 +67,8 @@ Patience::Patience(QObject *parent)
     , m_state(UninitializedState)
     , m_historyConf(Constants::ConfPath + HistoryConf)
 {
+    if (s_testMode & TestModeEnabled)
+        qCInfo(lcTestMode) << "Test mode enabled.";
     auto engine = Engine::instance();
     engine->moveToThread(&m_engineThread);
     connect(&m_engineThread, &QThread::started, engine, &Engine::init);
@@ -104,6 +112,22 @@ Patience::~Patience()
 {
     m_engineThread.quit();
     m_engineThread.wait();
+}
+
+void Patience::newTable(Table *table)
+{
+    if (s_testMode & TestModeEnabled)
+        connect(table, &Table::cardTextureUpdated, this, &Patience::handleCardTextureUpdated);
+}
+
+void Patience::addArguments(QCommandLineParser *parser)
+{
+    parser->addOption({"test", "Run in test mode"});
+}
+
+void Patience::setArguments(QCommandLineParser *parser)
+{
+    s_testMode = parser->isSet("test") ? TestModeEnabled : TestModeDisabled;
 }
 
 void Patience::startNewGame()
@@ -380,6 +404,11 @@ bool Patience::showLibraryLicenses() const
     return QCoreApplication::instance()->arguments().first().section('/', -1).startsWith(HarbourPrefix);
 }
 
+bool Patience::testMode() const
+{
+    return s_testMode;
+}
+
 void Patience::catchFailure(QString message) {
     qCCritical(lcPatience) << "Engine failed!" << message;
     m_engineFailed = true;
@@ -411,6 +440,11 @@ void Patience::handleGameStarted()
 {
     qCDebug(lcPatience) << "Game started";
     setState(state() == RestoringState ? RunningState : StartingState);
+    if (s_testMode & TestModeEnabled) {
+        s_testMode |= TestModeReplayDone;
+        qCInfo(lcTestMode) << "Game started in test mode.";
+        testModeCompleted();
+    }
 }
 
 void Patience::handleGameContinued()
@@ -512,5 +546,44 @@ void Patience::handleRestoreCompleted(bool restored, bool success)
         qCDebug(lcPatience) << "Could not restore game, load instead"
                             << fallback;
         loadGame(fallback);
+    }
+}
+
+void Patience::handleCardTextureUpdated()
+{
+    if (s_testMode & TestModeEnabled) {
+        s_testMode |= TestModeTextureDrawn;
+        qCInfo(lcTestMode) << "Card texture drawn in test mode.";
+        testModeCompleted();
+    }
+}
+
+void Patience::testModeCompleted()
+{
+    if (s_testMode & TestModeComplete) {
+        qCInfo(lcTestMode) << "All tasks finished in test mode. Closing.";
+        QTimer::singleShot(TestModeDelay, this, [this]() {
+            int exitCode = 5;
+            switch (m_state) {
+            case UninitializedState:
+            case LoadedState:
+            case RestartingState:
+            case RestoringState:
+                break;
+            case StartingState:
+                exitCode = 4;
+                break;
+            case RunningState:
+                exitCode = 3;
+                break;
+            case GameOverState:
+                exitCode = 2;
+                break;
+            case WonState:
+                exitCode = 0;
+                break;
+            }
+            QCoreApplication::instance()->exit(exitCode);
+        });
     }
 }

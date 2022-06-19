@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,11 @@
 #include "engine.h"
 #include "timer.h"
 
-class QQmlEngine;
+class QCommandLineParser;
 class QJSEngine;
+class QQmlEngine;
 class QThread;
+class Table;
 class Patience : public QObject
 {
     Q_OBJECT
@@ -50,11 +52,25 @@ class Patience : public QObject
     Q_PROPERTY(QString helpFile READ helpFile NOTIFY gameNameChanged)
     Q_PROPERTY(int gamesCount READ gamesCount CONSTANT)
     Q_PROPERTY(bool showLibraryLicenses READ showLibraryLicenses CONSTANT)
+    Q_PROPERTY(bool testMode READ testMode CONSTANT)
 
 public:
     static Patience* instance();
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
     ~Patience();
+    void newTable(Table *table);
+
+    static void addArguments(QCommandLineParser *parser);
+    static void setArguments(QCommandLineParser *parser);
+
+    enum TestModeFlag {
+        TestModeDisabled,
+        TestModeEnabled = 0x01,
+        TestModeReplayDone = 0x02,
+        TestModeTextureDrawn = 0x04,
+        TestModeComplete = TestModeEnabled | TestModeReplayDone | TestModeTextureDrawn,
+    };
+    Q_DECLARE_FLAGS(TestModeFlags, TestModeFlag)
 
     enum GameState {
         UninitializedState,
@@ -104,6 +120,7 @@ public:
     bool engineFailed() const;
     int gamesCount() const;
     bool showLibraryLicenses() const;
+    bool testMode() const;
 
 signals:
     void canUndoChanged();
@@ -149,11 +166,13 @@ private slots:
     void handleShowDeal(bool show);
     void handleRestoreStarted(qint64 time);
     void handleRestoreCompleted(bool restored, bool success);
+    void handleCardTextureUpdated();
 
 private:
     explicit Patience(QObject *parent = nullptr);
     void setState(GameState state);
     QString readFile(const QString &path) const;
+    void testModeCompleted();
 
     QThread m_engineThread;
     bool m_engineFailed;
@@ -170,6 +189,9 @@ private:
     Timer m_timer;
 
     static Patience *s_game;
+    static TestModeFlags s_testMode;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Patience::TestModeFlags)
 
 #endif // PATIENCE_H
