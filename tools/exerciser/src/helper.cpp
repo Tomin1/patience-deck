@@ -1,6 +1,6 @@
 /*
  * Exerciser for Patience Deck engine class.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,9 +165,9 @@ int EngineHelper::findSlot(const CardData &needle)
 {
     auto engine = EngineInternals::instance();
     for (auto it = engine->m_cardSlots.constBegin(); it != engine->m_cardSlots.constEnd(); it++) {
-        for (const auto &card : it.value()) {
+        for (const auto &card : *it) {
             if (needle.equalValue(card))
-                return it.key();
+                return it - engine->m_cardSlots.constBegin();
         }
     }
     return -1;

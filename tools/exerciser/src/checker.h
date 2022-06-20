@@ -1,6 +1,6 @@
 /*
  * Exerciser for Patience Deck engine class.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,8 +47,7 @@ private slots:
     void handleNewSlot(int id, const CardList &cards, int type, double x, double y,
                        int expansionDepth, bool expandedDown, bool expandedRight);
     void handleGameStarted();
-    void handleAction(Engine::ActionType action, int slot, int index, const CardData &data);
-    void handleMoveEnded();
+    void handleAction(Engine::ActionTypeFlags action, int slot, int index, const CardData &data);
 
 private:
     struct Error {
@@ -70,6 +69,7 @@ private:
 
     void handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &data);
     bool handleQueued(const Action &action);
+    void handleMoveEnded();
     void fail(Error::Reason reason, const Action &action, const CardData &data);
 
     int m_move;

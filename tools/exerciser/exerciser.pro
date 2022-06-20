@@ -24,6 +24,7 @@ SOURCES += \
     src/helper.cpp \
     ../../src/engine/engine.cpp \
     ../../src/engine/interface.cpp \
+    ../../src/engine/recorder.cpp \
     ../../src/manager/queue.cpp \
     ../../src/common/logging.cpp
 
@@ -34,6 +35,7 @@ HEADERS += \
     ../../src/engine/engineinternals.h \
     ../../src/engine/enginedata.h \
     ../../src/engine/interface.h \
+    ../../src/engine/recorder.h \
     ../../src/manager/queue.h \
     ../../src/common/logging.h
 

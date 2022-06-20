@@ -1,6 +1,6 @@
 /*
  * Exerciser for Patience Deck engine class.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ EngineChecker::EngineChecker(QObject *parent)
     connect(engine, &Engine::newSlot, this, &EngineChecker::handleNewSlot);
     connect(engine, &Engine::gameStarted, this, &EngineChecker::handleGameStarted);
     connect(engine, &Engine::action, this, &EngineChecker::handleAction);
-    connect(engine, &Engine::moveEnded, this, &EngineChecker::handleMoveEnded);
 }
 
 void EngineChecker::dump() const
@@ -67,19 +66,18 @@ void EngineChecker::handleNewSlot(int id, const CardList &cards, int type, doubl
 
 void EngineChecker::handleGameStarted()
 {
-    int count = 0;
-    for (const auto &slot : m_slots) {
-        count += slot.count();
-    }
     m_move = 0;
 }
 
-void EngineChecker::handleAction(Engine::ActionType action, int slot, int index, const CardData &data)
+void EngineChecker::handleAction(Engine::ActionTypeFlags action, int slot, int index, const CardData &data)
 {
-    if (m_move < 0)
-        handleImmediately(action, slot, index, data);
-    else
-        m_queue.queue(action, slot, index, data);
+    Engine::ActionType type = Engine::actionType(action);
+    if (type == Engine::MoveEndedAction)
+        handleMoveEnded();
+    else if (m_move < 0)
+        handleImmediately(type, slot, index, data);
+    else if (!(action & Engine::EngineActionFlag))
+        m_queue.queue(type, slot, index, data);
 }
 
 void EngineChecker::handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &data)
@@ -102,6 +100,8 @@ void EngineChecker::handleImmediately(Engine::ActionType action, int slotId, int
         break;
     case Engine::ClearingAction:
         slot.clear();
+        break;
+    default:
         break;
     }
 }
@@ -197,6 +197,8 @@ bool EngineChecker::handleQueued(const Action &action)
             handled = true;
             break;
         }
+    default:
+        break;
     }
     return handled;
 }

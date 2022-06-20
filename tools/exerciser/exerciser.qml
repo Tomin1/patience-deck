@@ -1,6 +1,6 @@
 /*
  * Exerciser for Patience Deck engine class.
- * Copyright (C) 2021  Tomi Leppänen
+ * Copyright (C) 2021-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,16 +102,6 @@ Item {
 
         checker: EngineChecker {
             id: checker
-
-            onQueueFinished: {
-                if (checker.failed) {
-                    console.log("Checker detected errors in queueing")
-                    checker.dump()
-                    quit()
-                } else {
-                    newMove.start()
-                }
-            }
         }
     }
 
@@ -151,6 +141,16 @@ Item {
             console.log("Game over, won:", won)
             console.log("Final score was:", score)
             quit()
+        }
+
+        function onMoveEnded() {
+            if (checker.failed) {
+                console.log("Checker detected errors in queueing")
+                checker.dump()
+                quit()
+            } else {
+                newMove.start()
+            }
         }
     }
 }
