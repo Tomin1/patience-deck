@@ -144,6 +144,15 @@ void EngineHelper::click(const QVariantMap &clicked)
             qDebug() << "Clicking" << card << "at slot" << slot;
             engine->click(-1, slot);
         }
+    } else {
+        int slot = findSlotByType(static_cast<Slots>(clicked.value("type").toInt()),
+                                  clicked.value("empty").toBool());
+        if (slot == -1) {
+            // Game probably doesn't define slot types, assume slot 0
+            slot = 0;
+        }
+        qDebug() << "Clicking slot" << slot;
+        engine->click(-1, slot);
     }
 }
 
@@ -173,7 +182,7 @@ int EngineHelper::findSlot(const CardData &needle)
     return -1;
 }
 
-int EngineHelper::findSlotByType(Slots type, bool emptyRequired)
+int EngineHelper::findSlotByType(Slots type, bool emptyRequired) const
 {
     auto engine = EngineInternals::instance();
     for (auto it = m_slotTypes.constBegin(); it != m_slotTypes.constEnd(); it++) {

@@ -26,6 +26,7 @@ Item {
     property var moveOnto: /Move ([\w\s]+) onto ([\w\s]+)/
     property var tryMovingCards: /Try moving cards down from the foundation/
     property var dealNew: /Deal a new card from the deck/
+    property var dealMore: /Deal more cards/
     property var removeCard: /Remove ([\w\s]+)/
     property var ranks: ["joker", "ace", "two", "three", "four", "five", "six",
                          "seven", "eight", "nine", "ten", "jack", "queen", "king"]
@@ -81,6 +82,9 @@ Item {
         } else if (dealNew.test(hint)) {
             console.log("Should deal a new card")
             helper.engine.dealCard()
+        } else if (dealMore.test(hint)) {
+            console.log("Should deal more cards")
+            helper.click({ "type": EngineHelper.Stock, "empty": false })
         } else if (tryMovingCards.test(hint)) {
             console.log("No more hints, unsuccessful")
             console.log("Final score was:", score)

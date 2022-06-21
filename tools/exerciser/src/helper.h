@@ -59,11 +59,11 @@ private slots:
                        int expansionDepth, bool expandedDown, bool expandedRight);
 
 private:
-    bool isCard(const QVariantMap &map);
-    CardData toCard(const QVariantMap &map);
-    int findSlot(const CardData &needle);
-    int findSlotByType(Slots type, bool emptyRequired);
-    CardList getCards(int slot, const CardData &first);
+    static bool isCard(const QVariantMap &map);
+    static CardData toCard(const QVariantMap &map);
+    static int findSlot(const CardData &needle);
+    int findSlotByType(Slots type, bool emptyRequired) const;
+    static CardList getCards(int slot, const CardData &first);
 
     QHash<int, Slots> m_slotTypes;
     EngineChecker *m_checker;
