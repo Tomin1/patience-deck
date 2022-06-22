@@ -245,12 +245,16 @@ bool GameOptionModel::loadOptions(const QString &gameFile, GameOptionList &optio
 void GameOptionModel::saveOptions(const QString &gameFile, const GameOptionList &options)
 {
     MGConfItem optionsConf(Constants::ConfPath + OptionsConfTemplate.arg(GameList::name(gameFile)));
-    QStringList values;
-    for (const GameOption &option : options) {
-        if (option.set)
-            values.append(QString::number(option.index));
+    if (options.empty()) {
+        optionsConf.unset();
+    } else {
+        QStringList values;
+        for (const GameOption &option : options) {
+            if (option.set)
+                values.append(QString::number(option.index));
+        }
+        optionsConf.set(values.join(';'));
     }
-    optionsConf.set(values.join(';'));
     optionsConf.sync();
 }
 
