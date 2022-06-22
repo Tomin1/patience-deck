@@ -15,6 +15,7 @@
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import argparse
+import re
 import shlex
 import subprocess
 import sys
@@ -29,6 +30,8 @@ RESULTS = [
     "NEW",   # 4
     "OTHER", # 5
 ]
+
+COMMENT = re.compile(r"(?P<code>WON|INVAL|LOST|STUCK|NEW|OTHER)(?:, errors (?P<errors>\d+))?")
 
 def result_text(code):
     if code < len(RESULTS):
@@ -45,10 +48,16 @@ def read_saved_states(filename):
     with open(filename, 'r') as file:
         for line in filter(lambda l: not l.startswith('#'), file):
             parts = line.partition('#')
-            code = result_codes[parts[2].strip()] if parts[2].strip() in RESULTS else 0
-            yield parser.parse_args(shlex.split(parts[0])[1:]), code
+            comment = COMMENT.search(parts[2])
+            code = 0
+            expected_errors = 0
+            if comment:
+                code = result_codes[comment.group("code")]
+                if comment.group("errors"):
+                    expected_errors = int(comment.group("errors"))
+            yield parser.parse_args(shlex.split(parts[0])[1:]), code, expected_errors
 
-def run(test, expected_result):
+def run(test, expected_result, expected_errors):
     print(f"Testing with {test.game} (seed {test.seed})...", end="")
     sys.stdout.flush()
     command = ["patience-deck", "--test", "--game", test.game, "--seed", test.seed,
@@ -57,14 +66,15 @@ def run(test, expected_result):
     errors = []
     for line in filter(lambda l: l.startswith(b'[W] ') or l.startswith(b'[C] '), result.stderr.split(b'\n')):
         errors.append(line.decode('UTF-8'))
-    if result.returncode == expected_result and not errors:
-        print(f" succeeded, result {result_text(result.returncode)}")
+    if result.returncode == expected_result and len(errors) == expected_errors:
+        status = "succeeded" if expected_errors == 0 else f"succeeded with {len(errors)} expected errors"
+        print(f" {status}, result {result_text(result.returncode)}")
     else:
-        status = "FAILED" if not errors else "FAILED with errors"
+        status = "FAILED" if errors == expected_errors else f"FAILED with {len(errors)} errors"
         print(f" {status}, result {result_text(result.returncode)}, expected {result_text(expected_result)}")
     for line in errors:
         print("-->", line)
-    return result.returncode == expected_result and not errors
+    return result.returncode == expected_result and len(errors) == expected_errors
 
 def main():
     parser = argparse.ArgumentParser()
@@ -72,9 +82,9 @@ def main():
     args = parser.parse_args()
     count = 0
     successful = 0
-    for test, expected_result in read_saved_states(args.filename):
+    for test, expected_result, expected_errors in read_saved_states(args.filename):
         count += 1
-        if run(test, expected_result):
+        if run(test, expected_result, expected_errors):
             successful += 1
     if count == successful:
         print(f"All {count} tests passed!")
