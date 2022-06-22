@@ -171,7 +171,7 @@ bool Manager::handleQueued(const Action &action) {
         {
             auto cards = slot->takeAll();
             m_queue.clearQueued(slot->id());
-            store(cards);
+            store(cards, true);
             handled = true;
             qCDebug(lcManager) << "Cleared" << cards.count() << "cards from" << slot << "at" << action.index;
             break;
@@ -229,11 +229,16 @@ void Manager::handleMoveEnded()
 
 void Manager::store(const QList<Card *> &cards)
 {
+    store(cards, false);
+}
+
+void Manager::store(const QList<Card *> &cards, bool suppress)
+{
     for (Card *card : cards) {
         if (card) {
             card->moveTo(m_table);
             m_queue.store(card);
-        } else {
+        } else if (!suppress) {
             qCWarning(lcManager) << "Skipped placeholder card";
         }
     }

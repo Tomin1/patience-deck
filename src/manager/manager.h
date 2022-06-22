@@ -49,6 +49,7 @@ private slots:
     void handleMoveEnded();
 
 private:
+    void store(const QList<Card *> &cards, bool suppress);
     bool handleQueued(const Action &action);
 
     Engine *m_engine;
