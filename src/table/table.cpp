@@ -695,7 +695,7 @@ void Table::updateCardSize()
 
     m_cardSpace = m_cardSize + m_cardMargin;
     m_sideMargin = ceil((width() - (m_cardSpace.width()+m_margin.width())*m_tableSize.width() + m_margin.width()) / 2.0);
-    if (m_sideMargin < m_minimumSideMargin)
+    if (m_sideMargin < (m_minimumSideMargin - 1))
         qCWarning(lcTable) << "Miscalculated side margin! Current is" << m_sideMargin
                            << "but it should be" << m_minimumSideMargin;
 
