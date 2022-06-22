@@ -76,8 +76,10 @@ void EngineChecker::handleAction(Engine::ActionTypeFlags action, int slot, int i
         handleMoveEnded();
     else if (m_move < 0)
         handleImmediately(type, slot, index, data);
-    else if (!(action & Engine::EngineActionFlag))
+    else if (!(action & Engine::EngineActionFlag)) {
         m_queue.queue(type, slot, index, data);
+        emit queued();
+    }
 }
 
 void EngineChecker::handleImmediately(Engine::ActionType action, int slotId, int index, const CardData &data)

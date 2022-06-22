@@ -40,6 +40,7 @@ public:
 
 signals:
     void failedChanged();
+    void queued();
     void queueFinished();
 
 private slots:

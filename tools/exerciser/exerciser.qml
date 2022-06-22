@@ -32,6 +32,7 @@ Item {
                          "seven", "eight", "nine", "ten", "jack", "queen", "king"]
     property var suits: ["clubs", "diamonds", "hearts", "spades"]
     property int score
+    property bool queueBusy
 
     function quit() {
         Qt.quit()
@@ -106,13 +107,22 @@ Item {
 
         checker: EngineChecker {
             id: checker
+
+            onQueued: queueBusy = true
+            onQueueFinished: queueBusy = false
         }
     }
 
     Timer {
         id: newMove
-        interval: 0
-        onTriggered: helper.engine.getHint()
+        interval: 10
+        repeat: true
+        onTriggered: {
+            if (!queueBusy) {
+                stop()
+                helper.engine.getHint()
+            }
+        }
     }
 
     Connections {
