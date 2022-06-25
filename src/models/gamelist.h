@@ -18,12 +18,16 @@
 #ifndef GAMELIST_H
 #define GAMELIST_H
 
+#include <functional>
 #include <MGConfItem>
 #include <QAbstractListModel>
+#include <QQmlParserStatus>
 
-class GameList : public QAbstractListModel
+class GameList : public QAbstractListModel, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
+    Q_PROPERTY(QString searchedText READ searchedText WRITE setSearchedText NOTIFY searchedTextChanged)
 
 public:
     static QString capitalized(const QString &fileName);
@@ -35,11 +39,16 @@ public:
     static int supportedCount();
 
     Q_INVOKABLE void setFavorite(int row, bool favorite);
+    QString searchedText() const;
+    void setSearchedText(const QString &text);
 
     explicit GameList(QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QHash<int, QByteArray> roleNames() const;
+
+    void classBegin() override;
+    void componentComplete() override;
 
     enum Roles {
         DisplayRole = Qt::DisplayRole,
@@ -56,8 +65,12 @@ public:
         AllGames,
         LastPlayed,
         Favorites,
+        SearchResults,
     };
     Q_ENUM(Section)
+
+signals:
+    void searchedTextChanged();
 
 private:
     static MGConfItem *showAllConf();
@@ -70,9 +83,18 @@ private:
     Section getSection(int row) const;
     void emitFavoriteChanged(int row);
 
+    bool searching() const;
+    std::function<bool(int, int)> searchCompareFunction() const;
+    void filterSearch();
+    void clearSearch();
+    void resetSearch();
+    void emitChangedEntries(int oldCount, int newCount);
+
     QVector<QString> m_games;
     QStringList m_lastPlayed;
     QStringList m_favorites;
+    QString m_searchedText;
+    QVector<int> m_results;
 
     MGConfItem m_favoriteConf;
 };

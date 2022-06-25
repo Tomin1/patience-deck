@@ -158,9 +158,23 @@ GameList::GameList(QObject *parent)
     });
 }
 
+void GameList::classBegin()
+{
+}
+
+void GameList::componentComplete()
+{
+    if (!m_searchedText.isEmpty()) {
+        resetSearch();
+        filterSearch();
+    }
+}
+
 int GameList::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
+    if (searching())
+        return m_results.count();
     return m_lastPlayed.count() + m_favorites.count() + m_games.count();
 }
 
@@ -233,38 +247,140 @@ void GameList::setFavorite(int row, bool favorite)
     auto it = std::lower_bound(m_favorites.begin(), m_favorites.end(), fileName, lessThan);
     if (favorite) {
         if (it == m_favorites.end() || *it != fileName) {
-            int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
-            beginInsertRows(QModelIndex(), pos, pos);
-            m_favorites.insert(it, fileName);
-            endInsertRows();
-            changed = true;
+            if (!searching()) {
+                int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
+                beginInsertRows(QModelIndex(), pos, pos);
+                m_favorites.insert(it, fileName);
+                endInsertRows();
+                qCDebug(lcGameList) << "Inserted favorite to" << pos << "for row" << row
+                                    << "with value" << fileName;
+            } else {
+                m_favorites.insert(it, fileName);
+            }
             m_favoriteConf.set(m_favorites.join(';'));
-            qCDebug(lcGameList) << "Inserted favorite to" << pos << "for row" << row
-                                << "with value" << fileName;
+            changed = true;
         }
     } else {
         if (it != m_favorites.end() && *it == fileName) {
-            int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
-            beginRemoveRows(QModelIndex(), pos, pos);
-            m_favorites.erase(it);
-            endRemoveRows();
-            changed = true;
+            if (!searching()) {
+                int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
+                beginRemoveRows(QModelIndex(), pos, pos);
+                m_favorites.erase(it);
+                endRemoveRows();
+                qCDebug(lcGameList) << "Removed favorite from" << pos << "for row" << row
+                                    << "with value" << fileName;
+            } else {
+                m_favorites.erase(it);
+            }
             m_favoriteConf.set(m_favorites.join(';'));
-            qCDebug(lcGameList) << "Removed favorite from" << pos << "for row" << row
-                                << "with value" << fileName;
+            changed = true;
         }
     }
     if (changed) {
-        int lastPlayedRow = section == LastPlayed ? row : m_lastPlayed.indexOf(fileName);
-        if (lastPlayedRow != -1)
-            emitFavoriteChanged(lastPlayedRow);
-        if (section == AllGames) {
-            emitFavoriteChanged(row + (favorite ? 1 : -1));
+        if (!searching()) {
+            int lastPlayedRow = section == LastPlayed ? row : m_lastPlayed.indexOf(fileName);
+            if (lastPlayedRow != -1)
+                emitFavoriteChanged(lastPlayedRow);
+            if (section == AllGames) {
+                emitFavoriteChanged(row + (favorite ? 1 : -1));
+            } else {
+                int allGamesRow = std::distance(m_games.begin(),
+                        std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan));
+                emitFavoriteChanged(allGamesRow + m_lastPlayed.count() + m_favorites.count());
+            }
         } else {
             int allGamesRow = std::distance(m_games.begin(),
                     std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan));
-            emitFavoriteChanged(allGamesRow + m_lastPlayed.count() + m_favorites.count());
+            int resultsRow = std::distance(m_results.begin(),
+                    std::lower_bound(m_results.begin(), m_results.end(), allGamesRow));
+            emitFavoriteChanged(resultsRow);
         }
+    }
+}
+
+bool GameList::searching() const
+{
+    return !m_searchedText.isEmpty();
+}
+
+QString GameList::searchedText() const
+{
+    return m_searchedText;
+}
+
+void GameList::setSearchedText(const QString &text)
+{
+    if (m_searchedText != text) {
+        if (text.isEmpty()) {
+            m_searchedText.clear();
+            clearSearch();
+        } else {
+            int previousCount = (m_searchedText.isEmpty()
+                ? m_lastPlayed.count() + m_favorites.count() + m_games.count()
+                : m_results.count());
+            if (m_searchedText.isEmpty() || !text.startsWith(m_searchedText))
+                resetSearch();
+            m_searchedText = text;
+            filterSearch();
+            emitChangedEntries(previousCount, m_results.count());
+        }
+        emit searchedTextChanged();
+    }
+}
+
+std::function<bool(int, int)> GameList::searchCompareFunction() const
+{
+    return [this](int a, int b) {
+        int iA = translated(m_games[a]).indexOf(m_searchedText, 0, Qt::CaseInsensitive);
+        int iB = translated(m_games[b]).indexOf(m_searchedText, 0, Qt::CaseInsensitive);
+        if (iA == iB)
+            return a < b;
+        return iA < iB;
+    };
+}
+
+void GameList::filterSearch()
+{
+    qCDebug(lcGameList) << m_results.count() << "games to search from";
+    QVector<int> results;
+    for (int i : m_results) {
+        if (translated(m_games[i]).contains(m_searchedText, Qt::CaseInsensitive))
+            results.append(i);
+    }
+    qCInfo(lcGameList) << results.count() << "matched to searched text";
+    std::sort(results.begin(), results.end(), searchCompareFunction());
+    m_results.swap(results);
+}
+
+void GameList::clearSearch()
+{
+    emitChangedEntries(m_results.count(), m_lastPlayed.count() + m_favorites.count() + m_games.count());
+    m_results.clear();
+    qCInfo(lcGameList) << "Cleared search";
+}
+
+void GameList::resetSearch()
+{
+    m_results.clear();
+    m_results.reserve(m_games.count());
+    for (int i = 0; i < m_games.count(); i++)
+        m_results.append(i);
+}
+
+void GameList::emitChangedEntries(int oldCount, int newCount)
+{
+    if (oldCount > 0 && newCount > 0) {
+        emit dataChanged(createIndex(0, 0), createIndex(std::min(oldCount, newCount) - 1, 0));
+        qCDebug(lcGameList) << "Data changed for items between 0 and" << std::min(oldCount, newCount) - 1;
+    }
+    if (newCount < oldCount) {
+        beginRemoveRows(QModelIndex(), newCount, oldCount - 1);
+        qCDebug(lcGameList) << "Removed items between" << newCount << "and" << oldCount - 1;
+        endRemoveRows();
+    } else if (newCount > oldCount) {
+        beginInsertRows(QModelIndex(), oldCount, newCount - 1);
+        qCDebug(lcGameList) << "Inserted items between" << oldCount << "and" << newCount - 1;
+        endInsertRows();
     }
 }
 
@@ -298,6 +414,8 @@ int GameList::supportedCount()
 
 QString GameList::getFileName(int row) const
 {
+    if (searching())
+        return m_games[m_results[row]];
     if (row < m_lastPlayed.count())
         return m_lastPlayed[row];
     if (row < m_lastPlayed.count() + m_favorites.count())
@@ -307,6 +425,8 @@ QString GameList::getFileName(int row) const
 
 GameList::Section GameList::getSection(int row) const
 {
+    if (searching())
+        return SearchResults;
     if (row < m_lastPlayed.count())
         return LastPlayed;
     if (row < m_lastPlayed.count() + m_favorites.count())
