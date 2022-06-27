@@ -542,7 +542,7 @@ Drag *Table::drag(QMouseEvent *event, Card *card)
 {
     Selection *selection = qobject_cast<Selection *>(m_interaction);
     if (selection && event->type() == QEvent::MouseButtonPress) {
-        if (selection->slot() == card->slot())
+        if (selection->contains(card))
             // Give this selection to a new drag to handle
             m_interaction = nullptr;
         else

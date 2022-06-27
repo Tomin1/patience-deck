@@ -112,6 +112,9 @@ Card *Selection::card() const
 
 bool Selection::contains(const Card *card) const
 {
+    if (slot() != card->slot())
+        return false;
+
     for (auto it = m_source->constFind(m_card); it != m_source->constEnd(); ++it) {
         if (*it == card)
             return true;
