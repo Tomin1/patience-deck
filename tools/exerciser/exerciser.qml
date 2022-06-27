@@ -23,6 +23,7 @@ Item {
     property var moveToFoundation: /Move ([\w\s]+) onto (the|an empty) foundation/
     property var moveToTableau: /Move ([\w\s]+) onto (the|an empty) tableau/
     property var moveToReserve: /Move ([\w\s]+) onto (the|an empty) reserve/
+    property var moveSomething: /Move something onto ([\w\s]+)/
     property var moveOnto: /Move ([\w\s]+) onto ([\w\s]+)/
     property var tryMovingCards: /Try moving cards down from the foundation/
     property var dealNew: /Deal a new card from the deck/
@@ -86,6 +87,9 @@ Item {
                 "type": EngineHelper.Reserve,
                 "empty": (matches[2] == "an empty")
             })
+        } else if (moveSomething.test(hint)) {
+            console.warn("Unsupported hint:", hint)
+            quit()
         } else if (moveOnto.test(hint)) {
             var matches = hint.match(moveOnto)
             console.log("Should move", matches[1], "to", matches[2])
