@@ -83,6 +83,8 @@ QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         QSizeF size = m_table->cardSizeInTexture();
         QRect rect(column * size.width(), row * size.height(), size.width(), size.height());
         node->setSourceRect(rect);
+        if (node->childCount() > 0)
+            static_cast<QSGSimpleRectNode *>(node->firstChild())->setRect(boundingRect());
         m_dirty = false;
     }
     if (highlighted()) {
