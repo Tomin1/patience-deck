@@ -582,6 +582,15 @@ void Table::select(Card *card)
     });
 }
 
+void Table::unselect()
+{
+    Selection *selection = qobject_cast<Selection *>(m_interaction);
+    if (selection) {
+        selection->cancel();
+        emit feedback()->selectionChanged();
+    }
+}
+
 void Table::handleSetExpansionToDown(int id, double expansion)
 {
     if (!preparing()) {

@@ -103,6 +103,9 @@ public:
     void store(const QList<Card *> &cards);
     Drag *drag(QMouseEvent *event, Card *card);
     void select(Card *card);
+    Q_INVOKABLE void unselect();
+
+    void setDirtyCardSize();
 
     typedef QVector<Slot *>::iterator iterator;
     iterator begin();
@@ -122,10 +125,6 @@ public:
     };
     Q_DECLARE_FLAGS(DirtyFlags, Dirty)
 
-public slots:
-    void handleSizeChanged();
-    void setDirtyCardSize();
-
 signals:
     void minimumSideMarginChanged();
     void horizontalMarginChanged();
@@ -144,6 +143,7 @@ private slots:
     void createCardTexture();
     void swapCardTexture();
     void handleCardTextureRendered(QImage image, const QSize &size);
+    void handleSizeChanged();
     void handleSceneGraphInvalidated();
     void handleSetExpansionToDown(int id, double expansion);
     void handleSetExpansionToRight(int id, double expansion);

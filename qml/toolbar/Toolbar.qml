@@ -399,7 +399,7 @@ Item {
                         showText: buttonCountHorizontal < 1
                         parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
                         disabled: !Patience.canUndo
-                        onClicked: if (!disabled) Patience.undoMove()
+                        onActionTriggered: Patience.undoMove()
                     }
 
                     ToolbarButton {
@@ -411,7 +411,7 @@ Item {
                         showText: buttonCountHorizontal < 2
                         parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
                         disabled: !Patience.canRedo
-                        onClicked: if (!disabled) Patience.redoMove()
+                        onActionTriggered: Patience.redoMove()
                     }
 
                     ToolbarButton {
@@ -423,7 +423,7 @@ Item {
                         showText: buttonCountHorizontal < 3
                         parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
-                        onClicked: if (!disabled) Patience.getHint()
+                        onActionTriggered: Patience.getHint()
                     }
 
                     ToolbarButton {
@@ -436,7 +436,7 @@ Item {
                         parent: buttonCountHorizontal >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
-                        onClicked: if (!disabled) Patience.dealCard()
+                        onActionTriggered: Patience.dealCard()
                     }
 
                     ToolbarButton {
@@ -447,7 +447,7 @@ Item {
                         imageSource: "../../buttons/icon-m-restart.svg"
                         showText: buttonCountHorizontal < 5
                         parent: buttonCountHorizontal >= 5 ? mainButtons : extraButtons
-                        onClicked: Patience.restartGame()
+                        onActionTriggered: Patience.restartGame()
                     }
                 }
             }
