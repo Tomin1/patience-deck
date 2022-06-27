@@ -27,6 +27,7 @@
 EngineHelper::EngineHelper(QObject *parent)
     : QObject(parent)
     , m_checker(nullptr)
+    , m_goal(TestCurrentSeed)
 {
     auto engine = Engine::instance();
     connect(engine, &Engine::clearData, this, &EngineHelper::handleClearData);
@@ -48,8 +49,18 @@ bool EngineHelper::parseArgs()
     parser.addOptions({
         {{"g", "game"}, "Game file name to load", "filename"},
         {{"s", "seed"}, "Seed to use", "seed"},
+        {{"f", "find-winnable"}, "Find new seeds until a winnable game is found"},
+        {{"F", "find-any"}, "Find new seeds until a finishable game is found"},
     });
     parser.process(QCoreApplication::arguments());
+
+    if (parser.isSet("find-any")) {
+        m_goal = FindFinishableGame;
+        emit goalChanged();
+    } else if (parser.isSet("find-winnable")) {
+        m_goal = FindWinnableGame;
+        emit goalChanged();
+    }
 
     if (parser.isSet("seed")) {
         bool ok;
@@ -79,6 +90,11 @@ void EngineHelper::setChecker(EngineChecker *checker)
         m_checker = checker;
         emit checkerChanged();
     }
+}
+
+EngineHelper::Goal EngineHelper::goal() const
+{
+    return m_goal;
 }
 
 void EngineHelper::handleClearData()

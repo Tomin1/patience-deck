@@ -34,6 +34,16 @@ Item {
     property int score
     property bool queueBusy
 
+    function gameEnded(finished, won) {
+        if (helper.goal === EngineHelper.FindWinnableGame && !won) {
+            helper.engine.start()
+        } else if (helper.goal === EngineHelper.FindFinishableGame && !finished) {
+            helper.engine.start()
+        } else {
+            quit()
+        }
+    }
+
     function quit() {
         Qt.quit()
     }
@@ -89,7 +99,7 @@ Item {
         } else if (tryMovingCards.test(hint)) {
             console.log("No more hints, unsuccessful")
             console.log("Final score was:", score)
-            quit()
+            gameEnded(false, false);
         } else if (removeCard.test(hint)) {
             var matches = hint.match(removeCard)
             console.log("Removing", matches[1])
@@ -154,7 +164,7 @@ Item {
         function onGameOver(won) {
             console.log("Game over, won:", won)
             console.log("Final score was:", score)
-            quit()
+            gameEnded(true, won)
         }
 
         function onMoveEnded() {

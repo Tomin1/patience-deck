@@ -26,14 +26,23 @@ class EngineHelper : public QObject
     Q_OBJECT
     Q_PROPERTY(Engine *engine READ engine CONSTANT)
     Q_PROPERTY(EngineChecker *checker READ checker WRITE setChecker NOTIFY checkerChanged)
+    Q_PROPERTY(Goal goal READ goal NOTIFY goalChanged);
 
 public:
     explicit EngineHelper(QObject *parent = nullptr);
     ~EngineHelper();
 
+    enum Goal {
+        TestCurrentSeed,
+        FindWinnableGame,
+        FindFinishableGame,
+    };
+    Q_ENUM(Goal)
+
     Engine *engine() const;
     EngineChecker *checker() const;
     void setChecker(EngineChecker *checker);
+    Goal goal() const;
     Q_INVOKABLE bool parseArgs();
     Q_INVOKABLE quint32 getSeed() const;
     Q_INVOKABLE void move(const QVariantMap &from, const QVariantMap &to);
@@ -52,6 +61,7 @@ public:
 
 signals:
     void checkerChanged();
+    void goalChanged();
 
 private slots:
     void handleClearData();
@@ -67,4 +77,5 @@ private:
 
     QHash<int, Slots> m_slotTypes;
     EngineChecker *m_checker;
+    Goal m_goal;
 };
