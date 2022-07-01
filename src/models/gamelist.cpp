@@ -292,7 +292,7 @@ void GameList::setFavorite(int row, bool favorite)
             int allGamesRow = std::distance(m_games.begin(),
                     std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan));
             int resultsRow = std::distance(m_results.begin(),
-                    std::lower_bound(m_results.begin(), m_results.end(), allGamesRow));
+                    std::lower_bound(m_results.begin(), m_results.end(), allGamesRow, searchCompareFunction()));
             emitFavoriteChanged(resultsRow);
         }
     }
