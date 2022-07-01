@@ -74,8 +74,6 @@ private:
     bool m_hidden;
 };
 
-const QString Constants::DataDirectory = QStringLiteral(QUOTE(DATADIR) "/data");
-
 #define dirty(flag) (m_dirty & (flag))
 #define smudge(flag) m_dirty |= (flag)
 #define clean() m_dirty = Clean

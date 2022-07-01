@@ -34,6 +34,7 @@
 #include "gameoptionmodel.h"
 #include "helpmodel.h"
 #include "patience.h"
+#include "patiencedeck.h"
 #include "table.h"
 #include "texturerenderer.h"
 
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
     TextureRenderer::setArguments(&parser);
     Patience::setArguments(&parser);
 
+    qmlRegisterSingletonType<PatienceDeck>("PatienceDeck", 1, 0, "PatienceDeck", &PatienceDeck::instance);
     qmlRegisterSingletonType<Patience>("Patience", 1, 0, "Patience", &Patience::instance);
     qmlRegisterType<Table>("Patience", 1, 0, "Table");
     qmlRegisterUncreatableType<FeedbackEvent>("Patience", 1, 0, "FeedbackEvent", "This is an attached property to Table");

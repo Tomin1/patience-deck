@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 import QtQml 2.2
 import QtQuick 2.6
 import Sailfish.Silica 1.0
-import Patience 1.0
+import PatienceDeck 1.0
 
 Page {
     id: aboutPage
@@ -52,7 +52,7 @@ Page {
                         rightMargin: Theme.horizontalPageMargin
                         verticalCenter: parent.verticalCenter
                     }
-                    source: Patience.getIconPath(Theme.iconSizeLauncher)
+                    source: PatienceDeck.getIconPath(Theme.iconSizeLauncher)
                     sourceSize.height: Theme.iconSizeLauncher
                     sourceSize.width: Theme.iconSizeLauncher
                 }
@@ -64,7 +64,7 @@ Page {
                 //% "It reimplements game engine from <a href=%2>GNOME Aisleriot</a> and utilises "
                 //% "its implementations of patience games including translations, manual pages and artwork."
                 text: qsTrId("patience-la-about_text")
-                    .arg(Patience.gamesCount)
+                    .arg(PatienceDeck.gamesCount)
                     .arg("\"https://wiki.gnome.org/Apps/Aisleriot\"")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
@@ -146,8 +146,8 @@ Page {
                 text: qsTrId("patience-la-show_all_games")
                 //% "List also unsupported games in game selection"
                 description: qsTrId("patience-de-list_unsupported_games")
-                checked: Patience.showAllGames
-                onClicked: Patience.showAllGames = !Patience.showAllGames
+                checked: PatienceDeck.showAllGames
+                onClicked: PatienceDeck.showAllGames = !PatienceDeck.showAllGames
                 height: implicitHeight + Theme.paddingLarge
             }
         }
@@ -198,7 +198,7 @@ Page {
                     }
 
                     Paragraph {
-                        text: Patience.translators
+                        text: PatienceDeck.translators
                     }
                 }
 
@@ -232,7 +232,7 @@ Page {
                     }
 
                     Paragraph {
-                        text: Patience.aisleriotAuthors
+                        text: PatienceDeck.aisleriotAuthors
                     }
 
                     Paragraph {
@@ -244,12 +244,12 @@ Page {
                         text: qsTrId("patience-se-translator-information")
                         topPadding: Theme.paddingMedium
                         horizontalAlignment: Text.AlignRight
-                        visible: Patience.aisleriotTranslatorInfo !== ""
+                        visible: PatienceDeck.aisleriotTranslatorInfo !== ""
                     }
 
                     Paragraph {
-                        text: Patience.aisleriotTranslatorInfo
-                        visible: Patience.aisleriotTranslatorInfo !== ""
+                        text: PatienceDeck.aisleriotTranslatorInfo
+                        visible: PatienceDeck.aisleriotTranslatorInfo !== ""
                     }
                 }
 

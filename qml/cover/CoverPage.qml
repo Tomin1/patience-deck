@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021  Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Patience 1.0
+import PatienceDeck 1.0
 
 CoverBackground {
     Column {
@@ -26,7 +27,7 @@ CoverBackground {
 
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
-            source: Patience.getIconPath(Theme.iconSizeLauncher)
+            source: PatienceDeck.getIconPath(Theme.iconSizeLauncher)
             sourceSize.height: Theme.iconSizeLauncher
             sourceSize.width: Theme.iconSizeLauncher
         }

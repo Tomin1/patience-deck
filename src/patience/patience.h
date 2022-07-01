@@ -43,15 +43,9 @@ class Patience : public QObject
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
     Q_PROPERTY(bool showScore READ showScore NOTIFY showScoreChanged);
     Q_PROPERTY(bool showDeal READ showDeal NOTIFY showDealChanged);
-    Q_PROPERTY(QString aisleriotAuthors READ aisleriotAuthors CONSTANT)
-    Q_PROPERTY(QString aisleriotTranslatorInfo READ aisleriotTranslatorInfo CONSTANT)
-    Q_PROPERTY(QString translators READ translators CONSTANT)
-    Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
     Q_PROPERTY(QString helpFile READ helpFile NOTIFY gameNameChanged)
-    Q_PROPERTY(int gamesCount READ gamesCount CONSTANT)
-    Q_PROPERTY(bool showLibraryLicenses READ showLibraryLicenses CONSTANT)
     Q_PROPERTY(bool testMode READ testMode CONSTANT)
 
 public:
@@ -93,7 +87,6 @@ public:
     Q_INVOKABLE void dealCard();
     Q_INVOKABLE void getHint();
     Q_INVOKABLE void restoreSavedOrLoad(const QString &fallback);
-    Q_INVOKABLE QString getIconPath(int size) const;
 
     // Properties
     bool canUndo() const;
@@ -111,15 +104,8 @@ public:
     bool paused() const;
     void setPaused(bool paused);
     QString message() const;
-    QString aisleriotAuthors() const;
-    QString aisleriotTranslatorInfo() const;
-    QString translators() const;
-    bool showAllGames() const;
-    void setShowAllGames(bool show);
     QStringList history() const;
     bool engineFailed() const;
-    int gamesCount() const;
-    bool showLibraryLicenses() const;
     bool testMode() const;
 
 signals:
@@ -136,7 +122,6 @@ signals:
     void showDealChanged();
     void hint(const QString &hint);
     void cardMoved();
-    void showAllGamesChanged();
     void historyChanged();
     void engineFailedChanged();
 
@@ -171,7 +156,6 @@ private slots:
 private:
     explicit Patience(QObject *parent = nullptr);
     void setState(GameState state);
-    QString readFile(const QString &path) const;
     void testModeCompleted();
 
     QThread m_engineThread;

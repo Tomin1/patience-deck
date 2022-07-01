@@ -24,6 +24,7 @@ SOURCES += \
     models/helpmodel.cpp \
     patience/timer.cpp \
     patience/patience.cpp \
+    patience/patiencedeck.cpp \
     table/card.cpp \
     table/countableid.cpp \
     table/drag.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     models/gameoptionmodel.h \
     models/helpmodel.h \
     patience/patience.h \
+    patience/patiencedeck.h \
     patience/timer.h \
     table/card.h \
     table/countableid.h \

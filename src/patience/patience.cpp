@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glob.h>
-#include <libintl.h>
 #include <memory>
 #include <QCoreApplication>
 #include <QCommandLineParser>
-#include <QDir>
 #include <QJSEngine>
-#include <QObject>
 #include <QQmlEngine>
 #include <QTimer>
 #include "constants.h"
@@ -33,8 +29,6 @@
 
 const QString Constants::ConfPath = QStringLiteral("/site/tomin/apps/PatienceDeck");
 const QString HistoryConf = QStringLiteral("/history");
-const QString HarbourPrefix = QLatin1String("harbour-");
-const QString IconPathTemplate = QStringLiteral("/usr/share/icons/hicolor/%1x%1/apps/%2.png");
 const int TestModeDelay = 200;
 
 Patience* Patience::s_game = nullptr;
@@ -299,52 +293,6 @@ QString Patience::message() const
     return m_message;
 }
 
-QString Patience::readFile(const QString &path) const
-{
-    QFile file(path);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        qCWarning(lcPatience) << "Can not open" << file.fileName() << "for reading";
-        return QString();
-    }
-
-    QString content = file.readAll();
-    if (content.endsWith('\n'))
-        content.truncate(content.length() - 1);
-    return content;
-}
-
-QString Patience::aisleriotAuthors() const
-{
-    return readFile(Constants::DataDirectory + QStringLiteral("/AUTHORS"));
-}
-
-QString Patience::aisleriotTranslatorInfo() const
-{
-    const char *info = gettext("translator-credits");
-    if (!info || strcmp(info, "translator-credits") == 0)
-        return QString();
-    return QString(info);
-}
-
-QString Patience::translators() const
-{
-    return readFile(Constants::DataDirectory + QStringLiteral("/TRANSLATORS"));
-}
-
-bool Patience::showAllGames() const
-{
-    return GameList::showAll();
-}
-
-void Patience::setShowAllGames(bool show)
-{
-    if (show != GameList::showAll()) {
-        GameList::setShowAll(show);
-        emit showAllGamesChanged();
-    }
-}
-
 QStringList Patience::history() const
 {
     auto list = m_historyConf.value().toString().split(';');
@@ -357,51 +305,11 @@ bool Patience::engineFailed() const
     return m_engineFailed;
 }
 
-int Patience::gamesCount() const
-{
-    return GameList::supportedCount();
-}
-
 void Patience::restoreSavedOrLoad(const QString &fallback)
 {
     qCDebug(lcPatience) << "Asking engine to restore saved game";
     m_gameFile = fallback + '-';
     emit doRestoreSavedEngineState();
-}
-
-QString Patience::getIconPath(int size) const
-{
-    static QString mostSuitable;
-    if (mostSuitable.isEmpty()) {
-        QString name = QCoreApplication::instance()->arguments().first().section('/', -1);
-        glob_t globbuf;
-        QByteArray nameGlob = IconPathTemplate.arg("*").arg(name).toLocal8Bit();
-        int bestSize = 86;
-        if (glob(nameGlob.constData(), GLOB_NOSORT, NULL, &globbuf) == 0) {
-            QStringList files;
-            for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-                int foundSize = atoi(globbuf.gl_pathv[i] + 25);
-                if (foundSize == size) {
-                    bestSize = size;
-                    break;
-                } else if (foundSize > size) {
-                    if (bestSize < size || foundSize < bestSize)
-                        bestSize = foundSize;
-                } else /* foundSize < size */ {
-                    if (foundSize > bestSize)
-                        bestSize = foundSize;
-                }
-            }
-        }
-        mostSuitable = IconPathTemplate.arg(bestSize).arg(name);
-        qCDebug(lcPatience) << "Found icon at" << mostSuitable;
-    }
-    return mostSuitable;
-}
-
-bool Patience::showLibraryLicenses() const
-{
-    return QCoreApplication::instance()->arguments().first().section('/', -1).startsWith(HarbourPrefix);
 }
 
 bool Patience::testMode() const
