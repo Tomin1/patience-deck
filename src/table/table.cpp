@@ -141,14 +141,12 @@ void Table::setArguments(QCommandLineParser *parser)
     if (parser->isSet("background")) {
         MGConfItem backgroundConf(Constants::ConfPath + QStringLiteral("/backgroundColor"));
         QString value = parser->value("background");
-        QColor color(backgroundConf.value(DefaultBackgroundColor.name()).toString());
         if (value == QLatin1String("default") || value == QLatin1String("adaptive"))
-            color = QColor();
+            backgroundConf.set(QString());
         else if (value == QLatin1String("transparent"))
-            color.setAlpha(0);
+            backgroundConf.set(QColor(0, 0, 0, 0).name(QColor::HexArgb));
         else
-            color = QColor(value);
-        backgroundConf.set(color.isValid() ? color.name(color.alpha() == 255 ? QColor::HexRgb : QColor::HexArgb) : QString());
+            backgroundConf.set(QColor(value).name(QColor::HexRgb));
         backgroundConf.sync();
     }
 }
