@@ -32,7 +32,7 @@ MouseArea {
     width: Theme.itemSizeLarge + (showText ? label.width + Theme.paddingLarge : 0)
 
     onClicked: if (!disabled) {
-        table.deselect()
+        table.unselect()
         actionTriggered()
     }
 
