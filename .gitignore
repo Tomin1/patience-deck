@@ -8,6 +8,7 @@ moc_*.h
 patience-deck
 harbour-patience-deck
 /data/anglo*.svg
+/dist/*.png
 /installroot/
 /tools/convert
 /tools/exerciser/games/
