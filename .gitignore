@@ -9,6 +9,7 @@ patience-deck
 harbour-patience-deck
 /data/anglo*.svg
 /dist/*.png
+/dist/screenshots/*.png
 /installroot/
 /tools/convert
 /tools/exerciser/games/
