@@ -408,8 +408,10 @@ bool Engine::drag(quint32 id, int slotId, const CardList &cards)
     if (scm_is_true(rv)) {
         // Remove cards from the slot, assumes that they are removed from the end
         auto actionFlags = d_ptr->flags(Engine::RemovalAction, true);
-        for (int i = cards.count(); i > 0; i--)
-            emit action(actionFlags, slotId, d_ptr->m_cardSlots[slotId].count() - 1, d_ptr->m_cardSlots[slotId].takeLast());
+        for (int i = cards.count(); i > 0; i--) {
+            auto data = d_ptr->m_cardSlots[slotId].takeLast();
+            emit action(actionFlags, slotId, d_ptr->m_cardSlots[slotId].count(), data);
+        }
     }
 
     could = scm_is_true(rv);
