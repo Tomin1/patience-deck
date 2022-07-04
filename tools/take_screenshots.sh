@@ -79,11 +79,14 @@ screenshot "treize.png" --game 'treize.scm' --seed 108 --background adaptive --c
 
 screenshot "bakers-game-green.png" --game 'bakers-game.scm' --seed 1000 --background green --cards simplified
 screenshot "bakers-game-seagreen.png" --game 'bakers-game.scm' --seed 1000 --background seagreen --cards simplified
+set_ambience fire
 screenshot "bakers-game-maroon.png" --game 'bakers-game.scm' --seed 1000 --background maroon --cards simplified
 screenshot "bakers-game-sienna.png" --game 'bakers-game.scm' --seed 1000 --background sienna --cards simplified
+set_ambience sailfish3
 screenshot "bakers-game-navy.png" --game 'bakers-game.scm' --seed 1000 --background navy --cards simplified
 screenshot "bakers-game-steelblue.png" --game 'bakers-game.scm' --seed 1000 --background steelblue --cards simplified
-screenshot "bakers-game-goldenrod.png" --game 'bakers-game.scm' --seed 1000 --background goldenrod --cards simplified
+set_ambience airy
+screenshot "bakers-game-palevioletred.png" --game 'bakers-game.scm' --seed 1000 --background palevioletred --cards simplified
 screenshot "bakers-game-dimgray.png" --game 'bakers-game.scm' --seed 1000 --background dimgray --cards simplified
 
 start_pd --game 'bakers-game.scm' --seed 1000 --background adaptive --cards simplified
