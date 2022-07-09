@@ -29,6 +29,10 @@ api.path = /usr/share/$$(NAME)/games/aisleriot/
 
 manual.files = aisleriot/help/C/*.xml
 manual.path = /usr/share/$$(NAME)/help/
+manual_mv.depends = install_manual
+manual_mv.path = $$manual.path
+manual_mv.extra += mv $(INSTALL_ROOT)/usr/share/$(NAME)/help/eagle-wing.xml \
+                      $(INSTALL_ROOT)/usr/share/$(NAME)/help/eagle_wing.xml
 
 figures.files = aisleriot/help/C/figures/*.png
 figures.path = /usr/share/$$(NAME)/help/figures/
@@ -38,7 +42,7 @@ copying.files = COPYING.GPL3 \
     aisleriot/COPYING.GFDL1.3
 copying.path = /usr/share/$$(NAME)/
 
-INSTALLS += games chmod_games api manual figures copying
+INSTALLS += games chmod_games api manual manual_mv figures copying
 
 # Translations
 TS_FILE = $$PWD/translations/patience-deck.ts
