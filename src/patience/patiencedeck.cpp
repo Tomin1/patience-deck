@@ -125,18 +125,5 @@ QString PatienceDeck::getIconPath(int size) const
 
 int PatienceDeck::gamesCount() const
 {
-    return GameList::supportedCount();
-}
-
-bool PatienceDeck::showAllGames() const
-{
-    return GameList::showAll();
-}
-
-void PatienceDeck::setShowAllGames(bool show)
-{
-    if (show != GameList::showAll()) {
-        GameList::setShowAll(show);
-        emit showAllGamesChanged();
-    }
+    return GameList::count();
 }

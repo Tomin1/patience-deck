@@ -33,6 +33,7 @@ Page {
         Column {
             id: content
 
+            bottomPadding: Theme.paddingLarge
             width: aboutPage.width
 
             PageHeader {
@@ -60,7 +61,7 @@ Page {
 
             Paragraph {
                 linkColor: Theme.primaryColor
-                //% "Patience Deck is a collection of %1 supported patience games for Sailfish OS. "
+                //% "Patience Deck is a collection of %1 patience games for Sailfish OS. "
                 //% "It reimplements game engine from <a href=%2>GNOME Aisleriot</a> and utilises "
                 //% "its implementations of patience games including translations, manual pages and artwork."
                 text: qsTrId("patience-la-about_text")
@@ -133,22 +134,6 @@ Page {
                 text: qsTrId("patience-bt-licenses")
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: pageStack.push(Qt.resolvedUrl("LicensesPage.qml"))
-            }
-
-            SectionHeader {
-                //: Section for enabling experimental features
-                //% "Experimental"
-                text: qsTrId("patience-se-experimental")
-            }
-
-            TextSwitch {
-                //% "Show all games"
-                text: qsTrId("patience-la-show_all_games")
-                //% "List also unsupported games in game selection"
-                description: qsTrId("patience-de-list_unsupported_games")
-                checked: PatienceDeck.showAllGames
-                onClicked: PatienceDeck.showAllGames = !PatienceDeck.showAllGames
-                height: implicitHeight + Theme.paddingLarge
             }
         }
 

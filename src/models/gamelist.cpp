@@ -32,112 +32,12 @@ const QString DefaultFavorites = QStringLiteral("freecell.scm;helsinki.scm;klond
 
 } // namespace
 
-/*
- * List of supported patience games.
- * These are tested and any bugs found must be addressed.
- */
-QSet<QString> GameList::s_allowlist = {
-    // Klondike and its variations
-    QStringLiteral("aunt-mary"),
-    QStringLiteral("athena"),
-    QStringLiteral("gold-mine"),
-    QStringLiteral("jumbo"),
-    QStringLiteral("klondike"),
-    QStringLiteral("saratoga"),
-    QStringLiteral("thumb-and-pouch"),
-    QStringLiteral("whitehead"),
-    // Freecell / Bakers game
-    QStringLiteral("bakers-game"),
-    QStringLiteral("freecell"),
-    QStringLiteral("seahaven"),
-    // Spider and similar
-    QStringLiteral("spider"),
-    QStringLiteral("spiderette"),
-    QStringLiteral("scorpion"),
-    QStringLiteral("will-o-the-wisp"),
-    // Elevator and similar
-    QStringLiteral("elevator"),
-    QStringLiteral("escalator"),
-    QStringLiteral("thirteen"),
-    QStringLiteral("treize"),
-    QStringLiteral("yield"),
-    // Canfield and similar
-    QStringLiteral("agnes"),
-    QStringLiteral("canfield"),
-    QStringLiteral("hamilton"),
-    QStringLiteral("kansas"),
-    // Auld Lang Syne and Scuffle
-    QStringLiteral("auld-lang-syne"),
-    QStringLiteral("scuffle"),
-    // First law, Fortunes
-    QStringLiteral("first-law"),
-    QStringLiteral("fortunes"),
-    // Yukon, Odessa
-    QStringLiteral("odessa"),
-    QStringLiteral("yukon"),
-    // Osmosis, Peek
-    QStringLiteral("osmosis"),
-    QStringLiteral("peek"),
-    // Accordion, Maze
-    QStringLiteral("accordion"),
-    QStringLiteral("maze"),
-    // Other
-    QStringLiteral("backbone"),
-    QStringLiteral("bear-river"),
-    QStringLiteral("beleaguered-castle"),
-    QStringLiteral("block-ten"),
-    QStringLiteral("bristol"),
-    QStringLiteral("camelot"),
-    QStringLiteral("carpet"),
-    QStringLiteral("clock"),
-    QStringLiteral("cover"),
-    QStringLiteral("cruel"),
-    QStringLiteral("diamond-mine"),
-    QStringLiteral("doublets"),
-    QStringLiteral("easthaven"),
-    QStringLiteral("eight-off"),
-    QStringLiteral("eliminator"),
-    QStringLiteral("forty-thieves"),
-    QStringLiteral("fourteen"),
-    QStringLiteral("gaps"),
-    QStringLiteral("gay-gordons"),
-    QStringLiteral("giant"),
-    QStringLiteral("glenwood"),
-    QStringLiteral("gypsy"),
-    QStringLiteral("helsinki"),
-    QStringLiteral("isabel"),
-    QStringLiteral("jamestown"),
-    QStringLiteral("king-albert"),
-    QStringLiteral("kings-audience"),
-    QStringLiteral("labyrinth"),
-    QStringLiteral("lady-jane"),
-    QStringLiteral("napoleons-tomb"),
-    QStringLiteral("neighbor"),
-    QStringLiteral("pileon"),
-    QStringLiteral("plait"),
-    QStringLiteral("poker"),
-    QStringLiteral("quatorze"),
-    QStringLiteral("sir-tommy"),
-    QStringLiteral("straight-up"),
-    QStringLiteral("streets-and-alleys"),
-    QStringLiteral("ten-across"),
-    QStringLiteral("terrace"),
-    QStringLiteral("thieves"),
-    QStringLiteral("triple-peaks"),
-    QStringLiteral("union-square"),
-    QStringLiteral("valentine"),
-    QStringLiteral("wall"),
-    QStringLiteral("westhaven"),
-    QStringLiteral("zebra"),
-};
-
 QHash<int, QByteArray> GameList::s_roleNames = {
     { Qt::DisplayRole, "display" }, // alias to translated
     { FileNameRole, "filename" },
     { NameRole, "name" },
     { TranslatedRole, "translated" },
     { CapitalizedRole, "capitalized" },
-    { SupportedRole, "supported" },
     { SectionRole, "section" },
     { FavoriteRole, "favorite" },
     { MatchedByRole, "matchedBy" },
@@ -147,13 +47,7 @@ GameList::GameList(QObject *parent)
     : QAbstractListModel(parent)
     , m_favoriteConf(Constants::ConfPath + FavoriteConf)
 {
-    bool showAll = GameList::showAll();
-    QDir gameDirectory(Constants::GameDirectory);
-    for (auto &entry : gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"),
-                                               QDir::Files | QDir::Readable)) {
-        if (showAll || isSupported(entry))
-            m_games.append(entry);
-    }
+    m_games = QVector<QString>::fromList(gamesList());
     std::sort(m_games.begin(), m_games.end(), lessThan);
 
     m_lastPlayed = Patience::instance()->history().mid(0, ShownLastPlayedGames);
@@ -203,8 +97,6 @@ QVariant GameList::data(const QModelIndex &index, int role) const
         return name(getFileName(index.row()));
     case CapitalizedRole:
         return capitalized(getFileName(index.row()));
-    case SupportedRole:
-        return isSupported(getFileName(index.row()));
     case SectionRole:
         return getSection(index.row());
     case FavoriteRole:
@@ -424,32 +316,16 @@ void GameList::emitChangedEntries(int oldCount, int newCount)
     }
 }
 
-bool GameList::isSupported(const QString &fileName)
+QStringList GameList::gamesList()
 {
-    return s_allowlist.contains(name(fileName));
+    QDir gameDirectory(Constants::GameDirectory);
+    return gameDirectory.entryList(QStringList() << QStringLiteral("*.scm"), QDir::Files | QDir::Readable);
 }
 
-bool GameList::showAll()
+int GameList::count()
 {
-    return showAllConf()->value().toBool();
-}
-
-void GameList::setShowAll(bool show)
-{
-    showAllConf()->set(show);
-}
-
-MGConfItem *GameList::showAllConf()
-{
-    static MGConfItem *confItem = nullptr;
-    if (!confItem)
-        confItem = new MGConfItem(Constants::ConfPath + QStringLiteral("/showAllGames"));
-    return confItem;
-}
-
-int GameList::supportedCount()
-{
-    return s_allowlist.count();
+    static int count = gamesList().count();
+    return count;
 }
 
 QString GameList::getFileName(int row) const

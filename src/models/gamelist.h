@@ -33,10 +33,8 @@ public:
     static QString capitalized(const QString &fileName);
     static QString translated(const QString &fileName);
     static QString name(const QString &fileName);
-    static bool isSupported(const QString &fileName);
-    static bool showAll();
-    static void setShowAll(bool show);
-    static int supportedCount();
+    static QStringList gamesList();
+    static int count();
 
     Q_INVOKABLE void setFavorite(int row, bool favorite);
     QString searchedText() const;
@@ -56,7 +54,6 @@ public:
         NameRole,
         TranslatedRole,
         CapitalizedRole,
-        SupportedRole,
         SectionRole,
         FavoriteRole,
         MatchedByRole,
@@ -84,7 +81,6 @@ private:
     static MGConfItem *showAllConf();
     static bool lessThan(const QString &a, const QString &b);
 
-    static QSet<QString> s_allowlist;
     static QHash<int, QByteArray> s_roleNames;
 
     QString getFileName(int row) const;

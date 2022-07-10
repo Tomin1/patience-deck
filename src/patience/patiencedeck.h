@@ -31,7 +31,6 @@ class PatienceDeck : public QObject
     Q_PROPERTY(QString translators READ translators CONSTANT)
     Q_PROPERTY(bool showLibraryLicenses READ showLibraryLicenses CONSTANT)
     Q_PROPERTY(int gamesCount READ gamesCount CONSTANT)
-    Q_PROPERTY(bool showAllGames READ showAllGames WRITE setShowAllGames NOTIFY showAllGamesChanged)
 
 public:
     static QObject* instance(QQmlEngine *engine, QJSEngine *scriptEngine);
@@ -46,11 +45,6 @@ public:
     QString translators() const;
     bool showLibraryLicenses() const;
     int gamesCount() const;
-    bool showAllGames() const;
-    void setShowAllGames(bool show);
-
-signals:
-    void showAllGamesChanged();
 
 private:
     static QString appName();
