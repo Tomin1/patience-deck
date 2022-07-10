@@ -88,6 +88,7 @@ private:
     QString getFileName(int row) const;
     Section getSection(int row) const;
     void emitFavoriteChanged(int row);
+    void updateFavorites();
 
     bool searching() const;
     std::function<bool(int, int)> searchCompareFunction() const;
@@ -99,7 +100,7 @@ private:
 
     QVector<QString> m_games;
     QVector<int> m_lastPlayed;
-    QStringList m_favorites;
+    QVector<int> m_favorites;
     QString m_searchedText;
     QVector<int> m_results;
 

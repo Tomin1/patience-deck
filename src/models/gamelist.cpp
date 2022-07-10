@@ -59,9 +59,12 @@ GameList::GameList(QObject *parent)
     }
 
     auto favorites = m_favoriteConf.value(DefaultFavorites).toString().split(';');
-    favorites.removeAll(QString());
-    std::sort(favorites.begin(), favorites.end(), lessThan);
-    m_favorites.swap(favorites);
+    for (auto it = favorites.begin(); it != favorites.end(); ++it) {
+        int index = findIndex(*it);
+        if (index >= 0)
+            m_favorites.append(index);
+    }
+    std::sort(m_favorites.begin(), m_favorites.end());
 
     connect(&m_favoriteConf, &MGConfItem::valueChanged, this, [&] {
         qCDebug(lcGameList) << "Saved favorites:" << m_favoriteConf.value().toString();
@@ -106,7 +109,7 @@ QVariant GameList::data(const QModelIndex &index, int role) const
     case SectionRole:
         return getSection(index.row());
     case FavoriteRole:
-        return m_favorites.contains(getFileName(index.row()));
+        return m_favorites.contains(getIndex(index.row()));
     case MatchedByRole:
         return matchedBy(index.row());
     default:
@@ -163,39 +166,38 @@ void GameList::setFavorite(int row, bool favorite)
         return;
 
     int index = getIndex(row);
-    QString fileName = getFileName(row);
     Section section = getSection(row);
     bool changed = false;
 
-    auto it = std::lower_bound(m_favorites.begin(), m_favorites.end(), fileName, lessThan);
+    auto it = std::lower_bound(m_favorites.begin(), m_favorites.end(), index);
     if (favorite) {
-        if (it == m_favorites.end() || *it != fileName) {
+        if (it == m_favorites.end() || *it != index) {
             if (!searching()) {
                 int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
                 beginInsertRows(QModelIndex(), pos, pos);
-                m_favorites.insert(it, fileName);
+                m_favorites.insert(it, index);
                 endInsertRows();
                 qCDebug(lcGameList) << "Inserted favorite to" << pos << "for row" << row
-                                    << "with value" << fileName;
+                                    << "with value" << m_games[pos];
             } else {
-                m_favorites.insert(it, fileName);
+                m_favorites.insert(it, index);
             }
-            m_favoriteConf.set(m_favorites.join(';'));
+            updateFavorites();
             changed = true;
         }
     } else {
-        if (it != m_favorites.end() && *it == fileName) {
+        if (it != m_favorites.end() && *it == index) {
             if (!searching()) {
                 int pos = std::distance(m_favorites.begin(), it) + m_lastPlayed.count();
                 beginRemoveRows(QModelIndex(), pos, pos);
                 m_favorites.erase(it);
                 endRemoveRows();
                 qCDebug(lcGameList) << "Removed favorite from" << pos << "for row" << row
-                                    << "with value" << fileName;
+                                    << "with value" << m_games[pos];
             } else {
                 m_favorites.erase(it);
             }
-            m_favoriteConf.set(m_favorites.join(';'));
+            updateFavorites();
             changed = true;
         }
     }
@@ -346,19 +348,13 @@ int GameList::getIndex(int row) const
     if (row < m_lastPlayed.count())
         return m_lastPlayed[row];
     if (row < m_lastPlayed.count() + m_favorites.count())
-        return findIndex(m_favorites[row - m_lastPlayed.count()]);
+        return m_favorites[row - m_lastPlayed.count()];
     return row - m_lastPlayed.count() - m_favorites.count();
 }
 
 QString GameList::getFileName(int row) const
 {
-    if (searching())
-        return m_games[m_results[row]];
-    if (row < m_lastPlayed.count())
-        return m_games[m_lastPlayed[row]];
-    if (row < m_lastPlayed.count() + m_favorites.count())
-        return m_favorites[row - m_lastPlayed.count()];
-    return m_games[row - m_lastPlayed.count() - m_favorites.count()];
+    return m_games[getIndex(row)];
 }
 
 GameList::Section GameList::getSection(int row) const
@@ -376,6 +372,15 @@ void GameList::emitFavoriteChanged(int row)
 {
     auto index = createIndex(row, 0);
     emit dataChanged(index, index, QVector<int>() << FavoriteRole);
+}
+
+void GameList::updateFavorites()
+{
+    QStringList favorites;
+    favorites.reserve(m_favorites.count());
+    for (int index : m_favorites)
+        favorites.append(m_games[index]);
+    m_favoriteConf.set(favorites.join(';'));
 }
 
 bool GameList::lessThan(const QString &a, const QString &b)
