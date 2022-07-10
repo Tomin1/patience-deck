@@ -83,6 +83,8 @@ private:
 
     static QHash<int, QByteArray> s_roleNames;
 
+    int findIndex(const QString &fileName) const;
+    int getIndex(int row) const;
     QString getFileName(int row) const;
     Section getSection(int row) const;
     void emitFavoriteChanged(int row);
@@ -96,7 +98,7 @@ private:
     MatchedBy matchedBy(int row) const;
 
     QVector<QString> m_games;
-    QStringList m_lastPlayed;
+    QVector<int> m_lastPlayed;
     QStringList m_favorites;
     QString m_searchedText;
     QVector<int> m_results;

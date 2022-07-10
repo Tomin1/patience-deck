@@ -50,7 +50,13 @@ GameList::GameList(QObject *parent)
     m_games = QVector<QString>::fromList(gamesList());
     std::sort(m_games.begin(), m_games.end(), lessThan);
 
-    m_lastPlayed = Patience::instance()->history().mid(0, ShownLastPlayedGames);
+    m_lastPlayed.reserve(ShownLastPlayedGames);
+    auto history = Patience::instance()->history();
+    for (auto it = history.begin(); it != history.end() && m_lastPlayed.count() < ShownLastPlayedGames; ++it) {
+        int index = findIndex(*it);
+        if (index >= 0)
+            m_lastPlayed.append(index);
+    }
 
     auto favorites = m_favoriteConf.value(DefaultFavorites).toString().split(';');
     favorites.removeAll(QString());
@@ -156,6 +162,7 @@ void GameList::setFavorite(int row, bool favorite)
     if (row < 0 || row >= rowCount())
         return;
 
+    int index = getIndex(row);
     QString fileName = getFileName(row);
     Section section = getSection(row);
     bool changed = false;
@@ -194,21 +201,17 @@ void GameList::setFavorite(int row, bool favorite)
     }
     if (changed) {
         if (!searching()) {
-            int lastPlayedRow = section == LastPlayed ? row : m_lastPlayed.indexOf(fileName);
+            int lastPlayedRow = section == LastPlayed ? row : m_lastPlayed.indexOf(index);
             if (lastPlayedRow != -1)
                 emitFavoriteChanged(lastPlayedRow);
             if (section == AllGames) {
                 emitFavoriteChanged(row + (favorite ? 1 : -1));
             } else {
-                int allGamesRow = std::distance(m_games.begin(),
-                        std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan));
-                emitFavoriteChanged(allGamesRow + m_lastPlayed.count() + m_favorites.count());
+                emitFavoriteChanged(index + m_lastPlayed.count() + m_favorites.count());
             }
         } else {
-            int allGamesRow = std::distance(m_games.begin(),
-                    std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan));
             int resultsRow = std::distance(m_results.begin(),
-                    std::lower_bound(m_results.begin(), m_results.end(), allGamesRow, searchCompareFunction()));
+                    std::lower_bound(m_results.begin(), m_results.end(), index, searchCompareFunction()));
             emitFavoriteChanged(resultsRow);
         }
     }
@@ -328,12 +331,31 @@ int GameList::count()
     return count;
 }
 
+int GameList::findIndex(const QString &fileName) const
+{
+    auto it = std::lower_bound(m_games.begin(), m_games.end(), fileName, lessThan);
+    if (it == m_games.end())
+        return -1;
+    return std::distance(m_games.begin(), it);
+}
+
+int GameList::getIndex(int row) const
+{
+    if (searching())
+        return m_results[row];
+    if (row < m_lastPlayed.count())
+        return m_lastPlayed[row];
+    if (row < m_lastPlayed.count() + m_favorites.count())
+        return findIndex(m_favorites[row - m_lastPlayed.count()]);
+    return row - m_lastPlayed.count() - m_favorites.count();
+}
+
 QString GameList::getFileName(int row) const
 {
     if (searching())
         return m_games[m_results[row]];
     if (row < m_lastPlayed.count())
-        return m_lastPlayed[row];
+        return m_games[m_lastPlayed[row]];
     if (row < m_lastPlayed.count() + m_favorites.count())
         return m_favorites[row - m_lastPlayed.count()];
     return m_games[row - m_lastPlayed.count() - m_favorites.count()];
