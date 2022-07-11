@@ -41,8 +41,7 @@ Page {
                 //% "Type to search games"
                 placeholderText: qsTrId("patience-ph-search_games")
                 width: parent.width
-
-                onTextChanged: gameList.searchedText = text
+                Component.onCompleted: gameList.searchedText = Qt.binding(function() { return text })
             }
         }
         delegate: BackgroundItem {
