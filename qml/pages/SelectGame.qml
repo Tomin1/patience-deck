@@ -27,6 +27,7 @@ Page {
         model: GameList { id: gameList }
         anchors.fill: parent
         bottomMargin: Theme.paddingLarge
+        currentIndex: -1
         header: Column {
             width: parent.width
 
