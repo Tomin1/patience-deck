@@ -48,10 +48,26 @@ Page {
             id: delegate
 
             Label {
+                id: nameLabel
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: originalName.visible ? -Theme.fontSizeMedium/2 : 0
+                }
                 x: Theme.horizontalPageMargin
                 text: display
-                anchors.verticalCenter: parent.verticalCenter
                 color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
+            }
+
+            Label {
+                id: originalName
+                anchors {
+                    left: nameLabel.left
+                    top: nameLabel.bottom
+                }
+                text: capitalized
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: delegate.highlighted ? Theme.highlightColor : Theme.secondaryColor
+                visible: matchedBy == GameList.CapitalizedName
             }
 
             IconButton {

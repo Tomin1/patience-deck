@@ -59,6 +59,7 @@ public:
         SupportedRole,
         SectionRole,
         FavoriteRole,
+        MatchedByRole,
     };
 
     enum Section {
@@ -68,6 +69,13 @@ public:
         SearchResults,
     };
     Q_ENUM(Section)
+
+    enum MatchedBy {
+        None,
+        TranslatedName,
+        CapitalizedName,
+    };
+    Q_ENUM(MatchedBy)
 
 signals:
     void searchedTextChanged();
@@ -89,6 +97,7 @@ private:
     void clearSearch();
     void resetSearch();
     void emitChangedEntries(int oldCount, int newCount);
+    MatchedBy matchedBy(int row) const;
 
     QVector<QString> m_games;
     QStringList m_lastPlayed;

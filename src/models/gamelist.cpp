@@ -140,6 +140,7 @@ QHash<int, QByteArray> GameList::s_roleNames = {
     { SupportedRole, "supported" },
     { SectionRole, "section" },
     { FavoriteRole, "favorite" },
+    { MatchedByRole, "matchedBy" },
 };
 
 GameList::GameList(QObject *parent)
@@ -208,6 +209,8 @@ QVariant GameList::data(const QModelIndex &index, int role) const
         return getSection(index.row());
     case FavoriteRole:
         return m_favorites.contains(getFileName(index.row()));
+    case MatchedByRole:
+        return matchedBy(index.row());
     default:
         return QVariant();
     }
@@ -237,6 +240,18 @@ QString GameList::translated(const QString &fileName)
 QString GameList::name(const QString &fileName)
 {
     return fileName.left(fileName.length()-4);
+}
+
+GameList::MatchedBy GameList::matchedBy(int row) const
+{
+    if (searching()) {
+        QString fileName = getFileName(row);
+        if (translated(fileName).contains(m_searchedText, Qt::CaseInsensitive))
+            return TranslatedName;
+        if (capitalized(fileName).contains(m_searchedText, Qt::CaseInsensitive))
+            return CapitalizedName;
+    }
+    return None;
 }
 
 QHash<int, QByteArray> GameList::roleNames() const
@@ -339,9 +354,23 @@ void GameList::setSearchedText(const QString &text)
 
 std::function<bool(int, int)> GameList::searchCompareFunction() const
 {
+    /* This comparison function weights following:
+     * 1. Matches in translated name are better.
+     * 2. Matches earlier in translated name are better.
+     * 3. Otherwise equal matches are ordered by their translated names.
+     * If there are matches that match only by their capitalized name,
+     * those are at the bottom of the list ordered by their translated name.
+     * It's expected that there won't be many of those so it doesn't
+     * make sense to put a lot of effort into ordering them and besides
+     * this looks reasonably good anyway.
+     */
     return [this](int a, int b) {
         int iA = translated(m_games[a]).indexOf(m_searchedText, 0, Qt::CaseInsensitive);
         int iB = translated(m_games[b]).indexOf(m_searchedText, 0, Qt::CaseInsensitive);
+        if (iA == -1 && iB != -1)
+            return false;
+        else if (iB == -1 && iA != -1)
+            return true;
         if (iA == iB)
             return a < b;
         return iA < iB;
@@ -353,7 +382,9 @@ void GameList::filterSearch()
     qCDebug(lcGameList) << m_results.count() << "games to search from";
     QVector<int> results;
     for (int i : m_results) {
-        if (translated(m_games[i]).contains(m_searchedText, Qt::CaseInsensitive))
+        const QString &fileName = m_games[i];
+        if (translated(fileName).contains(m_searchedText, Qt::CaseInsensitive) ||
+                capitalized(fileName).contains(m_searchedText, Qt::CaseInsensitive))
             results.append(i);
     }
     qCInfo(lcGameList) << results.count() << "matched to searched text";
