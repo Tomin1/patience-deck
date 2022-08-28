@@ -152,6 +152,7 @@ private slots:
     void handleRestoreStarted(qint64 time);
     void handleRestoreCompleted(bool restored, bool success);
     void handleCardTextureUpdated();
+    void handleActionsDisabled(bool disabled);
 
 private:
     explicit Patience(QObject *parent = nullptr);
@@ -171,6 +172,7 @@ private:
     QString m_message;
     MGConfItem m_historyConf;
     Timer m_timer;
+    bool m_actionsDisabled;
 
     static Patience *s_game;
     static TestModeFlags s_testMode;

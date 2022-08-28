@@ -67,6 +67,7 @@ private:
         Dragging,
         Dropping,
         Dropped,
+        AnimatingBack,
         Finished,
         Canceled,
         Clicked,

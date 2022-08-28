@@ -15,7 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QEasingCurve>
 #include <QGuiApplication>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 #include <QScreen>
 #include <QStyleHints>
 #include "card.h"
@@ -26,6 +29,28 @@
 #include "selection.h"
 #include "slot.h"
 #include "table.h"
+
+namespace {
+
+const int MoveDuration = 100;
+
+QParallelAnimationGroup *getXYAnimation(QQuickItem *item, const QPointF &newPosition)
+{
+    auto *animation = new QParallelAnimationGroup(item);
+    auto *xAnimation = new QPropertyAnimation(item, "x", animation);
+    xAnimation->setEndValue(newPosition.x());
+    xAnimation->setDuration(MoveDuration);
+    xAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+    animation->addAnimation(xAnimation);
+    auto *yAnimation = new QPropertyAnimation(item, "y", animation);
+    yAnimation->setEndValue(newPosition.y());
+    yAnimation->setDuration(MoveDuration);
+    yAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+    animation->addAnimation(yAnimation);
+    return animation;
+}
+
+} // namespace
 
 QElapsedTimer Drag::s_doubleClickTimer;
 
@@ -137,6 +162,7 @@ void Drag::update(QMouseEvent *event)
         [[fallthrough]];
     case WaitingForSelection:
     case StartingDrag:
+    case AnimatingBack:
     case Canceled:
         break;
     }
@@ -161,6 +187,9 @@ void Drag::finish(QMouseEvent *event)
         move(m_card->mapToItem(m_table, event->pos()));
         m_state = Dropping;
         checkTargets(true);
+        break;
+    case AnimatingBack:
+        m_state = Canceled;
         break;
     case Canceled:
         done();
@@ -237,7 +266,17 @@ void Drag::drop(Slot *slot)
 {
     qCDebug(lcDrag) << "Moving from" << m_source << "to" << slot;
     m_state = Dropped;
-    emit doDrop(id(), m_source->id(), slot->id(), toCardData(m_cards, m_state));
+    emit m_table->feedback()->dropSucceeded();
+    QPointF topLeft = m_table->mapFromItem(slot, slot->nextPosition() - firstCard()->topLeft());
+    QParallelAnimationGroup *animation = getXYAnimation(this, topLeft);
+    connect(animation, &QAbstractAnimation::finished, this, [this, animation, slot] {
+        emit doDrop(id(), m_source->id(), slot->id(), toCardData(m_cards, m_state));
+        m_table->disableActions(false);
+        animation->deleteLater();
+        qCDebug(lcDrag) << "Animation finished";
+    });
+    m_table->disableActions(true);
+    animation->start();
 }
 
 void Drag::cancel()
@@ -245,16 +284,34 @@ void Drag::cancel()
     qCDebug(lcDrag) << "Canceling drag of" << m_card << "at state" << m_state;
 
     if (m_state < Dropped) {
-        if (m_state >= Dragging) { 
-            emit doCancelDrag(id(), m_source->id(), toCardData(m_cards, Canceled));
-            setParentItem(nullptr);
-            m_source->put(m_cards);
-            m_cards.clear();
+        if (m_state >= Dragging) {
+            QPointF topLeft = m_table->mapFromItem(m_source, QPointF(0, 0));
+            QParallelAnimationGroup *animation = getXYAnimation(this, topLeft);
+            connect(animation, &QAbstractAnimation::finished, this, [this, animation] {
+                if (m_state != AnimatingBack && m_state != Canceled)
+                    qCCritical(lcDrag) << "Unexpected state at the end of animation" << m_state;
+                emit doCancelDrag(id(), m_source->id(), toCardData(m_cards, m_state));
+                setParentItem(nullptr);
+                m_source->put(m_cards);
+                m_cards.clear();
+                // Whichever signal that was waited for set the state, call done()
+                if (m_state == Canceled)
+                    done();
+                m_state = Canceled;
+                m_table->disableActions(false);
+                animation->deleteLater();
+                qCDebug(lcDrag) << "Animation finished";
+            });
+            m_table->disableActions(true);
+            animation->start();
+            // If state is Dragging, there is a signal that can return still
+            // and it must be waited for. Otherwise, we can just call done().
+            m_state = m_state == Dragging ? AnimatingBack : Canceled;
+        } else {
+            if (m_state == AboutToDrag)
+                done();
+            m_state = Canceled;
         }
-
-        if (m_state == Dropping || m_state == AboutToDrag)
-            done();
-        m_state = Canceled;
     }
 }
 
@@ -302,18 +359,16 @@ void Drag::handleDropped(quint32 id, int slotId, bool could)
     if (id != CountableId::id())
         return;
 
-    if (m_state >= Finished) {
+    if (m_state > Dropped) {
         qCWarning(lcDrag) << this << "has already handled dropping";
         return;
     }
 
     if (could) {
-        emit m_table->feedback()->dropSucceeded();
         m_state = Finished;
         m_table->store(m_cards);
     } else {
         // Unlikely
-        emit m_table->feedback()->dropFailed();
         m_state = Canceled;
         m_source->put(m_cards);
     }
@@ -429,6 +484,9 @@ QDebug operator<<(QDebug debug, const Drag *drag)
             break;
         case Drag::Dropped:
             debug.nospace() << "Dropped";
+            break;
+        case Drag::AnimatingBack:
+            debug.nospace() << "AnimatingBack";
             break;
         case Drag::Finished:
             debug.nospace() << "Finished";

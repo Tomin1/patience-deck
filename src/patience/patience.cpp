@@ -60,6 +60,7 @@ Patience::Patience(QObject *parent)
     , m_showScore(false)
     , m_state(UninitializedState)
     , m_historyConf(Constants::ConfPath + HistoryConf)
+    , m_actionsDisabled(false)
 {
     if (s_testMode & TestModeEnabled)
         qCInfo(lcTestMode) << "Test mode enabled.";
@@ -112,6 +113,7 @@ void Patience::newTable(Table *table)
 {
     if (s_testMode & TestModeEnabled)
         connect(table, &Table::cardTextureUpdated, this, &Patience::handleCardTextureUpdated);
+    connect(table, &Table::actionsDisabled, this, &Patience::handleActionsDisabled);
 }
 
 void Patience::addArguments(QCommandLineParser *parser)
@@ -126,40 +128,46 @@ void Patience::setArguments(QCommandLineParser *parser)
 
 void Patience::startNewGame()
 {
-    qCDebug(lcPatience) << "Starting new game";
-    emit doStart();
+    if (!m_actionsDisabled) {
+        qCDebug(lcPatience) << "Starting new game";
+        emit doStart();
+    }
 }
 
 void Patience::restartGame()
 {
-    qCDebug(lcPatience) << "Restarting game";
-    emit doRestart();
+    if (!m_actionsDisabled) {
+        qCDebug(lcPatience) << "Restarting game";
+        emit doRestart();
+    }
 }
 
 void Patience::loadGame(const QString &gameFile)
 {
-    qCDebug(lcPatience) << "Loading" << gameFile;
-    if (gameFile.isEmpty())
-        qCWarning(lcPatience) << "gameFile can not be empty";
-    else if (m_gameFile != gameFile)
-        emit doLoad(gameFile);
+    if (!m_actionsDisabled) {
+        qCDebug(lcPatience) << "Loading" << gameFile;
+        if (gameFile.isEmpty())
+            qCWarning(lcPatience) << "gameFile can not be empty";
+        else if (m_gameFile != gameFile)
+            emit doLoad(gameFile);
+    }
 }
 
 void Patience::undoMove()
 {
-    if (m_canUndo)
+    if (!m_actionsDisabled && m_canUndo)
         emit doUndoMove();
 }
 
 void Patience::redoMove()
 {
-    if (m_canRedo)
+    if (!m_actionsDisabled && m_canRedo)
         emit doRedoMove();
 }
 
 void Patience::dealCard()
 {
-    if (m_canDeal)
+    if (!m_actionsDisabled && m_canDeal)
         emit doDealCard();
 }
 
@@ -210,7 +218,8 @@ QString Patience::helpFile() const
 
 void Patience::getHint()
 {
-    emit doGetHint();
+    if (!m_actionsDisabled)
+        emit doGetHint();
 }
 
 int Patience::score() const
@@ -307,9 +316,11 @@ bool Patience::engineFailed() const
 
 void Patience::restoreSavedOrLoad(const QString &fallback)
 {
-    qCDebug(lcPatience) << "Asking engine to restore saved game";
-    m_gameFile = fallback + '-';
-    emit doRestoreSavedEngineState();
+    if (!m_actionsDisabled) {
+        qCDebug(lcPatience) << "Asking engine to restore saved game";
+        m_gameFile = fallback + '-';
+        emit doRestoreSavedEngineState();
+    }
 }
 
 bool Patience::testMode() const
@@ -455,6 +466,11 @@ void Patience::handleRestoreCompleted(bool restored, bool success)
                             << fallback;
         loadGame(fallback);
     }
+}
+
+void Patience::handleActionsDisabled(bool disabled)
+{
+    m_actionsDisabled = disabled;
 }
 
 void Patience::handleCardTextureUpdated()

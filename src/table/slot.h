@@ -49,7 +49,7 @@ public:
     iterator begin();
     iterator end();
     iterator find(const Card *card);
-    const_iterator firstExpanded();
+    const_iterator firstExpanded() const;
 
     Slot(int id, SlotType type, double x, double y, int expansionDepth,
          bool expandedDown, bool expandedRight, Table *table);
@@ -57,6 +57,7 @@ public:
     void updateDimensions();
     void updateLocations();
     void updateLocations(iterator iter);
+    QPointF nextPosition() const;
 
     int id() const;
     QPointF position() const;
@@ -83,7 +84,7 @@ public:
     bool expanded() const;
     bool expandedRight() const;
     bool expandedDown() const;
-    qreal delta(const const_iterator &iter);
+    qreal delta(const const_iterator &iter) const;
     void setDelta(double delta);
     int expansionDepth() const;
 
@@ -103,8 +104,8 @@ private:
     qreal m_calculatedDelta;
     ExpansionTypes m_expansion;
     int m_expansionDepth;
-    const_iterator m_firstExpanded;
-    bool m_firstExpandedValid;
+    mutable const_iterator m_firstExpanded;
+    mutable bool m_firstExpandedValid;
     bool m_highlighted;
     Card *m_firstHighlightedCard;
 };

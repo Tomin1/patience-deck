@@ -719,6 +719,13 @@ void Table::updateCardSize()
         update();
 }
 
+void Table::disableActions(bool disabled)
+{
+    // During animation we may not allow any user interaction
+    emit actionsDisabled(disabled);
+    setEnabled(!disabled);
+}
+
 QSGTexture *Table::cardTexture()
 {
     return m_cardTexture;

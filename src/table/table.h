@@ -106,6 +106,7 @@ public:
     Q_INVOKABLE void unselect();
 
     void setDirtyCardSize();
+    void disableActions(bool disabled);
 
     typedef QVector<Slot *>::iterator iterator;
     iterator begin();
@@ -134,6 +135,7 @@ signals:
     void backgroundColorChanged();
     void highlightColorChanged();
     void cardTextureUpdated();
+    void actionsDisabled(bool disabled);
 
     void doClick(quint32 id, int slotId);
     void doRenderCardTexture(const QSize &size);

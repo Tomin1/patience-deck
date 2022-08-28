@@ -95,6 +95,25 @@ void Slot::updateLocations(iterator first)
     }
 }
 
+QPointF Slot::nextPosition() const
+{
+    qreal delta;
+    if (isEmpty() || !expanded() || m_expansionDepth == Expansion::None)
+        delta = 0.0;
+    else if (m_expansionDepth == Expansion::Full || m_expansionDepth > m_cards.count())
+        delta = m_calculatedDelta * m_cards.count();
+    else
+        delta = m_calculatedDelta * (m_expansionDepth - 1);
+
+    if (expandedDown()) {
+        return QPointF(0.0, round(delta));
+    } else if (expandedRight()) {
+        return QPointF(round(delta), 0.0);
+    } else /* !expanded() */ {
+        return QPointF(0.0, 0.0);
+    }
+}
+
 int Slot::id() const
 {
     return m_id;
@@ -289,7 +308,7 @@ bool Slot::expandedDown() const
     return m_expansion & ExpandsInY;
 }
 
-qreal Slot::delta(const Slot::const_iterator &iter)
+qreal Slot::delta(const Slot::const_iterator &iter) const
 {
     if (iter == constBegin() || !expanded() || iter < firstExpanded())
         return 0.0;
@@ -310,7 +329,7 @@ int Slot::expansionDepth() const
     return m_expansionDepth;
 }
 
-Slot::const_iterator Slot::firstExpanded()
+Slot::const_iterator Slot::firstExpanded() const
 {
     if (!m_firstExpandedValid) {
         if (m_expansionDepth == Expansion::Full || m_expansionDepth >= m_cards.count())
