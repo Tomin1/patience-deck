@@ -280,6 +280,9 @@ void Recorder::save()
         for (const Record &record : m_records)
             records << record.toString();
 #ifndef ENGINE_EXERCISER
+        // Take elapsed time from another thread :E
+        // This is fine. Trust me, I'm an engineer. ;)
+        // (Patience instance is not going anywhere so we get away with this.)
         m_stateConf.set(SavedState(m_gameFile, m_seed, m_hasSeed, Patience::instance()->elapsedTimeMs(),
                                    records.join(',')).toString());
 #endif // ENGINE_EXERCISER
