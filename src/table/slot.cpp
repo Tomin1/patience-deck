@@ -392,12 +392,13 @@ Slot::iterator Slot::find(const Card *card)
 bool Slot::reevaluateDelta()
 {
     qreal oldDelta = m_calculatedDelta;
+    QSizeF cardSize = m_table->cardSize();
 
     qreal expansion;
     if (expandedRight())
-        expansion = (m_table->tableSize().width() - position().x()) / expansionDepth();
+        expansion = (m_table->width() - x()) / cardSize.width() / expansionDepth();
     else // expandedDown()
-        expansion = (m_table->tableSize().height() - position().y()) / expansionDepth();
+        expansion = (m_table->height() - y()) / cardSize.height() / expansionDepth();
 
     qreal maximumExpansion = m_expansion & DeltaSet ? m_expansionDelta : CardStep;
     if (expansion < MinCardStep)
@@ -405,7 +406,6 @@ bool Slot::reevaluateDelta()
     else if (expansion > maximumExpansion)
         expansion = maximumExpansion;
 
-    QSizeF cardSize = m_table->cardSize();
     m_calculatedDelta = (expandedRight() ? cardSize.width() : cardSize.height()) * expansion;
 
     return oldDelta != m_calculatedDelta;
