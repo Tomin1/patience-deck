@@ -1,0 +1,81 @@
+From eb456c595235d2b84a218ba33c752eda931045e7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tomi=20Lepp=C3=A4nen?= <tomi@tomin.site>
+Date: Thu, 1 Sep 2022 19:52:05 +0300
+Subject: [PATCH] Adjust Clock for animations
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Limit slot extension in Clock to prevent cards moving erratically while
+they are animated to their slots.
+---
+ games/clock.scm | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/aisleriot/games/clock.scm b/aisleriot/games/clock.scm
+index f5a1a068..3e85885c 100644
+--- a/aisleriot/games/clock.scm
++++ b/aisleriot/games/clock.scm
+@@ -22,46 +22,46 @@
+   (shuffle-deck)
+ 
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-carriage-return-slot)
+   
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-carriage-return-slot)
+ 
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+   (add-blank-slot)
+-  (add-extended-slot DECK right)
++  (add-partially-extended-slot DECK right 4)
+   (add-blank-slot)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-carriage-return-slot)
+ 
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-carriage-return-slot)
+ 
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+   (add-blank-slot)
+-  (add-extended-slot '() right)
++  (add-partially-extended-slot '() right 4)
+ 
+   (deal-cards 6 '(2 4 7 9 12 11 10 8 5 3 0 1 2 4 7 9 12 11 10 8 5 3 0 1 2 4 7 9 12 11 10 8 5 3 0 1 2 4 7 9 12 11 10 8 5 3 0 1 ))
+ 
+-- 
+2.37.3
+
