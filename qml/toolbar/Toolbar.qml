@@ -24,13 +24,17 @@ Item {
     id: toolbar
 
     property bool landscape
+    property bool mirror
     property bool pageActive
     property bool expanded
+    property int prevX: x
     readonly property bool dragged: dragArea.drag.active
     readonly property bool animating: dragged || portraitTransition.running
                                               || portraitExpandedTransition.running
                                               || landscapeTransition.running
                                               || landscapeExpandedTransition.running
+                                              || landscapeMirroredTransition.running
+                                              || landscapeMirroredExpandedTransition.running
     readonly property int buttonCountPortrait: Math.ceil(Screen.width / 2 / Theme.itemSizeLarge)
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
@@ -40,7 +44,7 @@ Item {
     readonly property int buttonCountLandscape: Math.max(
                             Math.floor((Screen.width - titleLandscape.height) / Theme.itemSizeLarge),
                             Patience.showDeal ? 5 : 4)
-    readonly property int spaceX: handle.x
+    readonly property int spaceX: mirror ? Screen.height - toolbar.x - handleWidth : handle.x
     readonly property int minimumSpaceX: Theme.itemSizeLarge
     readonly property int maximumSpaceX: Math.max(gameTitleLandscape.contentWidth,
                                                   scoreTextLandscape.contentWidth,
@@ -78,15 +82,59 @@ Item {
             PropertyChanges { target: title; visible: true }
         },
         State {
+            name: "landscape mirrored dragged"
+            when: landscape && dragged && mirror
+            extend: "landscape mirrored expanded"
+            PropertyChanges { target: toolbar; width: Screen.height - toolbar.x }
+        },
+        State {
+            name: "landscape mirrored expanded"
+            when: landscape && expanded && mirror
+            extend: "landscape mirrored"
+            PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
+            PropertyChanges { target: scoreTextLandscape; x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: elapsedTextLandscape; x: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: mainButtons; width: maximumSpaceX }
+        },
+        State {
+            name: "landscape mirrored"
+            when: landscape && mirror
+            extend: "landscape"
+            AnchorChanges {
+                target: handle;
+                anchors {
+                    left: parent.left
+                    right: undefined
+                }
+            }
+            PropertyChanges {
+                target: toolbarArea
+
+                anchors {
+                    leftMargin: handleWidth
+                    rightMargin: { return 0 }
+                }
+            }
+            PropertyChanges {
+                target: dragArea
+
+                drag {
+                    target: toolbar
+                    minimumX: Screen.height - maximumSpaceX
+                    maximumX: Screen.height - minimumSpaceX - handleWidth
+                }
+            }
+        },
+        State {
             name: "landscape dragged"
-            when: landscape && dragged
+            when: landscape && dragged && !mirror
             extend: "landscape expanded"
             PropertyChanges { target: toolbar; width: spaceX + handleWidth }
             AnchorChanges { target: handle; anchors.right: undefined }
         },
         State {
             name: "landscape expanded"
-            when: landscape && expanded
+            when: landscape && expanded && !mirror
             extend: "landscape"
             PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
             PropertyChanges { target: scoreTextLandscape; x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
@@ -95,7 +143,7 @@ Item {
         },
         State {
             name: "landscape"
-            when: landscape
+            when: landscape && !mirror
 
             PropertyChanges {
                 target: toolbar
@@ -245,7 +293,7 @@ Item {
             from: "landscape dragged"
             to: "landscape"
 
-            ParallelAnimation {
+            LandscapeShrinkParallelAnimation {
                 SmoothedAnimation {
                     target: toolbar
                     properties: "width"
@@ -260,41 +308,6 @@ Item {
                     to: minimumSpaceX
                     velocity: toolbarVelocity
                 }
-                SmoothedAnimation {
-                    target: titleLandscape
-                    properties: "width"
-                    from: spaceX - Theme.paddingSmall
-                    to: minimumSpaceX - Theme.paddingSmall
-                    velocity: toolbarVelocity
-                }
-                SequentialAnimation {
-                    SmoothedAnimation {
-                        from: spaceX
-                        to: Math.max(scoreTextLandscape.contentWidth, spaceX)
-                        velocity: toolbarVelocity
-                    }
-                    SmoothedAnimation {
-                        target: scoreTextLandscape
-                        properties: "x"
-                        from: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -scoreTextLandscape.nameWidth
-                        velocity: toolbarVelocity
-                    }
-                }
-                SequentialAnimation {
-                    SmoothedAnimation {
-                        from: spaceX
-                        to: Math.max(elapsedTextLandscape.contentWidth, spaceX)
-                        velocity: toolbarVelocity
-                    }
-                    SmoothedAnimation {
-                        target: elapsedTextLandscape
-                        properties: "x"
-                        from: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -elapsedTextLandscape.nameWidth
-                        velocity: toolbarVelocity
-                    }
-                }
             }
         },
         Transition {
@@ -302,7 +315,7 @@ Item {
             from: "landscape dragged"
             to: "landscape expanded"
 
-            ParallelAnimation {
+            LandscapeExpansionParallelAnimation {
                 SmoothedAnimation {
                     target: toolbar
                     properties: "width"
@@ -317,30 +330,56 @@ Item {
                     to: maximumSpaceX
                     velocity: toolbarVelocity
                 }
+            }
+        },
+        Transition {
+            id: landscapeMirroredTransition
+            from: "landscape mirrored dragged"
+            to: "landscape mirrored"
+
+            LandscapeShrinkParallelAnimation {
                 SmoothedAnimation {
-                    target: titleLandscape
+                    target: toolbar
                     properties: "width"
-                    from: spaceX - Theme.paddingSmall * 2
-                    to: maximumSpaceX - Theme.paddingSmall * 2
+                    from: Screen.height - toolbar.x
+                    to: minimumSpaceX + handleWidth
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: scoreTextLandscape
+                    target: toolbar
                     properties: "x"
-                    from: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-scoreTextLandscape.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    to: Screen.height - minimumSpaceX - handleWidth
+                    velocity: toolbarVelocity
+                }
+            }
+        },
+        Transition {
+            id: landscapeMirroredExpandedTransition
+            from: "landscape mirrored dragged"
+            to: "landscape mirrored expanded"
+
+            LandscapeExpansionParallelAnimation {
+                SmoothedAnimation {
+                    target: toolbar
+                    properties: "width"
+                    from: Screen.height - toolbar.x
+                    to: maximumSpaceX + handleWidth
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: elapsedTextLandscape
+                    target: toolbar
                     properties: "x"
-                    from: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-elapsedTextLandscape.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    to: Screen.height - maximumSpaceX - handleWidth
                     velocity: toolbarVelocity
                 }
             }
         }
     ]
+
+    onXChanged: {
+        if (dragged) expanded = prevX > x
+        prevX = x
+    }
 
     MouseArea {
         id: dragArea

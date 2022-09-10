@@ -28,6 +28,7 @@ Item {
     property alias cardStyle: group.cardStyle
     property alias feedbackEffects: group.feedbackEffects
     property alias preventBlanking: group.preventBlanking
+    property alias toolbarOnRight: group.toolbarOnRight
 
     ConfigurationGroup {
         id: group
@@ -36,6 +37,7 @@ Item {
         property string cardStyle: "regular"
         property bool feedbackEffects
         property bool preventBlanking
+        property bool toolbarOnRight
 
         path: "/site/tomin/apps/PatienceDeck"
     }

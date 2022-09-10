@@ -63,27 +63,45 @@ Page {
     SilicaFlickable {
         anchors.fill: parent
 
-        states: State {
-            name: "landscape"
-            when: page.isLandscape
-            PropertyChanges { target: toolbar; landscape: true }
-            PropertyChanges {
-                target: tableContainer
-
-                x: toolbar.width
-                y: 0
-                height: Screen.width - messageBar.height
-                width: Screen.height - toolbar.width
+        states: [
+            State {
+                name: "landscape"
+                when: page.isLandscape && !settings.toolbarOnRight
+                extend: "landscape-base"
+                PropertyChanges { target: tableContainer; x: toolbar.width }
+                AnchorChanges { target: messageBar; anchors.left: toolbar.right }
+            },
+            State {
+                name: "landscape mirrored"
+                when: page.isLandscape && settings.toolbarOnRight
+                extend: "landscape-base"
+                PropertyChanges {
+                    target: toolbar
+                    mirror: true
+                    x: Screen.height - toolbar.width
+                }
+                AnchorChanges { target: messageBar; anchors.right: toolbar.left }
+            },
+            State {
+                name: "landscape-base"
+                when: { return false }
+                PropertyChanges { target: toolbar; landscape: true }
+                PropertyChanges {
+                    target: tableContainer
+                    x: { return 0 }
+                    y: { return 0 }
+                    height: Screen.width - messageBar.height
+                    width: Screen.height - toolbar.width
+                }
+                PropertyChanges {
+                    target: table
+                    height: Screen.width - messageBar.height
+                    width: Screen.height - toolbar.totalSpaceX
+                    horizontalMargin: Theme.paddingLarge
+                    verticalMargin: Theme.paddingSmall
+                }
             }
-            PropertyChanges {
-                target: table
-                height: Screen.width - messageBar.height
-                width: Screen.height - toolbar.totalSpaceX
-                horizontalMargin: Theme.paddingLarge
-                verticalMargin: Theme.paddingSmall
-            }
-            AnchorChanges { target: messageBar; anchors.left: toolbar.right }
-        }
+        ]
 
         PullDownMenu {
             id: pullDownMenu
