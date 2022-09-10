@@ -18,7 +18,6 @@
 import QtQuick 2.6
 import Sailfish.Silica 1.0
 import Patience 1.0
-import "../../toolbar"
 
 Row {
     anchors.horizontalCenter: parent.horizontalCenter
@@ -26,8 +25,8 @@ Row {
 
     Icon {
         source: Patience.state === Patience.WonState
-                ? "../../../buttons/icon-m-fireworks.svg"
-                : "../../../buttons/icon-m-skull.svg"
+                ? "../../buttons/icon-m-fireworks.svg"
+                : "../../buttons/icon-m-skull.svg"
         sourceSize.height: Theme.iconSizeLarge
         sourceSize.width: Theme.iconSizeLarge
     }

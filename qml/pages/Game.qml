@@ -23,7 +23,7 @@ import Nemo.Configuration 1.0
 import Nemo.KeepAlive 1.2
 import Patience 1.0
 import "../toolbar"
-import "components"
+import "../components"
 
 Page {
     id: page
@@ -196,7 +196,7 @@ Page {
             id: overlayLoader
 
             active: Patience.state === Patience.WonState || Patience.state === Patience.GameOverState
-            source: "components/GameOverOverlay.qml"
+            source: "../components/GameOverOverlay.qml"
             x: tableContainer.x
             y: tableContainer.y
             height: tableContainer.height
@@ -207,7 +207,7 @@ Page {
         Loader {
             id: failureOverlayLoader
             active: Patience.engineFailed
-            source: "components/EngineFailureOverlay.qml"
+            source: "../components/EngineFailureOverlay.qml"
             x: tableContainer.x
             y: tableContainer.y
             height: tableContainer.height
