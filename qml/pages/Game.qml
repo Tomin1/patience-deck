@@ -66,7 +66,7 @@ Page {
         states: State {
             name: "landscape"
             when: page.isLandscape
-            PropertyChanges { target: toolbar; vertical: true }
+            PropertyChanges { target: toolbar; landscape: true }
             PropertyChanges {
                 target: tableContainer
 
@@ -115,7 +115,7 @@ Page {
             id: toolbar
 
             enabled: !Patience.engineFailed
-            vertical: false
+            landscape: false
             pageActive: page.active
             z: 10
         }

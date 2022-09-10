@@ -23,28 +23,28 @@ import "../components"
 Item {
     id: toolbar
 
-    property bool vertical
+    property bool landscape
     property bool pageActive
     property bool expanded
     readonly property bool dragged: dragArea.drag.active
-    readonly property bool animating: dragged || horizontalTransition.running
-                                              || horizontalExpandedTransition.running
-                                              || verticalTransition.running
-                                              || verticalExpandedTransition.running
-    readonly property int buttonCountHorizontal: Math.ceil(Screen.width / 2 / Theme.itemSizeLarge)
+    readonly property bool animating: dragged || portraitTransition.running
+                                              || portraitExpandedTransition.running
+                                              || landscapeTransition.running
+                                              || landscapeExpandedTransition.running
+    readonly property int buttonCountPortrait: Math.ceil(Screen.width / 2 / Theme.itemSizeLarge)
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
     readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
-    readonly property bool showHandleY: buttonCountHorizontal < 5
+    readonly property bool showHandleY: buttonCountPortrait < 5
     readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
-    readonly property int buttonCountVertical: Math.max(
-                            Math.floor((Screen.width - titleVertical.height) / Theme.itemSizeLarge),
+    readonly property int buttonCountLandscape: Math.max(
+                            Math.floor((Screen.width - titleLandscape.height) / Theme.itemSizeLarge),
                             Patience.showDeal ? 5 : 4)
     readonly property int spaceX: handle.x
     readonly property int minimumSpaceX: Theme.itemSizeLarge
-    readonly property int maximumSpaceX: Math.max(gameTitleVertical.contentWidth,
-                                                  scoreTextVertical.contentWidth,
-                                                  elapsedTextVertical.contentWidth,
+    readonly property int maximumSpaceX: Math.max(gameTitleLandscape.contentWidth,
+                                                  scoreTextLandscape.contentWidth,
+                                                  elapsedTextLandscape.contentWidth,
                                                   undoButton.contentWidth,
                                                   redoButton.contentWidth,
                                                   hintButton.contentWidth,
@@ -56,46 +56,46 @@ Item {
 
     height: totalSpaceY
     width: Screen.width
-    state: "non-vertical"
+    state: "portrait"
     states: [
         State {
             name: "dragged"
-            when: !vertical && dragged
+            when: !landscape && dragged
             extend: "expanded"
             PropertyChanges { target: toolbar; height: spaceY + handleWidth }
             AnchorChanges { target: handle; anchors.bottom: undefined }
         },
         State {
             name: "expanded"
-            when: !vertical && expanded
-            extend: "non-vertical"
+            when: !landscape && expanded
+            extend: "portrait"
             PropertyChanges { target: toolbar; height: maximumSpaceY + handleWidth }
         },
         State {
             // To ensure that title is visible also on portrait when the app is started in landscape
-            name: "non-vertical"
-            when: !vertical
+            name: "portrait"
+            when: !landscape
             PropertyChanges { target: title; visible: true }
         },
         State {
-            name: "vertical dragged"
-            when: vertical && dragged
-            extend: "vertical expanded"
+            name: "landscape dragged"
+            when: landscape && dragged
+            extend: "landscape expanded"
             PropertyChanges { target: toolbar; width: spaceX + handleWidth }
             AnchorChanges { target: handle; anchors.right: undefined }
         },
         State {
-            name: "vertical expanded"
-            when: vertical && expanded
-            extend: "vertical"
+            name: "landscape expanded"
+            when: landscape && expanded
+            extend: "landscape"
             PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
-            PropertyChanges { target: scoreTextVertical; x: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0) }
-            PropertyChanges { target: elapsedTextVertical; x: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: scoreTextLandscape; x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
+            PropertyChanges { target: elapsedTextLandscape; x: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
             PropertyChanges { target: mainButtons; width: maximumSpaceX }
         },
         State {
-            name: "vertical"
-            when: vertical
+            name: "landscape"
+            when: landscape
 
             PropertyChanges {
                 target: toolbar
@@ -148,14 +148,14 @@ Item {
             }
             PropertyChanges { target: dragArea; drag.axis: Drag.XAxis; enabled: true }
             PropertyChanges { target: title; visible: false }
-            PropertyChanges { target: titleVertical; visible: true }
+            PropertyChanges { target: titleLandscape; visible: true }
             PropertyChanges {
                 target: mainButtonsContainer
 
                 height: {
-                    var spaceAvailable = toolbarArea.height - titleVertical.height
-                    if (spaceAvailable > Theme.itemSizeLarge * buttonCountVertical) {
-                        return Theme.itemSizeLarge * buttonCountVertical
+                    var spaceAvailable = toolbarArea.height - titleLandscape.height
+                    if (spaceAvailable > Theme.itemSizeLarge * buttonCountLandscape) {
+                        return Theme.itemSizeLarge * buttonCountLandscape
                     }
                     var minItemSize = 0.2 * Theme.itemSizeLarge
                     var maxItemSize = Theme.itemSizeLarge - minItemSize
@@ -182,7 +182,7 @@ Item {
             PropertyChanges {
                 target: mainButtons
 
-                height: Theme.itemSizeLarge * buttonCountVertical
+                height: Theme.itemSizeLarge * buttonCountLandscape
                 width: minimumSpaceX
                 x: { return 0 }
                 y: mainButtons.y
@@ -197,7 +197,7 @@ Item {
     ]
     transitions: [
         Transition {
-            id: horizontalTransition
+            id: portraitTransition
             from: "dragged"
             to: ""
 
@@ -219,7 +219,7 @@ Item {
             }
         },
         Transition {
-            id: horizontalExpandedTransition
+            id: portraitExpandedTransition
             from: "dragged"
             to: "expanded"
 
@@ -241,9 +241,9 @@ Item {
             }
         },
         Transition {
-            id: verticalTransition
-            from: "vertical dragged"
-            to: "vertical"
+            id: landscapeTransition
+            from: "landscape dragged"
+            to: "landscape"
 
             ParallelAnimation {
                 SmoothedAnimation {
@@ -261,7 +261,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: titleVertical
+                    target: titleLandscape
                     properties: "width"
                     from: spaceX - Theme.paddingSmall
                     to: minimumSpaceX - Theme.paddingSmall
@@ -270,37 +270,37 @@ Item {
                 SequentialAnimation {
                     SmoothedAnimation {
                         from: spaceX
-                        to: Math.max(scoreTextVertical.contentWidth, spaceX)
+                        to: Math.max(scoreTextLandscape.contentWidth, spaceX)
                         velocity: toolbarVelocity
                     }
                     SmoothedAnimation {
-                        target: scoreTextVertical
+                        target: scoreTextLandscape
                         properties: "x"
-                        from: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -scoreTextVertical.nameWidth
+                        from: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -scoreTextLandscape.nameWidth
                         velocity: toolbarVelocity
                     }
                 }
                 SequentialAnimation {
                     SmoothedAnimation {
                         from: spaceX
-                        to: Math.max(elapsedTextVertical.contentWidth, spaceX)
+                        to: Math.max(elapsedTextLandscape.contentWidth, spaceX)
                         velocity: toolbarVelocity
                     }
                     SmoothedAnimation {
-                        target: elapsedTextVertical
+                        target: elapsedTextLandscape
                         properties: "x"
-                        from: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
-                        to: -elapsedTextVertical.nameWidth
+                        from: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
+                        to: -elapsedTextLandscape.nameWidth
                         velocity: toolbarVelocity
                     }
                 }
             }
         },
         Transition {
-            id: verticalExpandedTransition
-            from: "vertical dragged"
-            to: "vertical expanded"
+            id: landscapeExpandedTransition
+            from: "landscape dragged"
+            to: "landscape expanded"
 
             ParallelAnimation {
                 SmoothedAnimation {
@@ -318,24 +318,24 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: titleVertical
+                    target: titleLandscape
                     properties: "width"
                     from: spaceX - Theme.paddingSmall * 2
                     to: maximumSpaceX - Theme.paddingSmall * 2
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: scoreTextVertical
+                    target: scoreTextLandscape
                     properties: "x"
-                    from: Math.min(-scoreTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-scoreTextVertical.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    from: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-scoreTextLandscape.nameWidth + maximumSpaceX - minimumSpaceX, 0)
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
-                    target: elapsedTextVertical
+                    target: elapsedTextLandscape
                     properties: "x"
-                    from: Math.min(-elapsedTextVertical.nameWidth + spaceX - minimumSpaceX, 0)
-                    to: Math.min(-elapsedTextVertical.nameWidth + maximumSpaceX - minimumSpaceX, 0)
+                    from: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
+                    to: Math.min(-elapsedTextLandscape.nameWidth + maximumSpaceX - minimumSpaceX, 0)
                     velocity: toolbarVelocity
                 }
             }
@@ -354,7 +354,7 @@ Item {
             maximumX: maximumSpaceX
             filterChildren: true
         }
-        enabled: buttonCountHorizontal < 5
+        enabled: showHandleY
 
         MouseArea {
             id: toolbarArea
@@ -389,7 +389,7 @@ Item {
                     x: Theme.horizontalPageMargin - Theme.paddingMedium
                     y: 0
                     height: minimumSpaceY
-                    width: Theme.itemSizeLarge * buttonCountHorizontal
+                    width: Theme.itemSizeLarge * buttonCountPortrait
 
                     ToolbarButton {
                         id: undoButton
@@ -397,8 +397,8 @@ Item {
                         //% "Undo"
                         text: qsTrId("patience-bt-undo")
                         imageSource: "../../buttons/icon-m-undo.svg"
-                        showText: buttonCountHorizontal < 1
-                        parent: buttonCountHorizontal >= 1 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < 1
+                        parent: buttonCountPortrait >= 1 ? mainButtons : extraButtons
                         disabled: !Patience.canUndo
                         onActionTriggered: Patience.undoMove()
                     }
@@ -409,8 +409,8 @@ Item {
                         //% "Redo"
                         text: qsTrId("patience-bt-redo")
                         imageSource: "../../buttons/icon-m-redo.svg"
-                        showText: buttonCountHorizontal < 2
-                        parent: buttonCountHorizontal >= 2 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < 2
+                        parent: buttonCountPortrait >= 2 ? mainButtons : extraButtons
                         disabled: !Patience.canRedo
                         onActionTriggered: Patience.redoMove()
                     }
@@ -421,8 +421,8 @@ Item {
                         //% "Hint"
                         text: qsTrId("patience-bt-hint")
                         imageSource: "../../buttons/icon-m-hint.svg"
-                        showText: buttonCountHorizontal < 3
-                        parent: buttonCountHorizontal >= 3 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < 3
+                        parent: buttonCountPortrait >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
                         onActionTriggered: Patience.getHint()
                     }
@@ -433,8 +433,8 @@ Item {
                         //% "Deal"
                         text: qsTrId("patience-bt-deal")
                         imageSource: "../../buttons/icon-m-deal.svg"
-                        showText: buttonCountHorizontal < 4
-                        parent: buttonCountHorizontal >= 4 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < 4
+                        parent: buttonCountPortrait >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
                         onActionTriggered: Patience.dealCard()
@@ -446,8 +446,8 @@ Item {
                         //% "Restart"
                         text: qsTrId("patience-bt-restart")
                         imageSource: "../../buttons/icon-m-restart.svg"
-                        showText: buttonCountHorizontal < 5
-                        parent: buttonCountHorizontal >= 5 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < 5
+                        parent: buttonCountPortrait >= 5 ? mainButtons : extraButtons
                         onActionTriggered: Patience.restartGame()
                     }
                 }
@@ -467,7 +467,7 @@ Item {
                 id: title
 
                 height: minimumSpaceY
-                width: Screen.width - 2 * Theme.horizontalPageMargin + Theme.paddingMedium - Theme.itemSizeLarge * buttonCountHorizontal - Theme.paddingSmall
+                width: Screen.width - 2 * Theme.horizontalPageMargin + Theme.paddingMedium - Theme.itemSizeLarge * buttonCountPortrait - Theme.paddingSmall
                 anchors {
                     right: parent.right
                     rightMargin: Theme.horizontalPageMargin
@@ -530,18 +530,18 @@ Item {
             }
 
             Item {
-                id: titleVertical
+                id: titleLandscape
 
                 visible: false
-                height: gameTitleVertical.height + (Patience.showScore ? scoreTextVertical.height : 0)
-                                                 + elapsedTextVertical.height
+                height: gameTitleLandscape.height + (Patience.showScore ? scoreTextLandscape.height : 0)
+                                                 + elapsedTextLandscape.height
                 width: spaceX - Theme.paddingSmall
                 x: Theme.paddingSmall
                 anchors.top: parent.top
-                clip: width < gameTitleVertical.contentWidth
+                clip: width < gameTitleLandscape.contentWidth
 
                 Label {
-                    id: gameTitleVertical
+                    id: gameTitleLandscape
 
                     text: Patience.gameName
                     color: Theme.highlightColor
@@ -554,13 +554,13 @@ Item {
 
 
                 ScoreText {
-                    id: scoreTextVertical
+                    id: scoreTextLandscape
 
                     //% "Score:"
                     text: qsTrId("patience-la-score")
                     value: Patience.score
-                    anchors.bottom: elapsedTextVertical.top
-                    x: -scoreTextVertical.nameWidth + spaceX - minimumSpaceX
+                    anchors.bottom: elapsedTextLandscape.top
+                    x: -scoreTextLandscape.nameWidth + spaceX - minimumSpaceX
                     truncationMode: TruncationMode.None
                     nameVisible: true
                     nameOpacity: expanded || animating ? 1.0 : 0.0
@@ -568,13 +568,13 @@ Item {
                 }
 
                 ScoreText {
-                    id: elapsedTextVertical
+                    id: elapsedTextLandscape
 
                     //% "Time:"
                     text: qsTrId("patience-la-time")
                     value: Patience.elapsedTime
                     anchors.bottom: parent.bottom
-                    x: -elapsedTextVertical.nameWidth + spaceX - minimumSpaceX
+                    x: -elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX
                     truncationMode: TruncationMode.None
                     nameVisible: true
                     nameOpacity: expanded || animating ? 1.0 : 0.0
@@ -595,7 +595,7 @@ Item {
         }
         height: handleWidth
         width: Screen.width
-        visible: buttonCountHorizontal < 5
+        visible: showHandleY
 
         onXChanged: {
             if (dragged) expanded = prevX < x
