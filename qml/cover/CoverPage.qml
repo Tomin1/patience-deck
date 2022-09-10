@@ -19,6 +19,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Patience 1.0
 import PatienceDeck 1.0
+import "../components"
 
 CoverBackground {
     Column {
@@ -51,13 +52,8 @@ CoverBackground {
             color: Theme.secondaryColor
         }
 
-        Icon {
+        GameFinishedIcon {
             anchors.horizontalCenter: parent.horizontalCenter
-            source: Patience.state === Patience.WonState
-                    ? "../../buttons/icon-m-fireworks.svg"
-                    : "../../buttons/icon-m-skull.svg"
-            sourceSize.height: Theme.iconSizeLarge
-            sourceSize.width: Theme.iconSizeLarge
             visible: Patience.state >= Patience.GameOverState
         }
     }

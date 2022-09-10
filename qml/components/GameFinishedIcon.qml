@@ -15,29 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.6
+import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Patience 1.0
 
-Row {
-    anchors.horizontalCenter: parent.horizontalCenter
-    spacing: Theme.paddingLarge
-
-    GameFinishedIcon { }
-
-    Column {
-        anchors.verticalCenter: parent.verticalCenter
-
-        ScoreText {
-            //% "Score:"
-            text: qsTrId("patience-la-score")
-            value: Patience.score
-        }
-
-        ScoreText {
-            //% "Time:"
-            text: qsTrId("patience-la-time")
-            value: Patience.elapsedTime
-        }
-    }
+Icon {
+    source: Patience.state === Patience.WonState
+            ? "../../buttons/icon-m-fireworks.svg"
+            : "../../buttons/icon-m-skull.svg"
+    sourceSize.height: Theme.iconSizeLarge
+    sourceSize.width: Theme.iconSizeLarge
 }
