@@ -498,6 +498,7 @@ Item {
                     x: parent.width - width - elapsedText.width - spacer.width - 2 * Theme.paddingSmall
                     maximumWidth: title.width - elapsedText.width - spacer.width - 3 * Theme.paddingSmall
                     nameVisible: false
+                    nameOpacity: expanded || animating ? 1.0 : 0.0
                     visible: Patience.showScore
                 }
 
@@ -523,6 +524,7 @@ Item {
                     x: parent.width - width
                     maximumWidth: title.width
                     nameVisible: false
+                    nameOpacity: expanded || animating ? 1.0 : 0.0
                 }
             }
 
@@ -560,6 +562,7 @@ Item {
                     x: -scoreTextVertical.nameWidth + spaceX - minimumSpaceX
                     truncationMode: TruncationMode.None
                     nameVisible: true
+                    nameOpacity: expanded || animating ? 1.0 : 0.0
                     visible: Patience.showScore
                 }
 
@@ -573,6 +576,7 @@ Item {
                     x: -elapsedTextVertical.nameWidth + spaceX - minimumSpaceX
                     truncationMode: TruncationMode.None
                     nameVisible: true
+                    nameOpacity: expanded || animating ? 1.0 : 0.0
                 }
             }
         }

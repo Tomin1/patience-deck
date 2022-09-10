@@ -22,6 +22,7 @@ Row {
     property alias text: nameLabel.text
     property alias value: valueLabel.text
     property alias nameVisible: nameLabel.visible
+    property alias nameOpacity: nameLabel.opacity
     property alias truncationMode: valueLabel.truncationMode
     readonly property int nameWidth: nameLabel.width + spacing
     readonly property int contentWidth: nameLabel.width + spacing + valueLabel.width
@@ -32,7 +33,6 @@ Row {
     Label {
         id: nameLabel
         color: Theme.highlightColor
-        opacity: expanded || animating ? 1.0 : 0.0
     }
 
     Label {
