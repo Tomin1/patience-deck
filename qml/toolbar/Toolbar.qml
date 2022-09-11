@@ -236,11 +236,36 @@ Item {
                 y: mainButtons.y
             }
             PropertyChanges { target: extraButtons; visible: false }
-            PropertyChanges { target: undoButton; showText: expanded || animating; parent: mainButtons }
-            PropertyChanges { target: redoButton; showText: expanded || animating; parent: mainButtons }
-            PropertyChanges { target: hintButton; showText: expanded || animating; parent: mainButtons }
-            PropertyChanges { target: dealButton; showText: expanded || animating; parent: mainButtons }
-            PropertyChanges { target: restartButton; showText: expanded || animating; parent: mainButtons }
+            PropertyChanges {
+                target: undoButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: redoButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: hintButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: dealButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: restartButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
         }
     ]
     transitions: [
