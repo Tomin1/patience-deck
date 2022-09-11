@@ -39,7 +39,7 @@ Item {
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
     readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
-    readonly property bool showHandleY: buttonCountPortrait < 5
+    readonly property bool showHandleY: buttonCountPortrait < (Patience.showDeal ? 5 : 4)
     readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
     readonly property int buttonCountLandscape: Math.max(
                             Math.floor((Screen.width - titleLandscape.height) / Theme.itemSizeLarge),
