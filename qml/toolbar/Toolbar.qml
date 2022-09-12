@@ -35,15 +35,17 @@ Item {
                                               || landscapeExpandedTransition.running
                                               || landscapeMirroredTransition.running
                                               || landscapeMirroredExpandedTransition.running
-    readonly property int buttonCountPortrait: Math.ceil(Screen.width / 2 / Theme.itemSizeLarge)
+    readonly property int buttonCount: Patience.showDeal ? 5 : 4
+    readonly property int buttonCountPortrait: Math.min(Math.ceil(Screen.width / 2 / Theme.itemSizeLarge),
+                                                        buttonCount)
     readonly property int spaceY: handle.y
     readonly property int minimumSpaceY: Theme.itemSizeLarge
     readonly property int maximumSpaceY: extraButtons.y + extraButtons.height + Theme.paddingSmall
-    readonly property bool showHandleY: buttonCountPortrait < (Patience.showDeal ? 5 : 4)
+    readonly property bool showHandleY: buttonCountPortrait < buttonCount
     readonly property int totalSpaceY: minimumSpaceY + (showHandleY ? handleWidth : 0)
     readonly property int buttonCountLandscape: Math.max(
                             Math.floor((Screen.width - titleLandscape.height) / Theme.itemSizeLarge),
-                            Patience.showDeal ? 5 : 4)
+                            buttonCount)
     readonly property int spaceX: mirror ? Screen.height - toolbar.x - handleWidth : handle.x
     readonly property int minimumSpaceX: Theme.itemSizeLarge
     readonly property int maximumSpaceX: Math.max(gameTitleLandscape.contentWidth,
@@ -474,7 +476,7 @@ Item {
                         text: qsTrId("patience-bt-redo")
                         imageSource: "../../buttons/icon-m-redo.svg"
                         showText: buttonCountPortrait < 2
-                        parent: buttonCountPortrait >= 2 ? mainButtons : extraButtons
+                        parent: undoButton.parent, buttonCountPortrait >= 2 ? mainButtons : extraButtons
                         disabled: !Patience.canRedo
                         onActionTriggered: Patience.redoMove()
                     }
@@ -486,7 +488,7 @@ Item {
                         text: qsTrId("patience-bt-hint")
                         imageSource: "../../buttons/icon-m-hint.svg"
                         showText: buttonCountPortrait < 3
-                        parent: buttonCountPortrait >= 3 ? mainButtons : extraButtons
+                        parent: dealButton.parent, buttonCountPortrait >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
                         onActionTriggered: Patience.getHint()
                     }
@@ -498,7 +500,7 @@ Item {
                         text: qsTrId("patience-bt-deal")
                         imageSource: "../../buttons/icon-m-deal.svg"
                         showText: buttonCountPortrait < 4
-                        parent: buttonCountPortrait >= 4 ? mainButtons : extraButtons
+                        parent: restartButton.parent, buttonCountPortrait >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
                         onActionTriggered: Patience.dealCard()
@@ -510,8 +512,8 @@ Item {
                         //% "Restart"
                         text: qsTrId("patience-bt-restart")
                         imageSource: "../../buttons/icon-m-restart.svg"
-                        showText: buttonCountPortrait < 5
-                        parent: buttonCountPortrait >= 5 ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < buttonCount
+                        parent: redoButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
                         onActionTriggered: Patience.restartGame()
                     }
                 }
