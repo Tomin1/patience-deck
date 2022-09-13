@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = $$(NAME)
-QT += svg
+QT += svg xml
 CONFIG += link_pkgconfig sailfishapp
 equals(TARGET, "harbour-patience-deck") {
     INCLUDEPATH += $(CACHE)/built/usr/share/harbour-patience-deck/include
@@ -31,6 +31,7 @@ SOURCES += \
     table/feedbackevent.cpp \
     table/selection.cpp \
     table/slot.cpp \
+    table/svgdocument.cpp \
     table/table.cpp \
     table/texturerenderer.cpp \
     patience-deck.cpp
@@ -55,8 +56,10 @@ HEADERS += \
     table/countableid.h \
     table/drag.h \
     table/feedbackevent.h \
+    table/perftimer.h \
     table/selection.h \
     table/slot.h \
+    table/svgdocument.h \
     table/table.h \
     table/texturerenderer.h
 

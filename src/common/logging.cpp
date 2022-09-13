@@ -21,6 +21,8 @@
 Q_LOGGING_CATEGORY(lcPatience, "site.tomin.patience", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcTestMode, "site.tomin.patience.test", QtInfoMsg);
 Q_LOGGING_CATEGORY(lcTable, "site.tomin.patience.table", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcRenderer, "site.tomin.patience.table.renderer", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcRendererPerf, "site.tomin.patience.table.renderer.perf", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcDrag, "site.tomin.patience.table.drag", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcSelection, "site.tomin.patience.table.selection", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcManager, "site.tomin.patience.table.manager", QtWarningMsg);

@@ -102,6 +102,7 @@ Table::Table(QQuickItem *parent)
 
     auto renderer = new TextureRenderer();
     renderer->moveToThread(&m_textureThread);
+    QMetaObject::invokeMethod(renderer, "loadDocument", Qt::QueuedConnection);
     connect(&m_textureThread, &QThread::finished, renderer, &TextureRenderer::deleteLater);
     connect(this, &Table::doRenderCardTexture, renderer, &TextureRenderer::renderTexture);
     connect(renderer, &TextureRenderer::textureRendered, this, &Table::handleCardTextureRendered);

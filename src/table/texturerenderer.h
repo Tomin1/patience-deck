@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021 - 2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 class QCommandLineParser;
 class QSvgRenderer;
+class SvgDocument;
 class TextureRenderer : public QObject
 {
     Q_OBJECT
@@ -36,17 +37,27 @@ public:
     static void setArguments(QCommandLineParser *parser);
 
 public slots:
+    void loadDocument();
     void renderTexture(const QSize &size);
 
 signals:
     void textureRendered(QImage image, const QSize &size);
+    // These are only for measuring performance
+    void documentLoaded();
+    void textureRenderingStarted();
 
 private:
+    QString getVariant() const;
+    QHash<QString, QString> getColors() const;
+    void resetDocument();
     QSvgRenderer *renderer();
     void resetRenderer();
+    void measurePerf();
 
+    SvgDocument *m_document;
     QSvgRenderer *m_renderer;
     MGConfItem m_cardStyleConf;
+    MGConfItem m_cardColorConf;
     QSize m_size;
 };
 
