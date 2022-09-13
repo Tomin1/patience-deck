@@ -488,7 +488,7 @@ Item {
                         text: qsTrId("patience-bt-hint")
                         imageSource: "../../buttons/icon-m-hint.svg"
                         showText: buttonCountPortrait < 3
-                        parent: dealButton.parent, buttonCountPortrait >= 3 ? mainButtons : extraButtons
+                        parent: redoButton.parent, buttonCountPortrait >= 3 ? mainButtons : extraButtons
                         disabled: Patience.state !== Patience.StartingState && Patience.state !== Patience.RunningState
                         onActionTriggered: Patience.getHint()
                     }
@@ -500,7 +500,7 @@ Item {
                         text: qsTrId("patience-bt-deal")
                         imageSource: "../../buttons/icon-m-deal.svg"
                         showText: buttonCountPortrait < 4
-                        parent: restartButton.parent, buttonCountPortrait >= 4 ? mainButtons : extraButtons
+                        parent: hintButton.parent, buttonCountPortrait >= 4 ? mainButtons : extraButtons
                         disabled: !Patience.canDeal
                         visible: Patience.showDeal
                         onActionTriggered: Patience.dealCard()
@@ -513,7 +513,7 @@ Item {
                         text: qsTrId("patience-bt-restart")
                         imageSource: "../../buttons/icon-m-restart.svg"
                         showText: buttonCountPortrait < buttonCount
-                        parent: redoButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
+                        parent: dealButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
                         onActionTriggered: Patience.restartGame()
                     }
                 }
