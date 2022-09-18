@@ -21,12 +21,22 @@
     "S_red_jack": ["d", "m 2036.836,354.106 c 0,4.19 3.009,6.464 6.717,6.464 3.708,0 6.717,-2.637 6.717,-6.464 v -20.897"],
     "S_red_king": ["d", "m 2443.4729,349.90789 13.0862,-14.97377 m -8.2609,11.33239 8.3115,13.61537 M 2442.274,333.914 v 26.88096"],
     "A_stroke": ["stroke-width", "×1.6"],
+    "L_club": ["club fill"],
+    "L_club_stroke": ["club stroke"],
+    "L_diamond": ["diamond fill"],
+    "L_diamond_stroke": ["diamond stroke"],
+    "L_heart": ["heart fill"],
+    "I_heart": ["heart stroke"],
+    "L_spade": ["spade fill"],
+    "I_spade": ["spade stroke"],
+    "L_back": ["back fill"],
+    "T_fill_rule": ["fill-rule", "evenodd"],
     "club_1": {
         "use37950": ["D"],
         "use25665": ["D"],
-        "path37940": ["C_double", "C_suit"],
+        "path37940": ["C_double", "C_suit", "L_club", "T_fill_rule"],
         "path43924": ["D"],
-        "path22603": ["C_1", "S_black_1", "A_stroke"]
+        "path22603": ["C_1", "S_black_1", "A_stroke", "L_club_stroke"]
     },
     "club_2": {
         "use37956": ["D"],
@@ -34,7 +44,7 @@
         "use37954": ["C_double", "C_suit"],
         "use46754": ["D"],
         "use46756": ["D"],
-        "path22591": ["C_letter", "A_stroke"]
+        "path22591": ["C_letter", "A_stroke", "L_club_stroke"]
     },
     "club_3": {
         "use37970": ["D"],
@@ -44,8 +54,8 @@
         "use46819": ["D"],
         "use46821": ["D"],
         "g22585": ["C_3"],
-        "path22587": ["A_stroke"],
-        "path22589": ["A_stroke"]
+        "path22587": ["A_stroke", "L_club_stroke"],
+        "path22589": ["A_stroke", "L_club_stroke"]
     },
     "club_4": {
         "use37974": ["D"],
@@ -55,7 +65,7 @@
         "use46752": ["D"],
         "use46750": ["D"],
         "use46760": ["D"],
-        "path22583": ["C_4", "S_black_4", "A_stroke"]
+        "path22583": ["C_4", "S_black_4", "A_stroke", "L_club_stroke"]
     },
     "club_5": {
         "use37994": ["D"],
@@ -67,8 +77,8 @@
         "use46843": ["D"],
         "use46863": ["D"],
         "g22577": ["C_5"],
-        "path22579": ["A_stroke"],
-        "path22581": ["A_stroke"]
+        "path22579": ["A_stroke", "L_club_stroke"],
+        "path22581": ["A_stroke", "L_club_stroke"]
     },
     "club_6": {
         "use37998": ["D"],
@@ -80,7 +90,7 @@
         "use46867": ["D"],
         "use46869": ["D"],
         "use46871": ["D"],
-        "path22575": ["C_6", "A_stroke"]
+        "path22575": ["C_6", "A_stroke", "L_club_stroke"]
     },
     "club_7": {
         "use38002": ["D"],
@@ -93,7 +103,7 @@
         "use46895": ["D"],
         "use46897": ["D"],
         "use46899": ["D"],
-        "path22573": ["C_letter", "A_stroke"]
+        "path22573": ["C_letter", "A_stroke", "L_club_stroke"]
     },
     "club_8": {
         "use38006": ["D"],
@@ -107,7 +117,7 @@
         "use46951": ["D"],
         "use46953": ["D"],
         "use46955": ["D"],
-        "path22571": ["C_letter", "A_stroke"]
+        "path22571": ["C_letter", "A_stroke", "L_club_stroke"]
     },
     "club_9": {
         "use38034": ["D"],
@@ -122,7 +132,7 @@
         "use47016": ["D"],
         "use47018": ["D"],
         "use47026": ["D"],
-        "path22569": ["C_9", "A_stroke"]
+        "path22569": ["C_9", "A_stroke", "L_club_stroke"]
     },
     "club_10": {
         "use38038": ["D"],
@@ -139,8 +149,8 @@
         "use47070": ["D"],
         "use47076": ["D"],
         "g30085": ["C_10"],
-        "path22567": ["A_stroke"],
-        "path29088": ["A_stroke"]
+        "path22567": ["A_stroke", "L_club_stroke"],
+        "path29088": ["A_stroke", "L_club_stroke"]
     },
     "club_jack": {
         "use38042": ["D"],
@@ -150,7 +160,7 @@
         "g9233": ["D"],
         "use6722": ["D"],
         "rect9348": ["D"],
-        "path22593": ["C_letter", "S_black_jack", "A_stroke"]
+        "path22593": ["C_letter", "S_black_jack", "A_stroke", "L_club_stroke"]
     },
     "club_queen": {
         "use38046": ["D"],
@@ -161,8 +171,8 @@
         "use6724": ["D"],
         "use9727": ["D"],
         "g22595": ["C_queen"],
-        "path22597": ["A_stroke"],
-        "path22599": ["A_stroke"]
+        "path22597": ["A_stroke", "L_club_stroke"],
+        "path22599": ["A_stroke", "L_club_stroke"]
     },
     "club_king": {
         "use38050": ["D"],
@@ -172,14 +182,14 @@
         "g8604": ["D"],
         "use6728": ["D"],
         "use9737": ["D"],
-        "path22601": ["C_king", "S_black_king", "A_stroke"]
+        "path22601": ["C_king", "S_black_king", "A_stroke", "L_club_stroke"]
     },
     "diamond_1": {
         "use41521": ["D"],
         "use7024": ["D"],
-        "path37942": ["C_double", "C_suit"],
+        "path37942": ["C_double", "C_suit", "L_diamond"],
         "path49149": ["D"],
-        "path6008": ["C_1", "S_red_1", "A_stroke"]
+        "path6008": ["C_1", "S_red_1", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_2": {
         "use41527": ["D"],
@@ -187,7 +197,7 @@
         "use41525": ["C_double", "C_suit"],
         "use49155": ["D"],
         "use49157": ["D"],
-        "path5968": ["C_letter", "A_stroke"]
+        "path5968": ["C_letter", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_3": {
         "use41543": ["D"],
@@ -197,8 +207,8 @@
         "use49175": ["D"],
         "use49177": ["D"],
         "g5970": ["C_3"],
-        "path5972": ["A_stroke"],
-        "path5974": ["A_stroke"]
+        "path5972": ["A_stroke", "L_diamond_stroke"],
+        "path5974": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_4": {
         "use41547": ["D"],
@@ -208,7 +218,7 @@
         "use49181": ["D"],
         "use49189": ["D"],
         "use49191": ["D"],
-        "path5976": ["C_4", "S_red_4", "A_stroke"]
+        "path5976": ["C_4", "S_red_4", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_5": {
         "use41568": ["D"],
@@ -220,8 +230,8 @@
         "use49209": ["D"],
         "use49217": ["D"],
         "g5978": ["C_5"],
-        "path5980": ["A_stroke"],
-        "path5982": ["A_stroke"]
+        "path5980": ["A_stroke", "L_diamond_stroke"],
+        "path5982": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_6": {
         "use41572": ["D"],
@@ -233,7 +243,7 @@
         "use49225": ["D"],
         "use49233": ["D"],
         "use49235": ["D"],
-        "path5984": ["C_6", "A_stroke"]
+        "path5984": ["C_6", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_7": {
         "use41576": ["D"],
@@ -246,7 +256,7 @@
         "use49284": ["D"],
         "use49286": ["D"],
         "use14263": ["D"],
-        "path5986": ["C_letter", "A_stroke"]
+        "path5986": ["C_letter", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_8": {
         "use41580": ["D"],
@@ -260,7 +270,7 @@
         "use49322": ["D"],
         "use49326": ["D"],
         "use49328": ["D"],
-        "path5988": ["C_letter", "A_stroke"]
+        "path5988": ["C_letter", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_9": {
         "use41608": ["D"],
@@ -275,7 +285,7 @@
         "use49362": ["D"],
         "use49364": ["D"],
         "use14539": ["D"],
-        "path5990": ["C_9", "A_stroke"]
+        "path5990": ["C_9", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_10": {
         "use41612": ["D"],
@@ -292,8 +302,8 @@
         "use14541": ["D"],
         "use14543": ["D"],
         "g5992": ["C_10"],
-        "path5994": ["A_stroke"],
-        "path5996": ["A_stroke"]
+        "path5994": ["A_stroke", "L_diamond_stroke"],
+        "path5996": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_jack": {
         "use41616": ["D"],
@@ -303,7 +313,7 @@
         "g8822": ["D"],
         "use6730": ["D"],
         "use9719": ["D"],
-        "path6006": ["C_red_jack", "S_red_jack", "A_stroke"]
+        "path6006": ["C_red_jack", "S_red_jack", "A_stroke", "L_diamond_stroke"]
     },
     "diamond_queen": {
         "use41620": ["D"],
@@ -314,8 +324,8 @@
         "use6732": ["D"],
         "use9729": ["D"],
         "g5998": ["C_queen"],
-        "path6000": ["A_stroke"],
-        "path6002": ["A_stroke"]
+        "path6000": ["A_stroke", "L_diamond_stroke"],
+        "path6002": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_king": {
         "use41624": ["D"],
@@ -325,14 +335,14 @@
         "g7894": ["D"],
         "use6736": ["D"],
         "use9739": ["D"],
-        "path6004": ["C_king", "S_red_king", "A_stroke"]
+        "path6004": ["C_king", "S_red_king", "A_stroke", "L_diamond_stroke"]
     },
     "heart_1": {
         "use41664": ["D"],
         "use20340": ["D"],
-        "path37944": ["C_double", "C_suit"],
+        "path37944": ["C_double", "C_suit", "L_heart", "T_fill_rule"],
         "path49151": ["D"],
-        "use20299": ["C_1"]
+        "use20299": ["I_heart", "C_1"]
     },
     "heart_2": {
         "use41670": ["D"],
@@ -340,7 +350,7 @@
         "use41668": ["C_double", "C_suit"],
         "use49445": ["D"],
         "use49447": ["D"],
-        "use20275": ["C_letter"]
+        "use20275": ["I_heart", "C_letter"]
     },
     "heart_3": {
         "use41687": ["D"],
@@ -349,7 +359,7 @@
         "use49455": ["D"],
         "use49457": ["D"],
         "use49459": ["D"],
-        "use20277": ["C_3"]
+        "use20277": ["I_heart", "C_3"]
     },
     "heart_4": {
         "use41691": ["D"],
@@ -359,7 +369,7 @@
         "use49463": ["D"],
         "use49471": ["D"],
         "use49473": ["D"],
-        "use20279": ["C_4"]
+        "use20279": ["I_heart", "C_4"]
     },
     "heart_5": {
         "use41711": ["D"],
@@ -371,7 +381,7 @@
         "use49546": ["D"],
         "use49548": ["D"],
         "use49558": ["D"],
-        "use20281": ["C_5"]
+        "use20281": ["I_heart", "C_5"]
     },
     "heart_6": {
         "use41715": ["D"],
@@ -383,7 +393,7 @@
         "use49566": ["D"],
         "use49578": ["D"],
         "use49580": ["D"],
-        "use20283": ["C_6"]
+        "use20283": ["I_heart", "C_6"]
     },
     "heart_7": {
         "use41719": ["D"],
@@ -396,7 +406,7 @@
         "use49606": ["D"],
         "use49608": ["D"],
         "use49616": ["D"],
-        "use20285": ["C_letter"]
+        "use20285": ["I_heart", "C_letter"]
     },
     "heart_8": {
         "use41723": ["D"],
@@ -410,7 +420,7 @@
         "use49638": ["D"],
         "use49640": ["D"],
         "use49642": ["D"],
-        "use20287": ["C_letter"]
+        "use20287": ["I_heart", "C_letter"]
     },
     "heart_9": {
         "use41751": ["D"],
@@ -425,7 +435,7 @@
         "use49676": ["D"],
         "use49678": ["D"],
         "use49686": ["D"],
-        "use20289": ["C_9"]
+        "use20289": ["I_heart", "C_9"]
     },
     "heart_10": {
         "use41755": ["D"],
@@ -441,7 +451,7 @@
         "use49708": ["D"],
         "use49724": ["D"],
         "use49726": ["D"],
-        "use20291": ["C_10"]
+        "use20291": ["I_heart", "C_10"]
     },
     "heart_jack": {
         "use41759": ["D"],
@@ -451,7 +461,7 @@
         "g8962": ["D"],
         "use6738": ["D"],
         "use9721": ["D"],
-        "use20293": ["C_red_jack"]
+        "use20293": ["I_heart", "C_red_jack"]
     },
     "heart_queen": {
         "use41763": ["D"],
@@ -461,7 +471,7 @@
         "g6642": ["D"],
         "use6740": ["D"],
         "use9731": ["D"],
-        "use20295": ["C_queen"]
+        "use20295": ["I_heart", "C_queen"]
     },
     "heart_king": {
         "use41767": ["D"],
@@ -471,14 +481,14 @@
         "text10609": ["D"],
         "use6742": ["D"],
         "use9741": ["D"],
-        "use20297": ["C_king"]
+        "use20297": ["I_heart", "C_king"]
     },
     "spade_1": {
         "use42787": ["D"],
         "use20256": ["D"],
-        "path37946": ["C_double", "C_suit"],
+        "path37946": ["C_double", "C_suit", "L_spade", "T_fill_rule"],
         "use22215": ["D"],
-        "use20217": ["C_1"]
+        "use20217": ["I_spade", "C_1"]
     },
     "spade_2": {
         "use42793": ["D"],
@@ -486,7 +496,7 @@
         "use42791": ["C_double", "C_suit"],
         "use51906": ["D"],
         "use51908": ["D"],
-        "use20193": ["C_letter"]
+        "use20193": ["I_spade", "C_letter"]
     },
     "spade_3": {
         "use42809": ["D"],
@@ -495,7 +505,7 @@
         "path49153": ["D"],
         "use51916": ["D"],
         "use51918": ["D"],
-        "use20195": ["C_3"]
+        "use20195": ["I_spade", "C_3"]
     },
     "spade_4": {
         "use42813": ["D"],
@@ -505,7 +515,7 @@
         "use51932": ["D"],
         "use51924": ["D"],
         "use51934": ["D"],
-        "use20197": ["C_4"]
+        "use20197": ["I_spade", "C_4"]
     },
     "spade_5": {
         "use42833": ["D"],
@@ -516,7 +526,7 @@
         "use51978": ["D"],
         "use51980": ["D"],
         "use52048": ["D"],
-        "use20199": ["C_5"]
+        "use20199": ["I_spade", "C_5"]
     },
     "spade_6": {
         "use42837": ["D"],
@@ -528,7 +538,7 @@
         "use51998": ["D"],
         "use52006": ["D"],
         "use52008": ["D"],
-        "use20201": ["C_6"]
+        "use20201": ["I_spade", "C_6"]
     },
     "spade_7": {
         "use42841": ["D"],
@@ -541,7 +551,7 @@
         "use52028": ["D"],
         "use52030": ["D"],
         "use52046": ["D"],
-        "use20203": ["C_letter"]
+        "use20203": ["I_spade", "C_letter"]
     },
     "spade_8": {
         "use42845": ["D"],
@@ -555,7 +565,7 @@
         "use52066": ["D"],
         "use52068": ["D"],
         "use52070": ["D"],
-        "use20205": ["C_letter"]
+        "use20205": ["I_spade", "C_letter"]
     },
     "spade_9": {
         "use42873": ["D"],
@@ -570,7 +580,7 @@
         "use52088": ["D"],
         "use52094": ["D"],
         "use52098": ["D"],
-        "use20207": ["C_9"]
+        "use20207": ["I_spade", "C_9"]
     },
     "spade_10": {
         "use42877": ["D"],
@@ -586,7 +596,7 @@
         "use52136": ["D"],
         "use52156": ["D"],
         "use52158": ["D"],
-        "use20209": ["C_10"]
+        "use20209": ["I_spade", "C_10"]
     },
     "spade_jack": {
         "use42881": ["D"],
@@ -596,7 +606,7 @@
         "path70155": ["D"],
         "use6744": ["D"],
         "use9723": ["D"],
-        "use20211": ["C_letter"]
+        "use20211": ["I_spade", "C_letter"]
     },
     "spade_queen": {
         "use42885": ["D"],
@@ -607,7 +617,7 @@
         "path55722": ["D"],
         "use6746": ["D"],
         "use9733": ["D"],
-        "use20213": ["C_queen"]
+        "use20213": ["I_spade", "C_queen"]
     },
     "spade_king": {
         "use42889": ["D"],
@@ -617,12 +627,15 @@
         "path66735": ["D"],
         "use6748": ["D"],
         "use9743": ["D"],
-        "use20215": ["C_king"]
+        "use20215": ["I_spade", "C_king"]
     },
     "joker_black": {
         "use9635": ["D"]
     },
     "joker_red": {
         "use9625": ["D"]
+    },
+    "back": {
+        "rect6588": ["L_back"]
     }
 }

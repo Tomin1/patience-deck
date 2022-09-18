@@ -1,89 +1,236 @@
 {
     "A_stroke": ["stroke-width", "×1.6"],
+    "L_club": ["club fill"],
+    "L_club_stroke": ["club stroke"],
+    "L_diamond": ["diamond fill"],
+    "L_diamond_stroke": ["diamond stroke"],
+    "L_heart": ["heart fill"],
+    "I_heart": ["heart stroke"],
+    "L_spade": ["spade fill"],
+    "I_spade": ["spade stroke"],
+    "L_back": ["back fill"],
+    "T_fill_rule": ["fill-rule", "evenodd"],
     "club_1": {
-        "path22603": ["A_stroke"]
+        "path22603": ["A_stroke", "L_club_stroke"],
+        "path37940": ["L_club", "T_fill_rule"],
+        "path43924": ["L_club", "T_fill_rule"]
     },
     "club_2": {
-        "path22591": ["A_stroke"]
+        "path22591": ["A_stroke", "L_club_stroke"]
     },
     "club_3": {
-        "path22587": ["A_stroke"],
-        "path22589": ["A_stroke"]
+        "path22587": ["A_stroke", "L_club_stroke"],
+        "path22589": ["A_stroke", "L_club_stroke"]
     },
     "club_4": {
-        "path22583": ["A_stroke"]
+        "path22583": ["A_stroke", "L_club_stroke"]
     },
     "club_5": {
-        "path22579": ["A_stroke"],
-        "path22581": ["A_stroke"]
+        "path22579": ["A_stroke", "L_club_stroke"],
+        "path22581": ["A_stroke", "L_club_stroke"]
     },
     "club_6": {
-        "path22575": ["A_stroke"]
+        "path22575": ["A_stroke", "L_club_stroke"]
     },
     "club_7": {
-        "path22573": ["A_stroke"]
+        "path22573": ["A_stroke", "L_club_stroke"]
     },
     "club_8": {
-        "path22571": ["A_stroke"]
+        "path22571": ["A_stroke", "L_club_stroke"]
     },
     "club_9": {
-        "path22569": ["A_stroke"]
+        "path22569": ["A_stroke", "L_club_stroke"]
     },
     "club_10": {
-        "path22567": ["A_stroke"],
-        "path29088": ["A_stroke"]
+        "path22567": ["A_stroke", "L_club_stroke"],
+        "path29088": ["A_stroke", "L_club_stroke"]
     },
     "club_jack": {
-        "path22593": ["A_stroke"]
+        "path22593": ["A_stroke", "L_club_stroke"],
+        "path61812": ["L_club", "T_fill_rule"]
     },
     "club_queen": {
-        "path22597": ["A_stroke"],
-        "path22599": ["A_stroke"]
+        "path22597": ["A_stroke", "L_club_stroke"],
+        "path22599": ["A_stroke", "L_club_stroke"],
+        "path16805": ["L_club", "T_fill_rule"]
     },
     "club_king": {
-        "path22601": ["A_stroke"]
+        "path22601": ["A_stroke", "L_club_stroke"],
+        "path14282": ["L_club", "T_fill_rule"]
     },
     "diamond_1": {
-        "path6008": ["A_stroke"]
+        "path6008": ["A_stroke", "L_diamond_stroke"],
+        "path37942": ["L_diamond"],
+        "path49149": ["L_diamond"]
     },
     "diamond_2": {
-        "path5968": ["A_stroke"]
+        "path5968": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_3": {
-        "path5972": ["A_stroke"],
-        "path5974": ["A_stroke"]
+        "path5972": ["A_stroke", "L_diamond_stroke"],
+        "path5974": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_4": {
-        "path5976": ["A_stroke"]
+        "path5976": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_5": {
-        "path5980": ["A_stroke"],
-        "path5982": ["A_stroke"]
+        "path5980": ["A_stroke", "L_diamond_stroke"],
+        "path5982": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_6": {
-        "path5984": ["A_stroke"]
+        "path5984": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_7": {
-        "path5986": ["A_stroke"]
+        "path5986": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_8": {
-        "path5988": ["A_stroke"]
+        "path5988": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_9": {
-        "path5990": ["A_stroke"]
+        "path5990": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_10": {
-        "path5994": ["A_stroke"],
-        "path5996": ["A_stroke"]
+        "path5994": ["A_stroke", "L_diamond_stroke"],
+        "path5996": ["A_stroke", "L_diamond_stroke"]
     },
     "diamond_jack": {
-        "path6006": ["A_stroke"]
+        "path6006": ["A_stroke", "L_diamond_stroke"],
+        "path31670": ["L_diamond"]
     },
     "diamond_queen": {
-        "path6000": ["A_stroke"],
-        "path6002": ["A_stroke"]
+        "path6000": ["A_stroke", "L_diamond_stroke"],
+        "path6002": ["A_stroke", "L_diamond_stroke"],
+        "path4742": ["L_diamond"]
     },
     "diamond_king": {
-        "path6004": ["A_stroke"]
+        "path6004": ["A_stroke", "L_diamond_stroke"],
+        "rect63924": ["L_diamond"]
+    },
+    "heart_1": {
+        "use20299": ["I_heart"],
+        "use20340": ["I_heart"],
+        "path37944": ["L_heart", "T_fill_rule"],
+        "path49151": ["L_heart", "T_fill_rule"]
+    },
+    "heart_2": {
+        "use20275": ["I_heart"],
+        "use20316": ["I_heart"]
+    },
+    "heart_3": {
+        "use20277": ["I_heart"],
+        "use20318": ["I_heart"]
+    },
+    "heart_4": {
+        "use20279": ["I_heart"],
+        "use20320": ["I_heart"]
+    },
+    "heart_5": {
+        "use20281": ["I_heart"],
+        "use20322": ["I_heart"]
+    },
+    "heart_6": {
+        "use20283": ["I_heart"],
+        "use20324": ["I_heart"]
+    },
+    "heart_7": {
+        "use20285": ["I_heart"],
+        "use20326": ["I_heart"]
+    },
+    "heart_8": {
+        "use20287": ["I_heart"],
+        "use20328": ["I_heart"]
+    },
+    "heart_9": {
+        "use20289": ["I_heart"],
+        "use20330": ["I_heart"]
+    },
+    "heart_10": {
+        "use20291": ["I_heart"],
+        "use20332": ["I_heart"]
+    },
+    "heart_jack": {
+        "use20293": ["I_heart"],
+        "use20334": ["I_heart"],
+        "path5424": ["L_heart", "T_fill_rule"]
+    },
+    "heart_queen": {
+        "use20295": ["I_heart"],
+        "use20336": ["I_heart"],
+        "path16641": ["L_heart", "T_fill_rule"]
+    },
+    "heart_king": {
+        "use20297": ["I_heart"],
+        "use20338": ["I_heart"],
+        "text10609": ["L_heart", "T_fill_rule"]
+    },
+    "spade_1": {
+        "use20217": ["I_spade"],
+        "use20256": ["I_spade"],
+        "path37946": ["L_spade", "T_fill_rule"],
+        "use22215": ["L_spade", "T_fill_rule"],
+        "text11840": ["L_spade", "T_fill_rule"]
+    },
+    "spade_2": {
+        "use20193": ["I_spade"],
+        "use20234": ["I_spade"],
+        "use51906": ["L_spade", "T_fill_rule"],
+        "use51908": ["L_spade", "T_fill_rule"]
+    },
+    "spade_3": {
+        "use20195": ["I_spade"],
+        "use20236": ["I_spade"],
+        "path49153": ["L_spade", "T_fill_rule"]
+    },
+    "spade_4": {
+        "use20197": ["I_spade"],
+        "use20238": ["I_spade"],
+        "use51924": ["L_spade", "T_fill_rule"],
+        "use51934": ["L_spade", "T_fill_rule"]
+    },
+    "spade_5": {
+        "use20199": ["I_spade"],
+        "use20240": ["I_spade"]
+    },
+    "spade_6": {
+        "use20201": ["I_spade"],
+        "use20242": ["I_spade"],
+        "use51994": ["L_spade", "T_fill_rule"],
+        "use51998": ["L_spade", "T_fill_rule"]
+    },
+    "spade_7": {
+        "use20203": ["I_spade"],
+        "use20244": ["I_spade"]
+    },
+    "spade_8": {
+        "use20205": ["I_spade"],
+        "use20246": ["I_spade"],
+        "use52052": ["L_spade", "T_fill_rule"],
+        "use52056": ["L_spade", "T_fill_rule"]
+    },
+    "spade_9": {
+        "use20207": ["I_spade"],
+        "use20248": ["I_spade"]
+    },
+    "spade_10": {
+        "use20209": ["I_spade"],
+        "use20250": ["I_spade"]
+    },
+    "spade_jack": {
+        "use20211": ["I_spade"],
+        "use20252": ["I_spade"],
+        "path70155": ["L_spade", "T_fill_rule"]
+    },
+    "spade_queen": {
+        "use20213": ["I_spade"],
+        "use20254": ["I_spade"],
+        "path25195": ["L_spade", "T_fill_rule"]
+    },
+    "spade_king": {
+        "use20215": ["I_spade"],
+        "use20258": ["I_spade"],
+        "path66735": ["L_spade", "T_fill_rule"]
+    },
+    "back": {
+        "rect6588": ["L_back"]
     }
 }
