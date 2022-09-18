@@ -23,6 +23,7 @@
 # that they won't result in unintended changes to existing graphics.
 
 import argparse
+import copy
 import functools
 import json
 import lxml.etree as ET
@@ -57,6 +58,7 @@ def scale(t):
 def transform(elem, x, y):
     t = elem.get('transform')
     if t:
+        # QtSvg does not support multiple transformations in one transform attribute
         assert ' ' not in t
         if t.startswith('translate('):
             dx, dy = translate(t)
@@ -253,26 +255,107 @@ def adjust(elem, style, value):
     styles[i] = f"{style}:{value:.03g}"
     elem.set('style', ";".join(styles))
 
+def get_matrix_for_transform(t):
+    if t.startswith('translate('):
+        dx, dy = translate(t)
+        return 1, 0, 0, 1, dx, dy
+    elif t.startswith('matrix('):
+        return matrix(t)
+    elif t.startswith('scale('):
+        u, v = scale(t)
+        return u, 0, 0, v, 0, 0
+    else:
+        assert False, f"Unknown transformation: {t}"
+
+def combine(transform1, transform2):
+    a11, a21, a12, a22, a13, a23 = get_matrix_for_transform(transform1)
+    b11, b21, b12, b22, b13, b23 = get_matrix_for_transform(transform2)
+    c11 = a11 * b11 + a12 * b21
+    c12 = a11 * b12 + a12 * b22
+    c13 = a11 * b13 + a12 * b23 + a13
+    c21 = a21 * b11 + a22 * b21
+    c22 = a21 * b12 + a22 * b22
+    c23 = a21 * b13 + a22 * b23 + a23
+    return f"matrix({c11:.04f},{c21:.04f},{c12:.04f},{c22:.04f},{c13:.04f},{c23:.04f})"
+
+def find_original(elem, tree):
+    original = find_element(tree, elem.get('{http://www.w3.org/1999/xlink}href')[1:])
+    transform = original.get('transform')
+    if original.tag == '{http://www.w3.org/2000/svg}use':
+        original, transform_ = find_original(original, tree)
+        if transform and transform_:
+            transform = combine(transform, transform_)
+        elif transform_:
+            transform = transform_
+    return original, transform
+
+def isolate(elem, tree, class_names=None):
+    assert elem.tag == '{http://www.w3.org/2000/svg}use'
+    original, transform = find_original(elem, tree)
+    clone = copy.deepcopy(original)
+    for attr in ('id', 'x', 'y', 'width', 'height'):
+        if elem.get(attr):
+            clone.set(attr, elem.get(attr))
+    if clone.tag == '{http://www.w3.org/2000/svg}g':
+        for child in clone.iterchildren():
+            child.set('id', clone.get('id') + '_' + child.get('id'))
+            child.set('class', class_names)
+    else:
+        clone.set('class', class_names)
+    if elem.get('transform'):
+        if transform:
+            transform = combine(elem.get('transform'), transform)
+        else:
+            transform = elem.get('transform')
+        clone.set('transform', transform)
+    elem.getparent().replace(elem, clone)
+    return clone
+
+def set_classes(elem, class_names):
+    elem.set('class', class_names)
+
+def set_style(elem, name, value):
+    styles = elem.get('style', '').split(';')
+    for i, style in enumerate(styles):
+        if style == "":
+            continue
+        n, v = style.split(':', 1)
+        if (n == name):
+            styles[i] = f"{name}:{value}"
+            break
+    else:
+        styles.append(f"{name}:{value}")
+    elem.set('style', ";".join(styles))
+
 def modify_element(tree, copy_tree, params, element, actions):
     appended = []
     for elem in element.iterchildren():
         for action in actions.get(elem.get('id'), []):
             command = action[0]
-            if command == 'D':
+            if command == 'D': # Delete
                 element.remove(elem)
-            elif command == 'C':
+            elif command == 'C': # Copy
                 assert len(params[action]) in (2, 4), f"Wrong number of params for {action}, expected 2 or 4"
                 appended.append((elem, *params[action]))
-            elif command == 'M':
+            elif command == 'M': # Move
                 assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
                 dx, dy = params[action]
                 move(tree, elem, dx, dy, copy_tree)
-            elif command == 'S':
+            elif command == 'S': # Substitute
                 assert len(params[action]) in (2, 3, 4), f"Wrong number of params for {action}, expected 2, 3 or 4"
                 substitute(elem, *params[action])
-            elif command == 'A':
+            elif command == 'A': # Adjust style value
                 assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
                 adjust(elem, *params[action])
+            elif command == 'I': # Isolate (/separate)
+                assert len(params[action]) == 1, f"Wrong number of params for {action}, expected 1"
+                elem = isolate(elem, tree, *params[action])
+            elif command == 'L': # set cLasses
+                assert len(params[action]) == 1, f"Wrong number of params for {action}, expected 1"
+                set_classes(elem, *params[action])
+            elif command == 'T': # set sTyle
+                assert len(params[action]) == 2, f"Wrong number of params for {action}, expected 2"
+                set_style(elem, *params[action])
         if elem.tag == '{http://www.w3.org/2000/svg}g':
             modify_element(tree, copy_tree, params, elem, actions)
     for elem, *pos in appended:
@@ -292,7 +375,7 @@ def modify_element(tree, copy_tree, params, element, actions):
 
 def modify(tree, copy_tree, actions):
     root = tree.getroot()
-    params = dict(filter(lambda x: x[0][0] in ('A', 'C', 'M', 'S'), actions.items()))
+    params = dict(filter(lambda x: x[0][0] in ('A', 'C', 'I', 'L', 'M', 'S', 'T'), actions.items()))
     for card in root:
         name = card.get('id')
         if name in actions.keys():
