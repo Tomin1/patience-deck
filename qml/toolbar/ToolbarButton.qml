@@ -22,6 +22,7 @@ MouseArea {
     property alias imageSource: image.source
     property alias text: label.text
     property alias showText: label.visible
+    property alias highlighted: control.highlighted
     property bool down: !disabled && pressed && containsPress
     property bool disabled
     readonly property int contentWidth: Theme.itemSizeLarge + label.width
@@ -37,6 +38,7 @@ MouseArea {
     }
 
     SilicaControl {
+        id: control
         anchors.fill: parent
         highlighted: parent.down
         opacity: parent.disabled ? Theme.opacityLow : 1.0

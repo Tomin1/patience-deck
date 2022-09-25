@@ -134,14 +134,13 @@ Page {
 
             enabled: !Patience.engineFailed
             landscape: false
-            pageActive: page.active
             z: 10
         }
 
         Item {
             id: tableContainer
 
-            clip: toolbar.expanded || toolbar.animating
+            clip: toolbar.expanded || toolbar.animating || toolbar.magnify
             x: 0
             y: toolbar.height
             height: Screen.height - messageBar.height - toolbar.height
@@ -150,7 +149,7 @@ Page {
             Table {
                 id: table
 
-                enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed
+                enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed && !toolbar.magnify
 
                 height: Screen.height - toolbar.totalSpaceY - messageBar.height
                 width: Screen.width
@@ -165,6 +164,14 @@ Page {
                 backgroundColor: settings.backgroundColor
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
 
+                transform: Scale {
+                    id: magnifyTransform
+                    origin {
+                        x: magnifyArea.mouseX
+                        y: magnifyArea.mouseY
+                    }
+                }
+
                 layer.enabled: pullDownMenu.active
 
                 FeedbackEvent.onClicked: feedback.playEffect()
@@ -173,6 +180,38 @@ Page {
                 FeedbackEvent.onSelectionChanged: feedback.playEffect(true)
 
                 Component.onCompleted: Patience.restoreSavedOrLoad("klondike.scm")
+
+                NumberAnimation {
+                    id: animateShrink
+                    target: magnifyTransform
+                    properties: "xScale,yScale"
+                    to: 1
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+
+                NumberAnimation {
+                    id: animateGrow
+                    target: magnifyTransform
+                    properties: "xScale,yScale"
+                    to: 2
+                    duration: 100
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            MouseArea {
+                id: magnifyArea
+                anchors {
+                    left: table.left
+                    top: table.top
+                    right: table.right
+                    bottom: table.bottom
+                }
+                enabled: toolbar.magnify
+                preventStealing: true
+                onPressed: animateGrow.running = true
+                onReleased: animateShrink.running = true
             }
         }
 

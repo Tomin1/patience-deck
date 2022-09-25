@@ -25,8 +25,8 @@ Item {
 
     property bool landscape
     property bool mirror
-    property bool pageActive
     property bool expanded
+    property bool magnify
     property int prevX: x
     readonly property bool dragged: dragArea.drag.active
     readonly property bool animating: dragged || portraitTransition.running
@@ -35,7 +35,7 @@ Item {
                                               || landscapeExpandedTransition.running
                                               || landscapeMirroredTransition.running
                                               || landscapeMirroredExpandedTransition.running
-    readonly property int buttonCount: Patience.showDeal ? 5 : 4
+    readonly property int buttonCount: 5 + (Patience.showDeal ? 1 : 0)
     readonly property int buttonCountPortrait: Math.min(Math.ceil(Screen.width / 2 / Theme.itemSizeLarge),
                                                         buttonCount)
     readonly property int spaceY: handle.y
@@ -55,7 +55,8 @@ Item {
                                                   redoButton.contentWidth,
                                                   hintButton.contentWidth,
                                                   dealButton.contentWidth,
-                                                  restartButton.contentWidth) + Theme.paddingLarge
+                                                  restartButton.contentWidth,
+                                                  magnifyButton.contentWidth) + Theme.paddingLarge
     readonly property int totalSpaceX: minimumSpaceX + handleWidth
     readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
     readonly property int toolbarVelocity: Theme.dp(3000)
@@ -75,7 +76,7 @@ Item {
             name: "expanded"
             when: !landscape && expanded
             extend: "portrait"
-            PropertyChanges { target: toolbar; height: maximumSpaceY + handleWidth }
+            PropertyChanges { target: toolbar; height: buttonCount, maximumSpaceY + handleWidth }
         },
         State {
             // To ensure that title is visible also on portrait when the app is started in landscape
@@ -264,6 +265,12 @@ Item {
             }
             PropertyChanges {
                 target: restartButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: magnifyButton
                 showText: expanded || animating
                 parent: mainButtons
                 width: mainButtons.width
@@ -512,9 +519,21 @@ Item {
                         //% "Restart"
                         text: qsTrId("patience-bt-restart")
                         imageSource: "../../buttons/icon-m-restart.svg"
-                        showText: buttonCountPortrait < buttonCount
-                        parent: dealButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
+                        showText: buttonCountPortrait < (Patience.showDeal ? 5 : 4)
+                        parent: dealButton.parent, buttonCountPortrait >= (Patience.showDeal ? 5 : 4) ? mainButtons : extraButtons
                         onActionTriggered: Patience.restartGame()
+                    }
+
+                    ToolbarButton {
+                        id: magnifyButton
+
+                        //% "Magnify"
+                        text: qsTrId("patience-bt-magnify")
+                        highlighted: (magnify && !down) || (!magnify && down)
+                        imageSource: "../../buttons/icon-m-magnify.svg"
+                        showText: buttonCountPortrait < buttonCount
+                        parent: restartButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
+                        onActionTriggered: magnify = !magnify
                     }
                 }
             }
