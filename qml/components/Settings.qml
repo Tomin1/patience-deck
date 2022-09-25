@@ -29,6 +29,7 @@ Item {
     property alias feedbackEffects: group.feedbackEffects
     property alias preventBlanking: group.preventBlanking
     property alias landscapeToolbarSide: group.landscapeToolbarSide
+    property alias cardColors: group.cardColors
 
     ConfigurationGroup {
         id: group
@@ -38,6 +39,7 @@ Item {
         property bool feedbackEffects
         property bool preventBlanking
         property string landscapeToolbarSide
+        property string cardColors
 
         path: "/site/tomin/apps/PatienceDeck"
     }

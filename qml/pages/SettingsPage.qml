@@ -27,6 +27,9 @@ Page {
     readonly property var backgroundColorOptions: [
         "maroon", "sienna", "peru", "goldenrod", "olive", "darkolivegreen", "green", "seagreen", "darkslategray", "steelblue", "navy", "darkslateblue", "indigo", "palevioletred", "dimgray"
     ]
+    readonly property var backColorOptions: [
+        "#000055", "#4682b4", "#4b0082", "#b22222", "#ff7f50", "#006400", "#9acd32", "#deb887", "#000000"
+    ]
 
     allowedOrientations: Orientation.All
 
@@ -129,7 +132,7 @@ Page {
                 Rectangle {
                     anchors {
                         right: parent.right
-                        rightMargin: Theme.paddingLarge
+                        rightMargin: Theme.horizontalPageMargin
                         top: parent.top
                         topMargin: (Theme.itemSizeSmall - height) / 2
                     }
@@ -189,6 +192,48 @@ Page {
                 }
 
                 onChoiceSelected: settings.cardStyle = choice
+            }
+
+            BackgroundItem {
+                onClicked: {
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", {
+                        "colors": page.backColorOptions
+                    })
+                    dialog.accepted.connect(function() {
+                        var colors = settings.cardColors.split(";")
+                        colors[0] = dialog.color
+                        settings.cardColors = colors.join(";")
+                    })
+                }
+
+                Label {
+                    //% "Card back colour"
+                    text: qsTrId("patience-la-card_back_color")
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                Rectangle {
+                    anchors {
+                        right: parent.right
+                        rightMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                    height: Theme.itemSizeExtraSmall
+                    width: height
+                    radius: height / 4
+                    color: {
+                        var backColor = settings.cardColors.split(";")[0]
+                        return backColorOptions.indexOf(backColor) !== -1 ? backColor : backColorOptions[0]
+                    }
+                    border {
+                        color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+                        width: 2
+                    }
+                }
             }
 
             SectionHeader {
