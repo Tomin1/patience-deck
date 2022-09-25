@@ -236,6 +236,50 @@ Page {
                 }
             }
 
+            ChoiceBox {
+                id: suitColorsPicker
+                initialValue: {
+                    var sep = settings.cardColors.indexOf(";")
+                    if (sep === -1) {
+                        return ""
+                    }
+                    return settings.cardColors.substring(sep + 1)
+                }
+                defaultIndex: 0
+                choices: ["", "green;blue", ";orange;;green", "blue;orange"]
+
+                //% "Card suit colours"
+                label: qsTrId("patience-la-card_suit_colors")
+
+                menu: ContextMenu {
+                    Repeater {
+                        model: suitColorsPicker.choices
+
+                        MenuItem {
+                            readonly property var colors: modelData.split(";")
+
+                            function getColor(index, defaultValue) {
+                                return colors[index] || defaultValue
+                            }
+
+                            text: "<font color=\"%1\">♣</font>".arg(getColor(0, "black")) + 
+                                  "<font color=\"%1\">♦</font>".arg(getColor(1, "red")) +
+                                  "<font color=\"%1\">♥</font>".arg(getColor(2, "red")) +
+                                  "<font color=\"%1\">♠</font>".arg(getColor(3, "black"))
+                        }
+                    }
+                }
+
+                onChoiceSelected: {
+                    var sep = settings.cardColors.indexOf(";")
+                    if (sep === -1) {
+                        settings.cardColors = (choice === "" ? "" : ";" + choice)
+                    } else {
+                        settings.cardColors = "%1;%2".arg(settings.cardColors.substring(0, sep)).arg(choice)
+                    }
+                }
+            }
+
             SectionHeader {
                 //% "Gameplay"
                 text: qsTrId("patience-se-gameplay")
