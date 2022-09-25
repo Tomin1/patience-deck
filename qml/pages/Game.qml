@@ -30,6 +30,9 @@ Page {
 
     property bool active: page.status === PageStatus.Active
     property bool needsGameStart
+    readonly property bool toolbarOnRight: settings.landscapeToolbarSide == "right"
+                                       || (settings.landscapeToolbarSide != "left"
+                                        && page.orientation == Orientation.LandscapeInverted)
 
     allowedOrientations: Orientation.All
 
@@ -66,14 +69,14 @@ Page {
         states: [
             State {
                 name: "landscape"
-                when: page.isLandscape && !settings.toolbarOnRight
+                when: page.isLandscape && !page.toolbarOnRight
                 extend: "landscape-base"
                 PropertyChanges { target: tableContainer; x: toolbar.width }
                 AnchorChanges { target: messageBar; anchors.left: toolbar.right }
             },
             State {
                 name: "landscape mirrored"
-                when: page.isLandscape && settings.toolbarOnRight
+                when: page.isLandscape && page.toolbarOnRight
                 extend: "landscape-base"
                 PropertyChanges {
                     target: toolbar

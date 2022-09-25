@@ -213,6 +213,33 @@ Page {
                 checked: settings.feedbackEffects
                 onClicked: settings.feedbackEffects = !settings.feedbackEffects
             }
+
+            ChoiceBox {
+                initialValue: settings.landscapeToolbarSide
+                defaultIndex: 0
+                choices: ["auto", "left", "right"]
+
+                //% "Toolbar position"
+                label: qsTrId("patience-la-toolbar_position")
+                //% "Set toolbar placement on landscape orientation"
+                description: qsTrId("patience-de-set_toolbar_placement_on_landscape_orientation")
+                menu: ContextMenu {
+                    MenuItem {
+                        //% "Orientation dependent"
+                        text: qsTrId("patience-la-orientation_dependent")
+                    }
+                    MenuItem {
+                        //% "Always on left"
+                        text: qsTrId("patience-la-always_on_left")
+                    }
+                    MenuItem {
+                        //% "Always on right"
+                        text: qsTrId("patience-la-always_on_right")
+                    }
+                }
+
+                onChoiceSelected: settings.landscapeToolbarSide = choice
+            }
         }
 
         VerticalScrollDecorator {}
