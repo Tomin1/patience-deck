@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021 - 2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,17 +159,14 @@ Page {
                 }
             }
 
-            ComboBox {
-                property bool ready
-                readonly property var choices: ["regular", "optimized", "simplified"]
+            ChoiceBox {
+                initialValue: settings.cardStyle
+                defaultIndex: 0
+                choices: ["regular", "optimized", "simplified"]
 
                 //: Combo box for selecting card style
                 //% "Card style"
                 label: qsTrId("patience-la-card_style")
-                currentIndex: {
-                    var index = choices.indexOf(settings.cardStyle)
-                    return index !== -1 ? index : 0
-                }
 
                 menu: ContextMenu {
                     MenuItem {
@@ -191,8 +188,7 @@ Page {
                     }
                 }
 
-                onCurrentIndexChanged: if (ready) settings.cardStyle = choices[currentIndex]
-                Component.onCompleted: ready = true
+                onChoiceSelected: settings.cardStyle = choice
             }
 
             SectionHeader {
