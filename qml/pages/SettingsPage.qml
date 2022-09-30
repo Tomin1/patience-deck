@@ -285,6 +285,39 @@ Page {
                 text: qsTrId("patience-se-gameplay")
             }
 
+            ChoiceBox {
+                initialValue: settings.landscapeToolbarSide
+                defaultIndex: 0
+                choices: ["auto", "left", "right"]
+
+                //: Combo box to select toolbar placement on landscape orientation
+                //% "Toolbar position"
+                label: qsTrId("patience-la-toolbar_position")
+                //: Description text for combo box
+                //% "Set toolbar placement on landscape orientation"
+                description: qsTrId("patience-de-set_toolbar_placement_on_landscape_orientation")
+                menu: ContextMenu {
+                    MenuItem {
+                        //: Put the toolbar on the "top" side of the device,
+                        //: meaning that it can be on left or right depending on orientation
+                        //% "Orientation dependent"
+                        text: qsTrId("patience-la-orientation_dependent")
+                    }
+                    MenuItem {
+                        //: Toolbar is always on left side when device is on landscape orientation
+                        //% "Always on left"
+                        text: qsTrId("patience-la-always_on_left")
+                    }
+                    MenuItem {
+                        //: Toolbar is always on right side when device is on landscape orientation
+                        //% "Always on right"
+                        text: qsTrId("patience-la-always_on_right")
+                    }
+                }
+
+                onChoiceSelected: settings.landscapeToolbarSide = choice
+            }
+
             TextSwitch {
                 //% "Prevent display from blanking"
                 text: qsTrId("patience-la-prevent_display_blanking")
@@ -301,33 +334,6 @@ Page {
                 description: qsTrId("patience-de-play_feedback_effects")
                 checked: settings.feedbackEffects
                 onClicked: settings.feedbackEffects = !settings.feedbackEffects
-            }
-
-            ChoiceBox {
-                initialValue: settings.landscapeToolbarSide
-                defaultIndex: 0
-                choices: ["auto", "left", "right"]
-
-                //% "Toolbar position"
-                label: qsTrId("patience-la-toolbar_position")
-                //% "Set toolbar placement on landscape orientation"
-                description: qsTrId("patience-de-set_toolbar_placement_on_landscape_orientation")
-                menu: ContextMenu {
-                    MenuItem {
-                        //% "Orientation dependent"
-                        text: qsTrId("patience-la-orientation_dependent")
-                    }
-                    MenuItem {
-                        //% "Always on left"
-                        text: qsTrId("patience-la-always_on_left")
-                    }
-                    MenuItem {
-                        //% "Always on right"
-                        text: qsTrId("patience-la-always_on_right")
-                    }
-                }
-
-                onChoiceSelected: settings.landscapeToolbarSide = choice
             }
         }
 
