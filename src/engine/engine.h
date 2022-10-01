@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2021 Tomi Leppänen
+ * Copyright (C) 2020-2022 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#ifndef ENGINE_EXERCISER
+#include <MGConfItem>
+#endif // ENGINE_EXERCISER
 #include <QObject>
 #include <QString>
 #include "enginedata.h"
@@ -123,11 +126,15 @@ private:
 
     void loadGame(const QString &gameFile, bool restored);
     void startEngine(bool newSeed);
+    int readDelayedCallDelay() const;
 
     explicit Engine(QObject *parent = nullptr);
     static Engine *s_engine;
     EngineInternals *d_ptr;
     quint32 m_action;
+#ifndef ENGINE_EXERCISER
+    MGConfItem m_delayConf;
+#endif // ENGINE_EXERCISER
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Engine::ActionTypeFlags);

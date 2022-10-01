@@ -26,8 +26,9 @@
 
 namespace {
 const int MaxRetries = 10;
-const int DelayedCallDelay = 50;
+const int DelayedCallDelayDefault = 50;
 const int DelayedCallDelayOnReplay = 0;
+const QString DelayConf = QStringLiteral("/delayedCallDelay");
 const CardData none = CardData();
 } // namespace
 const QString Constants::GameDirectory = QStringLiteral(QUOTE(DATADIR) "/games");
@@ -99,6 +100,7 @@ bool EngineInternals::replaying() const
 EngineInternals::EngineInternals(Engine *engine)
     : QObject(engine)
     , m_delayedCallTimer(nullptr)
+    , m_delayedCallDelay(DelayedCallDelayDefault)
     , m_features(NoFeatures)
     , m_state(UninitializedState)
     , m_timeout(0)
@@ -139,6 +141,9 @@ Engine::Engine(QObject *parent)
     : QObject(parent)
     , d_ptr(new EngineInternals(this))
     , m_action(0)
+#ifndef ENGINE_EXERCISER
+    , m_delayConf(Constants::ConfPath + DelayConf)
+#endif // ENGINE_EXERCISER
 {
     qRegisterMetaType<CardData>();
     qRegisterMetaType<CardList>();
@@ -151,6 +156,12 @@ Engine::Engine(QObject *parent)
             d_ptr, &EngineInternals::handleReplayGame, Qt::DirectConnection);
     connect(&d_ptr->m_recorder, &Recorder::replayCompleted,
             d_ptr, &EngineInternals::handleReplayCompleted, Qt::DirectConnection);
+#ifndef ENGINE_EXERCISER
+    connect(&m_delayConf, &MGConfItem::valueChanged, this, [&]() {
+        d_ptr->m_delayedCallDelay = readDelayedCallDelay();
+    });
+#endif // ENGINE_EXERCISER
+    d_ptr->m_delayedCallDelay = readDelayedCallDelay();
     qCDebug(lcEngine) << "Patience Engine created";
 }
 
@@ -794,6 +805,23 @@ Engine::ActionTypeFlags EngineInternals::flags(Engine::ActionType action, bool e
     return flags;
 }
 
+int Engine::readDelayedCallDelay() const
+{
+    int delay = DelayedCallDelayDefault;
+#ifndef ENGINE_EXERCISER
+    auto value = m_delayConf.value();
+    if (value.isValid()) {
+        bool ok = false;
+        int tmp = value.toInt(&ok);
+        if (ok && tmp >= 0)
+            delay = tmp;
+        else
+            qCWarning(lcEngine) << "Invalid delayedCallDelay value:" << value;
+    }
+#endif // ENGINE_EXERCISER
+    return delay;
+}
+
 void EngineInternals::updateDealable()
 {
     SCM rv;
@@ -1087,7 +1115,7 @@ bool EngineInternals::setupDelayedCall(std::function<void()> callback, std::func
 
     QObject::connect(m_delayedCallTimer, &QObject::destroyed, this, destructCallback);
 
-    m_delayedCallTimer->start(replaying() ? DelayedCallDelayOnReplay : DelayedCallDelay);
+    m_delayedCallTimer->start(replaying() ? DelayedCallDelayOnReplay : m_delayedCallDelay);
     return true;
 }
 

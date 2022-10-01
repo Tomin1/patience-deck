@@ -318,6 +318,47 @@ Page {
                 onChoiceSelected: settings.landscapeToolbarSide = choice
             }
 
+            ChoiceBox {
+                id: delayedCallDelayChoice
+                readonly property bool custom: choices.indexOf(settings.delayedCallDelay) === -1
+                initialValue: settings.delayedCallDelay
+                defaultIndex: custom ? 3 : 1
+                choices: [0, 50, 200]
+
+                //: Combo box to select delay for game engine itself moving cards between moves
+                //% "Auto move delay"
+                label: qsTrId("patience-la-automated_move_delay")
+                //% "Set how quickly automatic moves repeat"
+                description: qsTrId("patience-de-set_how_quickly_automatic_moves_repeat")
+                menu: ContextMenu {
+                    MenuItem {
+                        //: No delay for moves from game engine, moves happen instantly
+                        //% "Instant"
+                        text: qsTrId("patience-la-instant_delay")
+                    }
+
+                    MenuItem {
+                        //: Very short delay for moves from game engine, moves happen quickly
+                        //% "Quick"
+                        text: qsTrId("patience-la-quick_delay")
+                    }
+
+                    MenuItem {
+                        //: Very long delay for moves from game engine, moves happen slowly
+                        //% "Slow"
+                        text: qsTrId("patience-la-slow_delay")
+                    }
+
+                    MenuItem {
+                        // Custom option if user has set the value with dconf
+                        text: "%1 ms".arg(settings.delayedCallDelay)
+                        visible: delayedCallDelayChoice.custom
+                    }
+                }
+
+                onChoiceSelected: settings.delayedCallDelay = choice
+            }
+
             TextSwitch {
                 //% "Prevent display from blanking"
                 text: qsTrId("patience-la-prevent_display_blanking")

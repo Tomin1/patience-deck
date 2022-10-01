@@ -20,7 +20,7 @@ import Sailfish.Silica 1.0
 
 ComboBox {
     property var choices: []
-    property string initialValue
+    property var initialValue
     property int defaultIndex
     property bool _ready
 

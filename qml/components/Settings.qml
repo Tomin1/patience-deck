@@ -30,6 +30,7 @@ Item {
     property alias preventBlanking: group.preventBlanking
     property alias landscapeToolbarSide: group.landscapeToolbarSide
     property alias cardColors: group.cardColors
+    property alias delayedCallDelay: group.delayedCallDelay
 
     ConfigurationGroup {
         id: group
@@ -40,6 +41,7 @@ Item {
         property bool preventBlanking
         property string landscapeToolbarSide
         property string cardColors
+        property int delayedCallDelay: 50
 
         path: "/site/tomin/apps/PatienceDeck"
     }
