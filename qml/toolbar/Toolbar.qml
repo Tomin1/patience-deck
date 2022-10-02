@@ -61,7 +61,7 @@ Item {
     readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
     readonly property int toolbarVelocity: Theme.dp(3000)
 
-    height: totalSpaceY
+    height: buttonCount, totalSpaceY
     width: Screen.width
     state: "portrait"
     states: [
