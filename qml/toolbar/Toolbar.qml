@@ -123,7 +123,7 @@ Item {
 
                 drag {
                     target: toolbar
-                    minimumX: Screen.height - maximumSpaceX
+                    minimumX: Screen.height - maximumSpaceX - handleWidth
                     maximumX: Screen.height - minimumSpaceX - handleWidth
                 }
             }
@@ -329,6 +329,7 @@ Item {
 
             LandscapeShrinkParallelAnimation {
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "width"
                     from: spaceX + handleWidth
@@ -336,6 +337,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: handle
                     properties: "x"
                     from: spaceX
@@ -351,6 +353,7 @@ Item {
 
             LandscapeExpansionParallelAnimation {
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "width"
                     from: spaceX + handleWidth
@@ -358,6 +361,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: handle
                     properties: "x"
                     from: spaceX
@@ -373,6 +377,7 @@ Item {
 
             LandscapeShrinkParallelAnimation {
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "width"
                     from: Screen.height - toolbar.x
@@ -380,6 +385,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "x"
                     to: Screen.height - minimumSpaceX - handleWidth
@@ -394,6 +400,7 @@ Item {
 
             LandscapeExpansionParallelAnimation {
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "width"
                     from: Screen.height - toolbar.x
@@ -401,6 +408,7 @@ Item {
                     velocity: toolbarVelocity
                 }
                 SmoothedAnimation {
+                    easing.type: Easing.Linear
                     target: toolbar
                     properties: "x"
                     to: Screen.height - maximumSpaceX - handleWidth

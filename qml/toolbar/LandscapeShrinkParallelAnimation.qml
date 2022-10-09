@@ -20,19 +20,20 @@ import Sailfish.Silica 1.0
 
 ParallelAnimation {
     SmoothedAnimation {
+        easing.type: Easing.Linear
         target: titleLandscape
         properties: "width"
-        from: spaceX - Theme.paddingSmall
+        from: Math.min(spaceX - Theme.paddingSmall, maximumSpaceX - Theme.paddingSmall * 2)
         to: minimumSpaceX - Theme.paddingSmall
         velocity: toolbarVelocity
     }
     SequentialAnimation {
-        SmoothedAnimation {
-            from: spaceX
-            to: Math.max(scoreTextLandscape.contentWidth, spaceX)
-            velocity: toolbarVelocity
+        AnimationDelay {
+            a: Math.max(scoreTextLandscape.nameWidth + minimumSpaceX, spaceX)
+            b: scoreTextLandscape.nameWidth + minimumSpaceX
         }
         SmoothedAnimation {
+            easing.type: Easing.Linear
             target: scoreTextLandscape
             properties: "x"
             from: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
@@ -41,12 +42,12 @@ ParallelAnimation {
         }
     }
     SequentialAnimation {
-        SmoothedAnimation {
-            from: spaceX
-            to: Math.max(elapsedTextLandscape.contentWidth, spaceX)
-            velocity: toolbarVelocity
+        AnimationDelay {
+            a: Math.max(elapsedTextLandscape.nameWidth + minimumSpaceX, spaceX)
+            b: elapsedTextLandscape.nameWidth + minimumSpaceX
         }
         SmoothedAnimation {
+            easing.type: Easing.Linear
             target: elapsedTextLandscape
             properties: "x"
             from: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
