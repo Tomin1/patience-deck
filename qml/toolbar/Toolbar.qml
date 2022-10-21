@@ -114,13 +114,17 @@ Item {
                 target: toolbarArea
 
                 anchors {
-                    leftMargin: handleWidth
+                    leftMargin: handleWidth - dragArea.anchors.leftMargin
                     rightMargin: { return 0 }
                 }
             }
             PropertyChanges {
                 target: dragArea
 
+                anchors {
+                    leftMargin: -table.horizontalMargin
+                    rightMargin: { return 0 }
+                }
                 drag {
                     target: toolbar
                     minimumX: Screen.height - maximumSpaceX - handleWidth
@@ -193,11 +197,19 @@ Item {
                 target: toolbarArea
 
                 anchors {
-                    rightMargin: handleWidth
+                    rightMargin: handleWidth - dragArea.anchors.rightMargin
                     bottomMargin: { return 0 }
                 }
             }
-            PropertyChanges { target: dragArea; drag.axis: Drag.XAxis; enabled: true }
+            PropertyChanges {
+                target: dragArea;
+                anchors {
+                    bottomMargin: { return 0 }
+                    rightMargin: -table.horizontalMargin
+                }
+                drag.axis: Drag.XAxis;
+                enabled: true
+            }
             PropertyChanges { target: title; visible: false }
             PropertyChanges { target: titleLandscape; visible: true }
             PropertyChanges {
@@ -425,7 +437,10 @@ Item {
 
     MouseArea {
         id: dragArea
-        anchors.fill: parent
+        anchors {
+            fill: parent
+            bottomMargin: -table.verticalMargin
+        }
         drag {
             target: handle
             axis: Drag.YAxis
@@ -442,7 +457,7 @@ Item {
 
             anchors {
                 fill: parent
-                bottomMargin: handleWidth
+                bottomMargin: handleWidth - dragArea.anchors.bottomMargin
             }
             clip: animating
 
