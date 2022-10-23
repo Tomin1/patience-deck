@@ -95,8 +95,6 @@ Item {
             when: landscape && expanded && mirror
             extend: "landscape mirrored"
             PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
-            PropertyChanges { target: scoreTextLandscape; x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
-            PropertyChanges { target: elapsedTextLandscape; x: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
             PropertyChanges { target: mainButtons; width: maximumSpaceX }
         },
         State {
@@ -144,8 +142,6 @@ Item {
             when: landscape && expanded && !mirror
             extend: "landscape"
             PropertyChanges { target: toolbar; width: maximumSpaceX + handleWidth }
-            PropertyChanges { target: scoreTextLandscape; x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
-            PropertyChanges { target: elapsedTextLandscape; x: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0) }
             PropertyChanges { target: mainButtons; width: maximumSpaceX }
         },
         State {
@@ -668,7 +664,7 @@ Item {
                     text: qsTrId("patience-la-score")
                     value: Patience.score
                     anchors.bottom: elapsedTextLandscape.top
-                    x: -scoreTextLandscape.nameWidth + spaceX - minimumSpaceX
+                    x: Math.min(-scoreTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
                     truncationMode: TruncationMode.None
                     nameVisible: true
                     nameOpacity: expanded || animating ? 1.0 : 0.0
@@ -682,7 +678,7 @@ Item {
                     text: qsTrId("patience-la-time")
                     value: Patience.elapsedTime
                     anchors.bottom: parent.bottom
-                    x: -elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX
+                    x: Math.min(-elapsedTextLandscape.nameWidth + spaceX - minimumSpaceX, 0)
                     truncationMode: TruncationMode.None
                     nameVisible: true
                     nameOpacity: expanded || animating ? 1.0 : 0.0
