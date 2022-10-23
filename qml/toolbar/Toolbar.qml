@@ -472,6 +472,8 @@ Item {
                     minimumY: height - mainButtons.height
                     maximumY: 0
                     filterChildren: true
+
+                    onMinimumYChanged: mainButtons.y = Math.min(Math.max(mainButtons.y, drag.minimumY), drag.maximumY)
                 }
 
                 Flow {
