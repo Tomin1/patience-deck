@@ -170,8 +170,8 @@ Page {
                 transform: Scale {
                     id: magnifyTransform
                     origin {
-                        x: magnifyArea.mouseX
-                        y: magnifyArea.mouseY
+                        x: Math.floor(magnifyArea.mouseX)
+                        y: Math.floor(magnifyArea.mouseY)
                     }
                 }
 
