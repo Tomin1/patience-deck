@@ -53,6 +53,8 @@ class Table : public QQuickItem, public CountableId
                RESET resetBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor
                RESET resetHighlightColor NOTIFY highlightColorChanged)
+    Q_PROPERTY(bool doubleResolution READ doubleResolution
+               WRITE setDoubleResolution NOTIFY doubleResolutionChanged)
 
 public:
     explicit Table(QQuickItem *parent = nullptr);
@@ -64,6 +66,7 @@ public:
     void updatePolish();
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
     QSGTexture *cardTexture();
+    bool textureIsDoubleSize() const;
 
     qreal minimumSideMargin() const;
     void setMinimumSideMargin(qreal minimumSideMargin);
@@ -82,6 +85,8 @@ public:
     void setBackgroundColor(QColor color);
     void resetBackgroundColor();
     bool transparentBackground() const;
+    bool doubleResolution() const;
+    void setDoubleResolution(bool doubleResolution);
 
     qreal sideMargin() const;
     QSizeF margin() const;
@@ -133,18 +138,20 @@ signals:
     void verticalMarginChanged();
     void maximumVerticalMarginChanged();
     void backgroundColorChanged();
+    void doubleResolutionChanged();
     void highlightColorChanged();
     void cardTextureUpdated();
     void actionsDisabled(bool disabled);
 
     void doClick(quint32 id, int slotId);
-    void doRenderCardTexture(const QSize &size);
+    void doRenderCardTexture(const QSize &size, bool drawDoubleSize);
 
 private slots:
     void connectWindowSignals(QQuickWindow *window);
     void createCardTexture();
     void swapCardTexture();
     void handleCardTextureRendered(QImage image, const QSize &size);
+    void handleDoubleSizeTextureRendered(QImage image, const QSize &size);
     void handleSizeChanged();
     void handleSceneGraphInvalidated();
     void handleSetExpansionToDown(int id, double expansion);
@@ -183,6 +190,7 @@ private:
     DirtyFlags m_dirty;
     bool m_dirtyCardSize;
     QColor m_backgroundColor;
+    bool m_doubleResolution;
 
     Slot *m_highlightedSlot;
     QColor m_highlightColor;
@@ -197,6 +205,7 @@ private:
     QSGTexture *m_cardTexture;
     QSGTexture *m_pendingCardTexture;
     QImage m_cardImage;
+    QImage m_doubleSizeImage;
     QQuickWindow *m_previousWindow;
 };
 

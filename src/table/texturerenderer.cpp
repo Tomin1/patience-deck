@@ -52,6 +52,7 @@ TextureRenderer::TextureRenderer(QObject *parent)
     , m_renderer(nullptr)
     , m_cardStyleConf(Constants::ConfPath + CardStyleConf)
     , m_cardColorConf(Constants::ConfPath + CardColorConf)
+    , m_drawDoubleSize(false)
 {
     connect(&m_cardStyleConf, &MGConfItem::valueChanged, this, [&] {
         qCDebug(lcRenderer) << "Card style changed, rendering new card texture";
@@ -147,7 +148,7 @@ void TextureRenderer::loadDocument()
     m_document->load(getColors());
     emit documentLoaded();
     resetRenderer();
-    renderTexture(m_size);
+    renderTexture(m_size, m_drawDoubleSize);
 }
 
 QSvgRenderer *TextureRenderer::renderer()
@@ -167,19 +168,26 @@ void TextureRenderer::resetRenderer()
     }
 }
 
-void TextureRenderer::renderTexture(const QSize &size)
+QImage TextureRenderer::drawTexture(const QSize &size) {
+    QImage image(size, QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(0, 0, size.width(), size.height(), Qt::transparent);
+    painter.setRenderHint(QPainter::Antialiasing);
+    renderer()->render(&painter);
+    qCDebug(lcRenderer) << "Drew new texture of size" << size;
+    return image;
+}
+
+void TextureRenderer::renderTexture(const QSize &size, bool drawDoubleSize)
 {
+    m_drawDoubleSize = drawDoubleSize;
     if (m_document && size.isValid()) {
         emit textureRenderingStarted();
         m_size = size;
-        QImage image(size, QImage::Format_ARGB32_Premultiplied);
-        QPainter painter(&image);
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(0, 0, size.width(), size.height(), Qt::transparent);
-        painter.setRenderHint(QPainter::Antialiasing);
-        renderer()->render(&painter);
-        qCDebug(lcRenderer) << "Drew new texture of size" << size;
-        emit textureRendered(image, size);
+        emit textureRendered(drawTexture(size), size);
+        if (drawDoubleSize)
+            emit doubleSizeTextureRendered(drawTexture(size * 2), size);
     }
 }
 

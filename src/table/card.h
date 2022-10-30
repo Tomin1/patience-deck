@@ -57,6 +57,7 @@ public:
 
 private slots:
     void handleCardTextureUpdated();
+    void handleDoubleResolutionChanged();
 
 private:
     void mousePressEvent(QMouseEvent *event);

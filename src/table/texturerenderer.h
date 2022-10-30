@@ -38,10 +38,11 @@ public:
 
 public slots:
     void loadDocument();
-    void renderTexture(const QSize &size);
+    void renderTexture(const QSize &size, bool drawDoubleSize);
 
 signals:
     void textureRendered(QImage image, const QSize &size);
+    void doubleSizeTextureRendered(QImage image, const QSize &size);
     // These are only for measuring performance
     void documentLoaded();
     void textureRenderingStarted();
@@ -52,6 +53,7 @@ private:
     void resetDocument();
     QSvgRenderer *renderer();
     void resetRenderer();
+    QImage drawTexture(const QSize &size);
     void measurePerf();
 
     SvgDocument *m_document;
@@ -59,6 +61,7 @@ private:
     MGConfItem m_cardStyleConf;
     MGConfItem m_cardColorConf;
     QSize m_size;
+    bool m_drawDoubleSize;
 };
 
 #endif // TEXTURERENDERER_H

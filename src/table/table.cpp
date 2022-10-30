@@ -85,6 +85,7 @@ Table::Table(QQuickItem *parent)
     , m_dirty(Filthy)
     , m_dirtyCardSize(true)
     , m_backgroundColor(DefaultBackgroundColor)
+    , m_doubleResolution(false)
     , m_highlightedSlot(nullptr)
     , m_highlightColor(DefaultHighlightColor)
     , m_manager(this)
@@ -106,6 +107,7 @@ Table::Table(QQuickItem *parent)
     connect(&m_textureThread, &QThread::finished, renderer, &TextureRenderer::deleteLater);
     connect(this, &Table::doRenderCardTexture, renderer, &TextureRenderer::renderTexture);
     connect(renderer, &TextureRenderer::textureRendered, this, &Table::handleCardTextureRendered);
+    connect(renderer, &TextureRenderer::doubleSizeTextureRendered, this, &Table::handleDoubleSizeTextureRendered);
     m_textureThread.start();
 
     auto engine = Engine::instance();
@@ -405,6 +407,21 @@ bool Table::transparentBackground() const
     return !m_backgroundColor.alpha();
 }
 
+bool Table::doubleResolution() const
+{
+    return m_doubleResolution;
+}
+
+void Table::setDoubleResolution(bool doubleResolution)
+{
+    if (m_doubleResolution != doubleResolution) {
+        m_doubleResolution = doubleResolution;
+        emit doubleResolutionChanged();
+        if (!m_doubleSizeImage.isNull())
+            createCardTexture();
+    }
+}
+
 qreal Table::sideMargin() const
 {
     return m_sideMargin;
@@ -432,6 +449,8 @@ QSizeF Table::cardSize() const
 
 QSizeF Table::cardSizeInTexture() const
 {
+    if (textureIsDoubleSize())
+        return m_cardSizeInTexture * 2;
     return m_cardSizeInTexture;
 }
 
@@ -527,6 +546,7 @@ void Table::clear()
     setPendingCardTexture(nullptr);
     m_cardSizeInTexture = QSizeF();
     m_cardImage = QImage();
+    m_doubleSizeImage = QImage();
     smudge(SlotCount);
 }
 
@@ -687,8 +707,11 @@ void Table::updateCardSize()
     if (m_cardSize != newCardSize) {
         m_cardSize = newCardSize;
         m_cardImage = QImage();
-        QSize size(m_cardSize.width()*13, m_cardSize.height()*5);
-        emit doRenderCardTexture(size);
+        m_doubleSizeImage = QImage();
+        QSize size(m_cardSize.width() * 13, m_cardSize.height() * 5);
+        bool doubleSize = (m_cardSize.height() * 3 < height() && m_cardSize.width() * 7 < width())
+            || (m_cardSize.height() * 3 < width() && m_cardSize.width() * 7 < height());
+        emit doRenderCardTexture(size, doubleSize);
     }
 
     qCDebug(lcTable) << "Calculated maximum space of" << QSizeF(maximumWidth, maximumHeight)
@@ -732,6 +755,11 @@ QSGTexture *Table::cardTexture()
     return m_cardTexture;
 }
 
+bool Table::textureIsDoubleSize() const
+{
+    return m_doubleResolution && !m_doubleSizeImage.isNull();
+}
+
 void Table::setCardTexture(QSGTexture *texture)
 {
     if (m_cardTexture)
@@ -760,7 +788,12 @@ void Table::connectWindowSignals(QQuickWindow *window)
 void Table::createCardTexture()
 {
     if (!m_cardImage.isNull()) {
-        setPendingCardTexture(window()->createTextureFromImage(m_cardImage));
+        QSGTexture *texture;
+        if (textureIsDoubleSize())
+            texture = window()->createTextureFromImage(m_doubleSizeImage);
+        else
+            texture = window()->createTextureFromImage(m_cardImage);
+        setPendingCardTexture(texture);
         qCDebug(lcTable) << "New card texture ready for card size of" << m_cardSize;
         polish();
     }
@@ -781,6 +814,16 @@ void Table::handleCardTextureRendered(QImage image, const QSize &size)
         m_cardImage = image;
         m_cardSizeInTexture = m_cardSize;
         createCardTexture();
+    }
+}
+
+void Table::handleDoubleSizeTextureRendered(QImage image, const QSize &size)
+{
+    QSize expectedSize(m_cardSize.width() * 13, m_cardSize.height() * 5);
+    if (expectedSize == size) {
+        m_doubleSizeImage = image;
+        if (m_doubleResolution)
+            createCardTexture();
     }
 }
 

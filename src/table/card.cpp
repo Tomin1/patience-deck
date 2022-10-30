@@ -65,6 +65,7 @@ Card::Card(const CardData &card, Table *table, Slot *slot, QObject *parent)
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemHasContents);
     connect(table, &Table::cardTextureUpdated, this, &Card::handleCardTextureUpdated);
+    connect(table, &Table::doubleResolutionChanged, this, &Card::handleDoubleResolutionChanged);
 }
 
 QSGNode *Card::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
@@ -193,6 +194,12 @@ bool Card::operator==(const Card &other) const
 }
 
 void Card::handleCardTextureUpdated()
+{
+    m_dirty = true;
+    update();
+}
+
+void Card::handleDoubleResolutionChanged()
 {
     m_dirty = true;
     update();

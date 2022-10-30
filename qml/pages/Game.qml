@@ -174,6 +174,7 @@ Page {
                         y: Math.floor(magnifyArea.mouseY)
                     }
                 }
+                doubleResolution: magnifyArea.pressed || animateShrink.running || animateGrow.running
 
                 layer.enabled: pullDownMenu.active
 
