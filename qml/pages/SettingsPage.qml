@@ -273,7 +273,7 @@ Page {
                 onChoiceSelected: {
                     var sep = settings.cardColors.indexOf(";")
                     if (sep === -1) {
-                        settings.cardColors = (choice === "" ? "" : ";" + choice)
+                        settings.cardColors = settings.cardColors + (choice === "" ? "" : ";" + choice)
                     } else {
                         settings.cardColors = "%1;%2".arg(settings.cardColors.substring(0, sep)).arg(choice)
                     }
