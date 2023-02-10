@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,13 +167,7 @@ Page {
                 backgroundColor: settings.backgroundColor
                 highlightColor: Theme.rgba(Theme.highlightColor, Theme.opacityLow)
 
-                transform: Scale {
-                    id: magnifyTransform
-                    origin {
-                        x: Math.floor(magnifyArea.mouseX)
-                        y: Math.floor(magnifyArea.mouseY)
-                    }
-                }
+                transform: Scale { id: magnifyTransform }
                 doubleResolution: magnifyArea.pressed || animateShrink.running || animateGrow.running
 
                 layer.enabled: pullDownMenu.active
@@ -214,8 +208,33 @@ Page {
                 }
                 enabled: toolbar.magnify
                 preventStealing: true
-                onPressed: animateGrow.running = true
-                onReleased: animateShrink.running = true
+                onPressed: {
+                    clickTimer.running = true
+                    if (magnifyTransform.xScale < 2) {
+                        animateGrow.running = true
+                    }
+                }
+                onReleased: if (magnifyTransform.xScale === 2 || !clickTimer.running) animateShrink.running = true
+                onEnabledChanged: if (!enabled) animateShrink.running = true
+
+                Timer {
+                    id: clickTimer
+                    interval: 100
+                }
+
+                Binding {
+                    target: magnifyTransform
+                    property: "origin.x"
+                    value: Math.floor(magnifyArea.mouseX)
+                    when: magnifyArea.pressed && (magnifyTransform.xScale === 1 || !clickTimer.running)
+                }
+
+                Binding {
+                    target: magnifyTransform
+                    property: "origin.y"
+                    value: Math.floor(magnifyArea.mouseY)
+                    when: magnifyArea.pressed && (magnifyTransform.xScale === 1 || !clickTimer.running)
+                }
             }
         }
 
