@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ Patience::Patience(QObject *parent)
     , m_state(UninitializedState)
     , m_historyConf(Constants::ConfPath + HistoryConf)
     , m_actionsDisabled(false)
+    , m_previousGameStored(false)
 {
     if (s_testMode & TestModeEnabled)
         qCInfo(lcTestMode) << "Test mode enabled.";
@@ -78,6 +79,7 @@ Patience::Patience(QObject *parent)
     connect(engine, &Engine::score, this, &Patience::handleScoreChanged);
     connect(engine, &Engine::message, this, &Patience::handleMessageChanged);
     connect(engine, &Engine::hint, this, &Patience::hint);
+    connect(engine, &Engine::previousGameStored, this, &Patience::handlePreviousGameStored);
     connect(engine, &Engine::showScore, this, &Patience::handleShowScore);
     connect(engine, &Engine::showDeal, this, &Patience::handleShowDeal);
     connect(engine, &Engine::moveEnded, this, &Patience::cardMoved);
@@ -94,6 +96,8 @@ Patience::Patience(QObject *parent)
     connect(this, &Patience::doGetHint, engine, &Engine::getHint);
     connect(this, &Patience::doRestoreSavedEngineState, engine, &Engine::restoreSavedState);
     connect(this, &Patience::doSaveEngineState, engine, &Engine::saveState);
+    connect(this, &Patience::doRestorePreviousGame, engine, &Engine::restorePreviousGame);
+    connect(this, &Patience::doForgetPreviousGame, engine, &Engine::forgetPreviousGame);
     connect(&m_historyConf, &MGConfItem::valueChanged, this, [&] {
         qCDebug(lcPatience) << "Saved history:" << m_historyConf.value().toString();
     });
@@ -326,6 +330,31 @@ void Patience::restoreSavedOrLoad(const QString &fallback)
 bool Patience::testMode() const
 {
     return s_testMode;
+}
+
+bool Patience::previousGameStored() const
+{
+    return m_previousGameStored;
+}
+
+void Patience::handlePreviousGameStored(bool stored)
+{
+    if (m_previousGameStored != stored) {
+        m_previousGameStored = stored;
+        emit previousGameStoredChanged();
+    }
+}
+
+void Patience::restorePreviousGame()
+{
+    if (!m_actionsDisabled && m_previousGameStored)
+        emit doRestorePreviousGame();
+}
+
+void Patience::forgetPreviousGame()
+{
+    if (m_previousGameStored)
+        emit doForgetPreviousGame();
 }
 
 void Patience::catchFailure(QString message) {

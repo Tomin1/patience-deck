@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,6 +152,8 @@ Engine::Engine(QObject *parent)
     qRegisterMetaType<GameOption>();
     qRegisterMetaType<GameOptionList>();
     connect(this, &Engine::clearData, this, [this] { m_action = 0; });
+    connect(&d_ptr->m_recorder, &Recorder::oldStateStored,
+            this, &Engine::previousGameStored, Qt::DirectConnection);
     connect(&d_ptr->m_recorder, &Recorder::replayingGame,
             d_ptr, &EngineInternals::handleReplayGame, Qt::DirectConnection);
     connect(&d_ptr->m_recorder, &Recorder::replayCompleted,
@@ -240,6 +242,7 @@ void Engine::loadGame(const QString &gameFile, bool restored)
         }
 #endif // ENGINE_EXERCISER
         emit gameLoaded(gameFile);
+        forgetPreviousGame();
     }
 }
 
@@ -254,6 +257,8 @@ void Engine::startEngine(bool newSeed)
         d_ptr->die("Game must be initialized first");
         return;
     }
+
+    d_ptr->m_recorder.storeOldState();
 
     int count = 0;
 
@@ -689,6 +694,8 @@ bool Engine::setGameOption(const GameOption &option)
         return false;
     }
 
+    d_ptr->m_recorder.invalidateState();
+
     scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
 
     if (!d_ptr->makeSCMCall(EngineInternals::ApplyOptionsLambda, &optionsList, 1, NULL)) {
@@ -703,6 +710,7 @@ bool Engine::setGameOption(const GameOption &option)
 bool Engine::setGameOptions(const GameOptionList &options)
 {
     qCDebug(lcOptions) << "Setting" << options.count() << "options";
+
     SCM optionsList;
     if (!d_ptr->makeSCMCall(EngineInternals::GetOptionsLambda, NULL, 0, &optionsList)) {
         d_ptr->die("Can not get options");
@@ -729,6 +737,8 @@ bool Engine::setGameOptions(const GameOptionList &options)
         scm_list_set_x(entry, scm_from_uint(1), option.set ? SCM_BOOL_T : SCM_BOOL_F);
     }
 
+    d_ptr->m_recorder.invalidateState();
+
     if (!d_ptr->makeSCMCall(EngineInternals::ApplyOptionsLambda, &optionsList, 1, NULL)) {
         qCWarning(lcEngine) << "Can not apply options! Not setting game options";
         scm_dynwind_end();
@@ -754,6 +764,27 @@ void Engine::restoreSavedState()
 void Engine::saveState()
 {
     d_ptr->m_recorder.save();
+}
+
+void Engine::restorePreviousGame()
+{
+    if (d_ptr->m_recordingMove) {
+        qCWarning(lcEngine) << "Cannot restore previous game while move is ongoing";
+        return;
+    }
+
+    if (d_ptr->replaying()) {
+        qCWarning(lcEngine) << "Cannot restore previous game while replaying a game";
+        return;
+    }
+
+    d_ptr->m_makeFirstMove = true;
+    d_ptr->m_recorder.restoreOldState();
+}
+
+void Engine::forgetPreviousGame()
+{
+    d_ptr->m_recorder.dropOldState();
 }
 
 CardList Engine::cards(int slotId, int count) const

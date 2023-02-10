@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ class Patience : public QObject
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
     Q_PROPERTY(bool showScore READ showScore NOTIFY showScoreChanged);
     Q_PROPERTY(bool showDeal READ showDeal NOTIFY showDealChanged);
+    Q_PROPERTY(bool previousGameStored READ previousGameStored NOTIFY previousGameStoredChanged)
     Q_PROPERTY(QStringList history READ history NOTIFY historyChanged)
     Q_PROPERTY(bool engineFailed READ engineFailed NOTIFY engineFailedChanged)
     Q_PROPERTY(QString helpFile READ helpFile NOTIFY gameNameChanged)
@@ -87,6 +88,8 @@ public:
     Q_INVOKABLE void dealCard();
     Q_INVOKABLE void getHint();
     Q_INVOKABLE void restoreSavedOrLoad(const QString &fallback);
+    Q_INVOKABLE void restorePreviousGame();
+    Q_INVOKABLE void forgetPreviousGame();
 
     // Properties
     bool canUndo() const;
@@ -107,6 +110,7 @@ public:
     QStringList history() const;
     bool engineFailed() const;
     bool testMode() const;
+    bool previousGameStored() const;
 
 signals:
     void canUndoChanged();
@@ -117,6 +121,7 @@ signals:
     void stateChanged();
     void pausedChanged();
     void gameNameChanged();
+    void previousGameStoredChanged();
     void messageChanged();
     void showScoreChanged();
     void showDealChanged();
@@ -134,6 +139,8 @@ signals:
     void doGetHint();
     void doRestoreSavedEngineState();
     void doSaveEngineState();
+    void doRestorePreviousGame();
+    void doForgetPreviousGame();
 
 private slots:
     void catchFailure(QString message);
@@ -147,6 +154,7 @@ private slots:
     void handleCanDealChanged(bool canDeal);
     void handleScoreChanged(int score);
     void handleMessageChanged(const QString &message);
+    void handlePreviousGameStored(bool stored);
     void handleShowScore(bool show);
     void handleShowDeal(bool show);
     void handleRestoreStarted(qint64 time);
@@ -173,6 +181,7 @@ private:
     MGConfItem m_historyConf;
     Timer m_timer;
     bool m_actionsDisabled;
+    bool m_previousGameStored;
 
     static Patience *s_game;
     static TestModeFlags s_testMode;

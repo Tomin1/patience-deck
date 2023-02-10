@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2022 Tomi Leppänen
+ * Copyright (C) 2022-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <QElapsedTimer>
 #include <QObject>
 #include <QVector>
+#include <QScopedPointer>
 #include "enginedata.h"
 
 class Engine;
@@ -59,10 +60,16 @@ public:
     void recordDoubleClick(int slotId);
 
     void setSeed(quint32 seed);
+    void invalidateState();
+
+    void storeOldState();
+    void restoreOldState();
+    void dropOldState();
 
 signals:
     void replayCompleted(CompletionStatus status);
     void replayingGame(const QString &gameFile, bool hasSeed, quint32 seed, qint64 time);
+    void oldStateStored(bool stored);
 
 public slots:
     void handleGameLoaded(const QString &gameFile);
@@ -106,6 +113,20 @@ private:
         QString toString() const;
     };
 
+    struct OldState {
+        QVector<Record> records;
+        quint32 seed;
+        qint64 time;
+
+        OldState(QVector<Record> records, quint32 seed, qint64 time)
+            : records(records)
+            , seed(seed)
+            , time(time) {}
+
+        bool restoring() { return time == -1; }
+        void setRestoring() { time = -1; }
+    };
+
     bool load();
     void replaySingle();
     void clear();
@@ -125,6 +146,7 @@ private:
     quint32 m_seed;
     int m_moves;
     QElapsedTimer m_elapsed;
+    QScopedPointer<OldState> m_oldState;
 };
 
 #endif // RECORDER_H

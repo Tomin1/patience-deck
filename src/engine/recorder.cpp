@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2022 Tomi Leppänen
+ * Copyright (C) 2022-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -304,6 +304,48 @@ void Recorder::setSeed(quint32 seed)
 {
     m_seed = seed;
     m_hasSeed = true;
+}
+
+void Recorder::invalidateState()
+{
+    m_hasSeed = false;
+}
+
+void Recorder::storeOldState()
+{
+    // Store only if there is a new state to store
+    if ((m_oldState.isNull() || !m_oldState->restoring()) && !m_replaying && m_hasSeed) {
+        m_oldState.reset(new OldState(m_records, m_seed, Patience::instance()->elapsedTimeMs()));
+        qCDebug(lcRecorder) << "Stored old state";
+        emit oldStateStored(true);
+    }
+}
+
+void Recorder::restoreOldState()
+{
+    // Restore only if there was a state to restore
+    if (!m_oldState.isNull()) {
+        m_records = m_oldState->records;
+        m_abandoned.clear();
+        m_hasSeed = true;
+        m_seed = m_oldState->seed;
+        m_moves = 0;
+        qint64 time = m_oldState->time;
+        m_oldState->setRestoring();
+        qCDebug(lcRecorder) << "Restored old state";
+        emit oldStateStored(false);
+        emit replayingGame(m_gameFile, true, m_oldState->seed, time);
+        m_oldState.reset();
+    }
+}
+
+void Recorder::dropOldState()
+{
+    if (!m_oldState.isNull()) {
+        m_oldState.reset();
+        qCDebug(lcRecorder) << "Dropped old state";
+        emit oldStateStored(false);
+    }
 }
 
 void Recorder::handleGameLoaded(const QString &gameFile)
