@@ -313,7 +313,10 @@ Page {
             message.hint = hint
             hintTimer.restart()
         }
-        onCardMoved: resetHint()
+        onCardMoved: {
+            resetHint()
+            Patience.forgetPreviousGame()
+        }
     }
 
     DisplayBlanking {
