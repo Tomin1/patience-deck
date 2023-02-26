@@ -35,7 +35,7 @@ Item {
                                               || landscapeExpandedTransition.running
                                               || landscapeMirroredTransition.running
                                               || landscapeMirroredExpandedTransition.running
-    readonly property int buttonCount: 5 + (Patience.showDeal ? 1 : 0)
+    readonly property int buttonCount: 6 + (Patience.showDeal ? 1 : 0)
     readonly property int buttonCountPortrait: Math.min(Math.ceil(Screen.width / 2 / Theme.itemSizeLarge),
                                                         buttonCount)
     readonly property int spaceY: handle.y
@@ -56,6 +56,7 @@ Item {
                                                   hintButton.contentWidth,
                                                   dealButton.contentWidth,
                                                   restartButton.contentWidth,
+                                                  newGameButton.contentWidth,
                                                   magnifyButton.contentWidth) + Theme.paddingLarge
     readonly property int totalSpaceX: minimumSpaceX + handleWidth
     readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
@@ -273,6 +274,12 @@ Item {
             }
             PropertyChanges {
                 target: restartButton
+                showText: expanded || animating
+                parent: mainButtons
+                width: mainButtons.width
+            }
+            PropertyChanges {
+                target: newGameButton
                 showText: expanded || animating
                 parent: mainButtons
                 width: mainButtons.width
@@ -555,6 +562,17 @@ Item {
                     }
 
                     ToolbarButton {
+                        id: newGameButton
+
+                        //% "New game"
+                        text: qsTrId("patience-bt-new_game")
+                        imageSource: "../../buttons/icon-m-new.svg"
+                        showText: buttonCountPortrait < (Patience.showDeal ? 6 : 5)
+                        parent: restartButton.parent, buttonCountPortrait >= (Patience.showDeal ? 6 : 5) ? mainButtons : extraButtons
+                        onActionTriggered: Patience.startNewGame()
+                    }
+
+                    ToolbarButton {
                         id: magnifyButton
 
                         //% "Magnify"
@@ -562,7 +580,7 @@ Item {
                         highlighted: (magnify && !down) || (!magnify && down)
                         imageSource: "../../buttons/icon-m-magnify.svg"
                         showText: buttonCountPortrait < buttonCount
-                        parent: restartButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
+                        parent: newGameButton.parent, buttonCountPortrait >= buttonCount ? mainButtons : extraButtons
                         onActionTriggered: magnify = !magnify
                     }
                 }
