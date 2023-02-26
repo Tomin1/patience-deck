@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,6 +106,7 @@ public:
     void setLambda(Lambda lambda, SCM func);
     uint getFeatures();
     void setFeatures(uint features);
+    void emitFeatures();
     bool hasFeature(GameFeature feature);
     int getTimeout();
     void setTimeout(int timeout);

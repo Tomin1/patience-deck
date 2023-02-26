@@ -280,6 +280,7 @@ void Engine::startEngine(bool newSeed)
         newSeed = true; // If we need to try again, use a new seed anyway
     } while (d_ptr->isGameOver() && count++ < MaxRetries && !d_ptr->replaying());
 
+    d_ptr->emitFeatures();
     d_ptr->m_state = EngineInternals::RunningState;
     if (d_ptr->m_makeFirstMove) {
         if (!d_ptr->hasDelayedCall()) {
@@ -944,7 +945,7 @@ void EngineInternals::clear(bool resetData)
 {
     if (resetData) {
         m_state = UninitializedState;
-        setFeatures(0);
+        m_features = static_cast<EngineInternals::GameFeatures>(0);
     }
     setCanUndo(false);
     setCanRedo(false);
@@ -1099,6 +1100,10 @@ void EngineInternals::setFeatures(uint features)
 {
     qCDebug(lcEngine) << "Setting features to" << static_cast<EngineInternals::GameFeatures>(features);
     m_features = static_cast<EngineInternals::GameFeatures>(features);
+}
+
+void EngineInternals::emitFeatures()
+{
     emit engine()->showScore(!hasFeature(FeatureScoreHidden));
     emit engine()->showDeal(hasFeature(FeatureDealable));
 }
