@@ -35,6 +35,7 @@ class Patience : public QObject
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY canRedoChanged)
     Q_PROPERTY(bool canDeal READ canDeal NOTIFY canDealChanged)
+    Q_PROPERTY(bool canRestart READ canRestart NOTIFY canRestartChanged)
     Q_PROPERTY(int score READ score NOTIFY scoreChanged)
     Q_PROPERTY(QString elapsedTime READ elapsedTime NOTIFY elapsedTimeChanged)
     Q_PROPERTY(int state READ state NOTIFY stateChanged)
@@ -95,6 +96,7 @@ public:
     bool canUndo() const;
     bool canRedo() const;
     bool canDeal() const;
+    bool canRestart() const;
     bool showDeal() const;
     QString gameName() const;
     QString gameFile() const;
@@ -116,6 +118,7 @@ signals:
     void canUndoChanged();
     void canRedoChanged();
     void canDealChanged();
+    void canRestartChanged();
     void scoreChanged();
     void elapsedTimeChanged();
     void stateChanged();

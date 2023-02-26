@@ -550,6 +550,7 @@ Item {
                         imageSource: "../../buttons/icon-m-restart.svg"
                         showText: buttonCountPortrait < (Patience.showDeal ? 5 : 4)
                         parent: dealButton.parent, buttonCountPortrait >= (Patience.showDeal ? 5 : 4) ? mainButtons : extraButtons
+                        disabled: !Patience.canRestart
                         onActionTriggered: Patience.restartGame()
                     }
 

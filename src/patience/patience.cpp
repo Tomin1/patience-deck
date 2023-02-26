@@ -140,7 +140,7 @@ void Patience::startNewGame()
 
 void Patience::restartGame()
 {
-    if (!m_actionsDisabled) {
+    if (!m_actionsDisabled && canRestart()) {
         qCDebug(lcPatience) << "Restarting game";
         emit doRestart();
     }
@@ -188,6 +188,11 @@ bool Patience::canRedo() const
 bool Patience::canDeal() const
 {
     return m_canDeal;
+}
+
+bool Patience::canRestart() const
+{
+    return state() >= RunningState;
 }
 
 bool Patience::showDeal() const
@@ -277,8 +282,11 @@ void Patience::setState(GameState state)
             m_timer.stop();
             break;
         }
+        bool previousCanRestart = canRestart();
         m_state = state;
         emit stateChanged();
+        if (previousCanRestart != canRestart())
+            emit canRestartChanged();
     }
 }
 
