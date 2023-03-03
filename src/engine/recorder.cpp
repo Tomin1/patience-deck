@@ -302,12 +302,14 @@ void Recorder::fail()
 
 void Recorder::setSeed(quint32 seed)
 {
+    qCDebug(lcRecorder) << "Storing seed";
     m_seed = seed;
     m_hasSeed = true;
 }
 
 void Recorder::invalidateState()
 {
+    qCDebug(lcRecorder) << "Invalidating state";
     m_hasSeed = false;
 }
 

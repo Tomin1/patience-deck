@@ -242,7 +242,7 @@ void Engine::loadGame(const QString &gameFile, bool restored)
         }
 #endif // ENGINE_EXERCISER
         emit gameLoaded(gameFile);
-        forgetPreviousGame();
+        d_ptr->m_recorder.invalidateState();
     }
 }
 
