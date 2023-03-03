@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QEasingCurve>
 #include <QGuiApplication>
-#include <QParallelAnimationGroup>
-#include <QPropertyAnimation>
 #include <QScreen>
 #include <QStyleHints>
+#include "animationbuilder.h"
 #include "card.h"
 #include "constants.h"
 #include "drag.h"
@@ -33,22 +31,6 @@
 namespace {
 
 const int MoveDuration = 100;
-
-QParallelAnimationGroup *getXYAnimation(QQuickItem *item, const QPointF &newPosition)
-{
-    auto *animation = new QParallelAnimationGroup(item);
-    auto *xAnimation = new QPropertyAnimation(item, "x", animation);
-    xAnimation->setEndValue(newPosition.x());
-    xAnimation->setDuration(MoveDuration);
-    xAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-    animation->addAnimation(xAnimation);
-    auto *yAnimation = new QPropertyAnimation(item, "y", animation);
-    yAnimation->setEndValue(newPosition.y());
-    yAnimation->setDuration(MoveDuration);
-    yAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-    animation->addAnimation(yAnimation);
-    return animation;
-}
 
 } // namespace
 
@@ -268,7 +250,7 @@ void Drag::drop(Slot *slot)
     m_state = Dropped;
     emit m_table->feedback()->dropSucceeded();
     QPointF topLeft = m_table->mapFromItem(slot, slot->nextPosition() - firstCard()->topLeft());
-    QParallelAnimationGroup *animation = getXYAnimation(this, topLeft);
+    QAnimationGroup *animation = AnimationBuilder::getXYAnimation(this, topLeft, MoveDuration);
     connect(animation, &QAbstractAnimation::finished, this, [this, animation, slot] {
         emit doDrop(id(), m_source->id(), slot->id(), toCardData(m_cards, m_state));
         m_table->disableActions(false);
@@ -286,7 +268,7 @@ void Drag::cancel()
     if (m_state < Dropped) {
         if (m_state >= Dragging) {
             QPointF topLeft = m_table->mapFromItem(m_source, QPointF(0, 0));
-            QParallelAnimationGroup *animation = getXYAnimation(this, topLeft);
+            QAnimationGroup *animation = AnimationBuilder::getXYAnimation(this, topLeft, MoveDuration);
             connect(animation, &QAbstractAnimation::finished, this, [this, animation] {
                 if (m_state != AnimatingBack && m_state != Canceled)
                     qCCritical(lcDrag) << "Unexpected state at the end of animation" << m_state;

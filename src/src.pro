@@ -25,6 +25,7 @@ SOURCES += \
     patience/timer.cpp \
     patience/patience.cpp \
     patience/patiencedeck.cpp \
+    table/animationbuilder.cpp \
     table/card.cpp \
     table/countableid.cpp \
     table/drag.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
     patience/patience.h \
     patience/patiencedeck.h \
     patience/timer.h \
+    table/animationbuilder.h \
     table/card.h \
     table/countableid.h \
     table/drag.h \
