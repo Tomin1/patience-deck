@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "slot.h"
 
 class FeedbackEventAttachedType;
+class QAnimationGroup;
 class QCommandLineParser;
 class QSGTexture;
 class QQuickWindow;
@@ -55,6 +56,9 @@ class Table : public QQuickItem, public CountableId
                RESET resetHighlightColor NOTIFY highlightColorChanged)
     Q_PROPERTY(bool doubleResolution READ doubleResolution
                WRITE setDoubleResolution NOTIFY doubleResolutionChanged)
+    Q_PROPERTY(bool animationPlaying READ animationPlaying NOTIFY animationPlayingChanged)
+    Q_PROPERTY(bool animationPaused READ animationPaused
+               WRITE setAnimationPaused NOTIFY animationPausedChanged)
 
 public:
     explicit Table(QQuickItem *parent = nullptr);
@@ -62,6 +66,9 @@ public:
 
     static void addArguments(QCommandLineParser *parser);
     static void setArguments(QCommandLineParser *parser);
+
+    Q_INVOKABLE void playWinAnimation();
+    void stopAnimation();
 
     void updatePolish();
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
@@ -87,6 +94,9 @@ public:
     bool transparentBackground() const;
     bool doubleResolution() const;
     void setDoubleResolution(bool doubleResolution);
+    bool animationPlaying() const;
+    bool animationPaused() const;
+    void setAnimationPaused(bool paused);
 
     qreal sideMargin() const;
     QSizeF margin() const;
@@ -139,6 +149,8 @@ signals:
     void maximumVerticalMarginChanged();
     void backgroundColorChanged();
     void doubleResolutionChanged();
+    void animationPlayingChanged();
+    void animationPausedChanged();
     void highlightColorChanged();
     void cardTextureUpdated();
     void actionsDisabled(bool disabled);
@@ -160,6 +172,7 @@ private slots:
     void handleWidthChanged(double width);
     void handleHeightChanged(double height);
     void handleEngineFailure();
+    void handleGameContinued();
 
 private:
     void updateCardSize();
@@ -168,6 +181,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
     void setCardTexture(QSGTexture *texture);
     void setPendingCardTexture(QSGTexture *texture);
+    void createWinAnimation();
 
     static QRectF getSlotOutline(Slot *slot);
     static void setMaterialForSlotNode(SlotNode *node);
@@ -176,6 +190,7 @@ private:
     QRectF getBoundingRect(const QList<Card *> &cards);
     QList<Slot *> getSlotsFor(const QRectF &rect, Slot *source);
     Slot *findSlotAtPoint(const QPointF point) const;
+    QSize size() const;
 
     QVector<Slot *> m_slots;
     qreal m_minimumSideMargin;
@@ -207,6 +222,8 @@ private:
     QImage m_cardImage;
     QImage m_doubleSizeImage;
     QQuickWindow *m_previousWindow;
+    QAnimationGroup *m_animation;
+    bool m_animate;
 };
 
 QDebug operator<<(QDebug debug, const Table *table);

@@ -40,7 +40,22 @@ Page {
         message.hint = ""
     }
 
-    onOrientationChanged: message.x = 0
+    function pauseOrResumeAnimation(pause) {
+        if (table.animationPlaying) {
+            table.animationPaused = pause
+        }
+    }
+
+    onOrientationChanged: {
+        message.x = 0
+        if (Patience.state === Patience.WonState) {
+            if (table.animationPlaying) {
+                table.animateAfterOrientationChange = true
+            } else {
+                table.playWinAnimation()
+            }
+        }
+    }
 
     onActiveChanged: {
         Patience.paused = !active
@@ -49,6 +64,7 @@ Page {
             Patience.startNewGame()
             needsGameStart = false
         }
+        pauseOrResumeAnimation(!active)
     }
 
     Connections {
@@ -56,8 +72,10 @@ Page {
         onStateChanged: {
             if (Qt.application.state === Qt.ApplicationActive) {
                 Patience.paused = !page.active
+                pauseOrResumeAnimation(!page.active)
             } else {
                 Patience.paused = true
+                pauseOrResumeAnimation(true)
             }
             resetHint()
         }
@@ -152,6 +170,8 @@ Page {
             Table {
                 id: table
 
+                property bool animateAfterOrientationChange
+
                 enabled: Patience.state < Patience.GameOverState && !Patience.engineFailed && !toolbar.magnify
 
                 height: Screen.height - toolbar.totalSpaceY - messageBar.height
@@ -170,7 +190,14 @@ Page {
                 transform: Scale { id: magnifyTransform }
                 doubleResolution: magnifyArea.pressed || animateShrink.running || animateGrow.running
 
-                layer.enabled: pullDownMenu.active
+                onAnimationPlayingChanged: {
+                    if (!animationPlaying && animateAfterOrientationChange) {
+                        playWinAnimation()
+                        animateAfterOrientationChange = false
+                    }
+                }
+
+                layer.enabled: pullDownMenu.active || (overlayLoader.active && !animationPlaying)
 
                 FeedbackEvent.onClicked: feedback.playEffect()
                 FeedbackEvent.onDropSucceeded: feedback.playEffect()
@@ -307,6 +334,8 @@ Page {
                 }
             } else if (Patience.state === Patience.StartingState) {
                 resetHint()
+            } else if (Patience.state === Patience.WonState) {
+                table.playWinAnimation()
             }
         }
         onHint: {

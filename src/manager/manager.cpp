@@ -187,6 +187,7 @@ bool Manager::handleQueued(const Action &action) {
 void Manager::handleClearData()
 {
     m_preparing = true;
+    m_table->stopAnimation();
     for (Slot *slot : *m_table) {
         for (Card *card : slot->takeAll()) {
             if (card) {

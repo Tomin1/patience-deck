@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  */
 
 #include <algorithm>
+#include <functional>
 #include <math.h>
 #include <MGConfItem>
 #include <QBrush>
@@ -26,17 +27,22 @@
 #include <QSGSimpleRectNode>
 #include <QSGTexture>
 #include <QStyleHints>
+#include <random>
+#include "animationbuilder.h"
 #include "card.h"
 #include "constants.h"
 #include "drag.h"
 #include "engine.h"
 #include "feedbackevent.h"
+#include "itertools.h"
 #include "logging.h"
 #include "patience.h"
 #include "selection.h"
 #include "slot.h"
 #include "table.h"
 #include "texturerenderer.h"
+
+#define ANGLE(a) ((double)(a) / 3.141592653589793)
 
 namespace {
 
@@ -48,6 +54,143 @@ const qreal SlotOutlineWidth = 3 / CardBaseWidth;
 const QColor DefaultBackgroundColor(Qt::darkGreen);
 const QColor DefaultHighlightColor(Qt::blue);
 const qreal DefaultHighlightOpacity = 0.25;
+const int CardsInMoveMinimum = 4;
+
+float pow2(float value) { return value * value; }
+
+float distanceToWall(float angle, const QPointF &point, const QSize &area)
+{
+    float width, height, alpha, beta;
+    if (angle < 0.5) {
+        width = area.width() - point.x();
+        height = area.height() - point.y();
+        alpha = angle;
+        beta = 0.5 - angle;
+    } else if (angle < 1) {
+        width = point.x();
+        height = area.height() - point.y();
+        alpha = 1.0 - angle;
+        beta = angle - 0.5;
+    } else if (angle < 1.5) {
+        width = point.x();
+        height = point.y();
+        alpha = angle - 1.0;
+        beta = 1.5 - angle;
+    } else /* (angle < 2.0) */ {
+        width = area.width() - point.x();
+        height = point.y();
+        alpha = 2.0 - angle;
+        beta = angle - 1.5;
+    }
+    return std::sqrt(std::min(pow2(width) + pow2(width * std::tan(RADIAN(alpha))),
+                              pow2(height) + pow2(height * std::tan(RADIAN(beta)))));
+}
+
+class AngleDistribution
+{
+    static const float width;
+
+public:
+    AngleDistribution(float minAngle, float maxAngle)
+        : m_distribution((maxAngle - minAngle) / 2.0 + minAngle, (maxAngle - minAngle) / (2.0 * width))
+        , m_minAngle(minAngle)
+        , m_maxAngle(maxAngle)
+    {
+    }
+
+    template<typename URNG>
+    float operator()(URNG &generator)
+    {
+        float value = m_distribution(generator);
+        if (value < m_minAngle || value > m_maxAngle)
+            return operator()(generator);
+        return fixAngle(value);
+    }
+
+    static AngleDistribution fromPointAndArea(const QPointF &point, const QSize &area)
+    {
+        // Nearest corner
+        int corner = 0;
+        if (point.x() >= area.width() / 2)
+            corner += 1;
+        if (point.y() > area.height() / 2)
+            corner += 2;
+        float min = 0.0;
+        switch (corner) {
+        case 0: // top left
+            min = -ANGLE(std::atan2(point.y(), point.x()));
+            break;
+        case 1: // top right
+            min = ANGLE(std::atan2(point.y(), area.width() - point.x()));
+            break;
+        case 2: // bottom left
+            min = 1.0f + ANGLE(std::atan2(area.height() - point.y(), point.x()));
+            break;
+        case 3: // bottom right
+            min = 0.5f + ANGLE(std::atan2(area.width() - point.x(), area.height() - point.y()));
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+        qCDebug(lcAnimation) << "computed angle:" << min << "-" << min + 1 << "for case" << corner
+                             << "from" << point << "in" << area;
+        return AngleDistribution(min, min + 1);
+    }
+
+    static AngleDistribution fromEndpoints(float a, float b)
+    {
+        return (a <= b) ? AngleDistribution(a, b) : AngleDistribution(b, a);
+    }
+
+private:
+    static float fixAngle(float angle)
+    {
+        float result = std::remainder(angle, 2.0f);
+        return result >= 0.0 ? result : result + 2.0;
+    }
+
+    std::normal_distribution<float> m_distribution;
+    float m_minAngle;
+    float m_maxAngle;
+};
+
+const float AngleDistribution::width = 2.0;
+
+class RadiusDistribution
+{
+    static const float df;
+
+public:
+    RadiusDistribution(float minRadius, float maxRadius)
+        : m_distribution(df)
+        , m_minRadius(minRadius)
+        , m_maxRadius(maxRadius)
+        , m_multiplier(-(maxRadius - minRadius) / (df * 2.0))
+    {
+    }
+
+    template<typename URNG>
+    float operator()(URNG &generator)
+    {
+        float value = m_distribution(generator);
+        value *= m_multiplier;
+        value += m_maxRadius;
+        if (value > m_maxRadius)
+            qCWarning(lcAnimation) << "Bad value for radius generated:" << value
+                                   << "[" << m_minRadius << "," << m_maxRadius << "]";
+        if (value < m_minRadius)
+            return operator()(generator);
+        return value;
+    }
+
+private:
+    std::chi_squared_distribution<float> m_distribution;
+    float m_minRadius;
+    float m_maxRadius;
+    float m_multiplier;
+};
+
+const float RadiusDistribution::df = 4.0;
 
 } // namespace
 
@@ -93,6 +236,8 @@ Table::Table(QQuickItem *parent)
     , m_cardTexture(nullptr)
     , m_pendingCardTexture(nullptr)
     , m_previousWindow(nullptr)
+    , m_animation(nullptr)
+    , m_animate(false)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QQuickItem::ItemClipsChildrenToShape);
@@ -112,6 +257,7 @@ Table::Table(QQuickItem *parent)
 
     auto engine = Engine::instance();
     connect(engine, &Engine::gameLoaded, this, &Table::update);
+    connect(engine, &Engine::gameContinued, this, &Table::handleGameContinued);
     connect(engine, &Engine::setExpansionToDown, this, &Table::handleSetExpansionToDown);
     connect(engine, &Engine::setExpansionToRight, this, &Table::handleSetExpansionToRight);
     connect(engine, &Engine::widthChanged, this, &Table::handleWidthChanged);
@@ -130,6 +276,11 @@ Table::~Table()
     m_textureThread.wait();
     setCardTexture(nullptr);
     setPendingCardTexture(nullptr);
+}
+
+QSize Table::size() const
+{
+    return QSize(width(), height());
 }
 
 void Table::addArguments(QCommandLineParser *parser)
@@ -154,11 +305,146 @@ void Table::setArguments(QCommandLineParser *parser)
     }
 }
 
+void Table::playWinAnimation()
+{
+    if (m_animation) {
+        qCWarning(lcAnimation) << "Win animation is already playing!";
+        return;
+    }
+
+    m_animate = true;
+    polish();
+}
+
+void Table::createWinAnimation()
+{
+    // SAFETY: While Engine is owned by another thread, it's not destroyed until
+    // the app closes and the seed only changes when a new game is started
+    std::mt19937 generator(Engine::instance()->seed());
+    AnimationBuilder builder = AnimationBuilder::sequentialAnimation(this);
+    using SlotIterator = typename QVector<Slot *>::iterator;
+    IndexedIterator<SlotIterator> shuffledIt = shuffled(m_slots, generator);
+    using ShuffledSlotIterator = typename IndexedIterator<SlotIterator>::iterator;
+    int count = 0;
+    GroupedIterator<ShuffledSlotIterator> onTable = grouped(
+            shuffledIt,
+            [this, &count](const Slot *slot) {
+                count += slot->count();
+                if (count >= CardsInMoveMinimum) {
+                    count = 0;
+                    return true;
+                }
+                return false;
+            });
+    using SlotGroupIterator = typename GroupedIterator<ShuffledSlotIterator>::slice;
+    int z = 1;
+    for (SlotGroupIterator groupIt : onTable) {
+        AnimationBuilder::ParallelGroupGuard guard(&builder);
+        for (Slot *slot : groupIt) {
+            if (!slot->isEmpty()) {
+                builder.addZAnimation(slot, z++);
+                auto angleDistribution = AngleDistribution::fromPointAndArea(
+                        mapFromItem(slot, slot->center()), size());
+                for (auto it = slot->begin(); it != slot->end(); ++it) {
+                    float angle = angleDistribution(generator);
+                    Card *card = *it;
+                    float maxRadius = distanceToWall(angle, mapFromItem(slot, card->center()), size());
+                    float minRadius = m_cardSize.height() * 1.5 < maxRadius ? m_cardSize.height() : m_cardSize.width();
+                    RadiusDistribution radiusDistribution(minRadius, maxRadius);
+                    card->setVisible(true);
+                    float radius = radiusDistribution(generator);
+                    qCDebug(lcAnimation) << "Card from" << slot << "to" << angle
+                                         << "by" << radius << "<" << maxRadius;
+                    builder.addARAnimation(card, angle, radius, 1000);
+                }
+            }
+        }
+    }
+    count = 0;
+    GroupedIterator<Manager::iterator> offTable = grouped(
+            m_manager,
+            [this, &count](const Card *) {
+                if (++count >= CardsInMoveMinimum) {
+                    count = 0;
+                    return true;
+                }
+                return false;
+            });
+    using CardGroupIterator = typename GroupedIterator<Manager::iterator>::slice;
+    std::uniform_int_distribution<int> widthDistribution(0, width() - m_cardSize.width());
+    for (CardGroupIterator slice : offTable) {
+        AnimationBuilder::ParallelGroupGuard guard(&builder);
+        for (Card *card : slice) {
+            card->setParentItem(this);
+            card->setX(widthDistribution(generator));
+            card->setY(height() + m_cardSize.height() * .5);
+            card->setZ(z++);
+            int left = card->x() + m_cardSize.width() * .5;
+            int right = width() - left;
+            auto angleDistribution = AngleDistribution::fromEndpoints(
+                    ANGLE(std::atan2(m_cardSize.height() * 1.5, left)) + 1.0f,
+                    2.0f - ANGLE(std::atan2(m_cardSize.height() * 1.5, right)));
+            float angle = angleDistribution(generator);
+            float maxRadius = distanceToWall(angle, card->center(), size());
+            RadiusDistribution radiusDistribution(maxRadius * .5, maxRadius);
+            card->setVisible(true);
+            float radius = radiusDistribution(generator);
+            qCDebug(lcAnimation) << "Card from store to" << angle << "by" << radius << "<" << maxRadius;
+            builder.addARAnimation(card, angle, radius, 1000);
+        }
+    };
+    m_animation = builder;
+    connect(m_animation, &QAbstractAnimation::finished, this, [this] {
+        qCInfo(lcAnimation) << "Win animation finished";
+        if (m_animation) {
+            m_animation->deleteLater();
+            m_animation = nullptr;
+            emit animationPlayingChanged();
+        }
+    });
+    m_animate = false;
+    emit animationPlayingChanged();
+    m_animation->start();
+    qCInfo(lcAnimation) << "Win animation started";
+}
+
+void Table::stopAnimation()
+{
+    if (m_animation) {
+        qCInfo(lcAnimation) << "Win animation canceled";
+        bool wasPaused = animationPaused();
+        m_animation->stop();
+        if (wasPaused)
+            emit animationPausedChanged();
+        disconnect(m_animation, &QAbstractAnimation::finished, 0, 0);
+        m_animation->deleteLater();
+        m_animation = nullptr;
+        emit animationPlayingChanged();
+    }
+}
+
+void Table::handleGameContinued()
+{
+    qCDebug(lcAnimation) << "Clearing animation as game continues";
+    stopAnimation();
+    for (Slot *slot : m_slots) {
+        slot->setZ(0);
+        slot->updateLocations();
+    }
+    m_manager.forEach([](Card *card) {
+        card->setZ(0);
+        card->setParentItem(nullptr);
+    });
+}
+
 void Table::updatePolish()
 {
     if (m_dirtyCardSize)
         updateCardSize();
     swapCardTexture();
+
+    if (m_animate)
+        createWinAnimation();
 }
 
 QRectF Table::getSlotOutline(Slot *slot)
@@ -419,6 +705,27 @@ void Table::setDoubleResolution(bool doubleResolution)
         emit doubleResolutionChanged();
         if (!m_doubleSizeImage.isNull())
             createCardTexture();
+    }
+}
+
+bool Table::animationPlaying() const
+{
+    return m_animation;
+}
+
+bool Table::animationPaused() const
+{
+    return m_animation && m_animation->state() == QAbstractAnimation::Paused;
+}
+
+void Table::setAnimationPaused(bool paused)
+{
+    if (m_animation
+            && ((paused && m_animation->state() == QAbstractAnimation::Running)
+            || (!paused && m_animation->state() == QAbstractAnimation::Paused))) {
+        m_animation->setPaused(paused);
+        emit animationPausedChanged();
+        qCDebug(lcAnimation) << "Win animation" << (paused ? "paused" : "resumed");
     }
 }
 
@@ -685,7 +992,10 @@ void Table::updateCardSize()
     if (!m_tableSize.isValid())
         return;
 
-    qCDebug(lcTable).nospace() << "Drawing to " << QSize(width(), height())
+    if (m_animation)
+        stopAnimation();
+
+    qCDebug(lcTable).nospace() << "Drawing to " << size()
                                << " area with margin of " << m_margin
                                << ", maximum margin of " << m_maximumMargin
                                << ", minimum side margin of " << m_minimumSideMargin
@@ -734,10 +1044,13 @@ void Table::updateCardSize()
 
     m_dirtyCardSize = false;
 
-    for (Slot *slot : m_slots)
+    for (Slot *slot : m_slots) {
+        slot->setZ(0);
         slot->updateDimensions();
     }
     m_manager.forEach([this](Card *card) {
+        card->setZ(0);
+        card->setParentItem(nullptr);
         card->setSize(m_cardSize);
     });
 
