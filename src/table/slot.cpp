@@ -293,6 +293,14 @@ QRectF Slot::box() const
     return box;
 }
 
+QPointF Slot::center() const
+{
+    if (!isEmpty() && !expanded())
+        return top()->center();
+    QRectF area = box();
+    return QPointF(area.width() / 2, area.height() / 2);
+}
+
 bool Slot::expanded() const
 {
     return m_expansion != DoesNotExpand;

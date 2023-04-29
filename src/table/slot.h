@@ -80,6 +80,7 @@ public:
     using QQuickItem::contains;
 
     QRectF box() const;
+    QPointF center() const;
 
     bool expanded() const;
     bool expandedRight() const;
