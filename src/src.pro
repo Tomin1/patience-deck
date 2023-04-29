@@ -16,6 +16,7 @@ SOURCES += \
     engine/engine.cpp \
     engine/interface.cpp \
     engine/recorder.cpp \
+    common/itertools.cpp \
     common/logging.cpp \
     manager/manager.cpp \
     manager/queue.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
 
 HEADERS += \
     common/constants.h \
+    common/itertools.h \
     common/logging.h \
     engine/enginedata.h \
     engine/engine.h \
