@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021 Tomi Leppänen
+ * Copyright (C) 2021-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -244,9 +244,18 @@ void Manager::store(const QList<Card *> &cards, bool suppress)
     }
 }
 
-void Manager::updateDimensions()
+void Manager::forEach(std::function<void(Card *card)> func)
 {
-    auto size = m_table->cardSize();
     for (auto it = m_queue.beginStored(); it != m_queue.endStored(); ++it)
-        (*it)->setSize(size);
+        func(it.value());
+}
+
+Manager::iterator Manager::begin()
+{
+    return m_queue.beginStored();
+}
+
+Manager::iterator Manager::end()
+{
+    return m_queue.endStored();
 }
