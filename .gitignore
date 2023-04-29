@@ -12,7 +12,5 @@ harbour-patience-deck
 /dist/screenshots/*.png
 /installroot/
 /tools/convert
-/tools/exerciser/games/
-/tools/exerciser/engine-exerciser
 .qmake.stash
 /libs/
