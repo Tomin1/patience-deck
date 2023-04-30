@@ -60,7 +60,7 @@ Item {
                                                   magnifyButton.contentWidth) + Theme.paddingLarge
     readonly property int totalSpaceX: minimumSpaceX + handleWidth
     readonly property int handleWidth: Theme.itemSizeExtraSmall / 4
-    readonly property int toolbarVelocity: Theme.dp(3000)
+    readonly property int toolbarVelocity: Theme.pixelRatio * 3000
 
     height: buttonCount, totalSpaceY
     width: Screen.width
