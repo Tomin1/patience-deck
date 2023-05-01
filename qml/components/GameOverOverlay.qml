@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2021-2022 Tomi Leppänen
+ * Copyright (C) 2021-2023 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ Rectangle {
         id: overlay
 
         readonly property int maximumWidth: parent.width - 2 * Theme.horizontalPageMargin
-        readonly property int contentWidth: Math.max(gameOverText.contentWidth, buttonFlow.width)
+        readonly property int contentWidth: Math.max(gameOverText.contentWidth, gameStats.width, buttonFlow.width)
 
         anchors {
             horizontalCenter: parent.horizontalCenter
@@ -75,7 +75,7 @@ Rectangle {
                 width: parent.width - 2 * parent.padding
             }
 
-            GameStats { }
+            GameStats { id: gameStats }
 
             Flow {
                 id: buttonFlow
