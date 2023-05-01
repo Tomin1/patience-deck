@@ -794,6 +794,11 @@ CardList Engine::cards(int slotId, int count) const
     return slot.mid(count > 0 ? slot.count() - count : 0);
 }
 
+uint_fast32_t Engine::seed() const
+{
+    return d_ptr->m_seed;
+}
+
 void EngineInternals::handleReplayGame(const QString &gameFile, bool hasSeed, uint_fast32_t seed, qint64 time)
 {
     if (hasSeed)
