@@ -84,7 +84,7 @@ fi
 for target in $TARGETS
 do
     echo "Building for $target"
-    $SFDK -c "target=$target" build -p -d $HARBOUR
+    $SFDK -c "target=$target" -c no-vcs-apply build -p -d $HARBOUR
     if [ "$DIR" != "" ]
     then
         cp -v "$($SFDK config --show | grep output-prefix \
