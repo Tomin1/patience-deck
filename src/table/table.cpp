@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2023 Tomi Leppänen
+ * Copyright (C) 2020-2024 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QQuickWindow>
+#include <QRunnable>
 #include <QSGSimpleRectNode>
 #include <QSGTexture>
 #include <QStyleHints>
@@ -191,6 +192,24 @@ private:
 };
 
 const float RadiusDistribution::df = 4.0;
+
+class TextureCleaningJob : public QRunnable
+{
+public:
+    TextureCleaningJob(QSGTexture *texture)
+        : texture(texture)
+    {
+        setAutoDelete(true);
+    }
+
+    void run() override
+    {
+        qCDebug(lcTable) << "Destroying texture";
+        delete texture;
+    }
+private:
+    QSGTexture *texture;
+};
 
 } // namespace
 
@@ -1079,15 +1098,27 @@ bool Table::textureIsDoubleSize() const
 void Table::setCardTexture(QSGTexture *texture)
 {
     if (m_cardTexture)
-        m_cardTexture->deleteLater();
+        deleteTexture(m_cardTexture);
     m_cardTexture = texture;
 }
 
 void Table::setPendingCardTexture(QSGTexture *texture)
 {
     if (m_pendingCardTexture)
-        m_pendingCardTexture->deleteLater();
+        deleteTexture(m_pendingCardTexture);
     m_pendingCardTexture = texture;
+}
+
+void Table::deleteTexture(QSGTexture *texture)
+{
+    if (window()) {
+        window()->scheduleRenderJob(
+                new TextureCleaningJob(texture),
+                QQuickWindow::AfterRenderingStage);
+    } else {
+        qWarning(lcTable) << "No window. Deleting texture later. This may leak fds!";
+        texture->deleteLater();
+    }
 }
 
 void Table::connectWindowSignals(QQuickWindow *window)
