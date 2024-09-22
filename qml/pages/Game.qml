@@ -51,6 +51,7 @@ Page {
         if (Patience.state === Patience.WonState) {
             if (table.animationPlaying) {
                 table.animateAfterOrientationChange = true
+                table.stopAnimation()
             } else {
                 table.playWinAnimation()
             }

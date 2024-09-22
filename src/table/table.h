@@ -68,7 +68,7 @@ public:
     static void setArguments(QCommandLineParser *parser);
 
     Q_INVOKABLE void playWinAnimation();
-    void stopAnimation();
+    Q_INVOKABLE void stopAnimation();
 
     void updatePolish();
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *);
@@ -183,6 +183,7 @@ private:
     void setPendingCardTexture(QSGTexture *texture);
     void deleteTexture(QSGTexture *texture);
     void createWinAnimation();
+    void resetCardPositions();
 
     static QRectF getSlotOutline(Slot *slot);
     static void setMaterialForSlotNode(SlotNode *node);

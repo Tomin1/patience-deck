@@ -331,6 +331,7 @@ void Table::playWinAnimation()
         return;
     }
 
+    resetCardPositions();
     m_animate = true;
     polish();
 }
@@ -438,14 +439,13 @@ void Table::stopAnimation()
         disconnect(m_animation, &QAbstractAnimation::finished, 0, 0);
         m_animation->deleteLater();
         m_animation = nullptr;
+        resetCardPositions();
         emit animationPlayingChanged();
     }
 }
 
-void Table::handleGameContinued()
+void Table::resetCardPositions()
 {
-    qCDebug(lcAnimation) << "Clearing animation as game continues";
-    stopAnimation();
     for (Slot *slot : m_slots) {
         slot->setZ(0);
         slot->updateLocations();
@@ -454,6 +454,12 @@ void Table::handleGameContinued()
         card->setZ(0);
         card->setParentItem(nullptr);
     });
+}
+
+void Table::handleGameContinued()
+{
+    qCDebug(lcAnimation) << "Clearing animation as game continues";
+    stopAnimation();
 }
 
 void Table::updatePolish()
