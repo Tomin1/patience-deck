@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2023 Tomi Leppänen
+ * Copyright (C) 2020-2024 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -261,6 +261,26 @@ void Drag::drop(Slot *slot)
     animation->start();
 }
 
+void Drag::abort()
+{
+    if (m_state < Dropped) {
+        if (m_state == StartingDrag) {
+            m_state = Canceled;
+            return;
+        } else if (m_state == Dragging) {
+            qCDebug(lcDrag) << "Canceling drag on abort, id" << id();
+            emit doCancelDrag(id(), m_source->id(), toCardData(m_cards, m_state));
+            setParentItem(nullptr);
+            m_source->put(m_cards);
+            m_cards.clear();
+        } else if (m_state == Dropping) {
+            return; // Let it finish
+        } // anything else -> canceled and done
+        m_state = Canceled;
+        done();
+    }
+}
+
 void Drag::cancel()
 {
     qCDebug(lcDrag) << "Canceling drag of" << m_card << "at state" << m_state;
@@ -299,8 +319,13 @@ void Drag::cancel()
 
 void Drag::handleCouldDrag(quint32 id, int slotId, bool could)
 {
-    if (id != CountableId::id() && slotId != m_source->id())
+    if (id != CountableId::id())
         return;
+
+    if (slotId != m_source->id()) {
+        qCCritical(lcDrag) << "Wrong slotId in handleCouldDrag, expected:" << m_source->id() << "but got:" << slotId;
+        return;
+    }
 
     if (m_state == StartingDrag && could) {
         m_state = Dragging;

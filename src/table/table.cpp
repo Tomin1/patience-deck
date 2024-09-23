@@ -940,6 +940,15 @@ void Table::unselect()
     }
 }
 
+void Table::cancelDrag()
+{
+    Drag *drag = qobject_cast<Drag *>(m_interaction);
+    if (drag) {
+        qCDebug(lcTable) << "Canceling drag by request";
+        drag->abort();
+    }
+}
+
 void Table::handleSetExpansionToDown(int id, double expansion)
 {
     if (!preparing()) {
@@ -1024,7 +1033,7 @@ void Table::updateCardSize()
                                << " area with margin of " << m_margin
                                << ", maximum margin of " << m_maximumMargin
                                << ", minimum side margin of " << m_minimumSideMargin
-                               << "and table size of " << m_tableSize;
+                               << " and table size of " << m_tableSize;
 
     qreal verticalSpace = width() - m_minimumSideMargin*2.0;
     qreal horizontalSpace = height() - m_margin.height()*2.0;

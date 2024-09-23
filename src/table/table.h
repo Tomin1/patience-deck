@@ -119,6 +119,7 @@ public:
     Drag *drag(QMouseEvent *event, Card *card);
     void select(Card *card);
     Q_INVOKABLE void unselect();
+    Q_INVOKABLE void cancelDrag();
 
     void setDirtyCardSize();
     void disableActions(bool disabled);
