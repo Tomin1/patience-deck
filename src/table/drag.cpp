@@ -104,6 +104,7 @@ Drag::Drag(QMouseEvent *event, Table *table, Card *card, Selection *selection)
     } else {
         qCDebug(lcDrag) << "Started drag of" << m_card << "for" << m_source;
     }
+    qCDebug(lcDragLT).nospace() << "Created Drag(" << (void*)this << ")";
 }
 
 Drag::~Drag()
@@ -112,6 +113,7 @@ Drag::~Drag()
         qCWarning(lcDrag) << "Drag was not finished or canceled when it was destroyed";
     if (m_selection)
         m_selection->deleteLater();
+    qCDebug(lcDragLT).nospace() << "Destroyed Drag(" << (void*)this << ")";
 }
 
 Card *Drag::card() const
@@ -419,6 +421,7 @@ void Drag::done()
 {
     emit finished();
     deleteLater();
+    qCDebug(lcDragLT).nospace() << "Finished Drag(" << (void*)this << ")";
 }
 
 bool Drag::mayBeAClick(QMouseEvent *event)
