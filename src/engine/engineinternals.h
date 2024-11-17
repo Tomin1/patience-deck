@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2023 Tomi Leppänen
+ * Copyright (C) 2020-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ public:
     bool setupDelayedCall(std::function<void()> callback, std::function<void()> destructCallback);
     void clearDelayedCall();
     quint32 getRandomValue(quint32 first, quint32 last);
+    void skipRandomValues(int steps);
     void resetGenerator(bool generateNewSeed);
     void die(const char *message);
 

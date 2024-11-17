@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2022-2023 Tomi Leppänen
+ * Copyright (C) 2022-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ public:
     void recordDoubleClick(int slotId);
 
     void setSeed(quint32 seed);
+    void advanceRngState(int steps = 1);
     void invalidateState();
 
     void storeOldState();
@@ -85,14 +86,15 @@ private:
         Move,
         Click,
         DoubleClick,
+        RngState,
     };
 
     class Record {
     public:
-        MoveType type;
-        int startSlot;
-        int endSlot;
-        int cards;
+        MoveType type = None;
+        int startSlot = -1;
+        int endSlot = -1;
+        int cards = 0;
 
         Record(MoveType type = None, int startSlot = -1, int endSlot = -1)
             : type(type)
@@ -108,6 +110,11 @@ private:
         }
         static Record click(int slot) { return Record(Click, slot); }
         static Record doubleClick(int slot) { return Record(DoubleClick, slot); }
+        static Record rngState(int state) {
+            auto record = Record(RngState);
+            record.cards = state;
+            return record;
+        }
 
         static Record fromString(const QString &record);
         QString toString() const;
@@ -135,16 +142,18 @@ private:
     const Record &current() const;
     Engine *engine() const;
 
-    uint m_replaying;
+    uint m_replaying = 0;
     QVector<Record> m_records;
     QVector<Record> m_abandoned;
 #ifndef ENGINE_EXERCISER
     MGConfItem m_stateConf;
 #endif // ENGINE_EXERCISER
     QString m_gameFile;
-    bool m_hasSeed;
-    quint32 m_seed;
-    int m_moves;
+    bool m_hasSeed = false;
+    quint32 m_seed = 0;
+    quint32 m_rngState = 0;
+    quint32 m_lastSavedRngState = 0;
+    int m_moves = 0;
     QElapsedTimer m_elapsed;
     QScopedPointer<OldState> m_oldState;
 };

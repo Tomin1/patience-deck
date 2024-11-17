@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2022-2023 Tomi Leppänen
+ * Copyright (C) 2022-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 #include "recorder.h"
 
 namespace {
-const auto DataVersion = QStringLiteral("0");
+const auto InvalidDataVersion = '\0';
+const auto DataVersion0 = '0';
+const auto DataVersion1 = '1';
 const auto MovesTemplate = QStringLiteral("%1:%2");
 const int MovesBetweenSaves = 10;
 const qint64 MoveTimeout = 30 * 1000;
@@ -52,19 +54,22 @@ struct SavedState {
     bool seedOk;
     qint64 time;
     QString moves;
+    QChar version;
 
     SavedState(const QString &gameFile = QString(),
                quint32 seed = 0,
                bool hasSeed = false,
                qint64 time = 0,
-               QString moves = QString())
+               QString moves = QString(),
+               QChar version = InvalidDataVersion)
         : valid(false)
         , gameFile(gameFile)
         , seed(seed)
         , hasSeed(hasSeed)
         , seedOk(true)
         , time(time)
-        , moves(moves) {}
+        , moves(moves)
+        , version(version) {}
 
     QString toString(bool encoded = true) const
     {
@@ -72,9 +77,9 @@ struct SavedState {
         parts << gameFile;
         if (hasSeed)
             parts << QString::number(seed);
-        if (!moves.isEmpty()) {
+        if (!moves.isEmpty() && !version.isNull()) {
             auto data = MovesTemplate.arg(time).arg(moves);
-            parts << DataVersion << (encoded ? encode(data) : data);
+            parts << QString(version) << (encoded ? encode(data) : data);
         }
         return parts.join(';');
     }
@@ -89,7 +94,14 @@ struct SavedState {
             if (parts.count() >= 2) {
                 saved.hasSeed = true;
                 saved.seed = parts.at(1).toULongLong(&saved.seedOk);
-                if (saved.seedOk && parts.count() >= 4 && parts.at(2) == DataVersion) {
+                if (parts.count() >= 3 && parts.at(2).length() == 1) {
+                    QChar version = parts.at(2)[0];
+                    if (version == DataVersion0)
+                        saved.version = DataVersion0;
+                    else if (version == DataVersion1)
+                        saved.version = DataVersion1;
+                }
+                if (!saved.version.isNull() && saved.seedOk && parts.count() >= 4) {
                     QString moves = decode(parts.at(3));
                     int sep = moves.indexOf(':');
                     bool ok = false;
@@ -118,13 +130,9 @@ const QString StateConf = QStringLiteral("/state");
 
 Recorder::Recorder(Engine *engine)
     : QObject(engine)
-    , m_replaying(0)
 #ifndef ENGINE_EXERCISER
     , m_stateConf(Constants::ConfPath + StateConf)
 #endif // ENGINE_EXERCISER
-    , m_hasSeed(false)
-    , m_seed(0)
-    , m_moves(0)
 {
     connect(engine, &Engine::gameLoaded, this, &Recorder::handleGameLoaded, Qt::DirectConnection);
     connect(engine, &Engine::gameStarted, this, &Recorder::handleGameStarted, Qt::DirectConnection);
@@ -141,7 +149,8 @@ Recorder::Recorder(Engine *engine)
 
 Recorder::~Recorder()
 {
-    save();
+    if (!m_replaying)
+        save();
 }
 
 void Recorder::startReplay()
@@ -252,6 +261,21 @@ void Recorder::replaySingle()
             qCInfo(lcRecorder) << "Replayed double click";
         }
         break;
+    case RngState:
+        qCDebug(lcRecorder) << "Replaying rng state from" << m_rngState << "to" << record.cards;
+        if (m_rngState > (quint32)record.cards) {
+            qCWarning(lcRecorder) << "Rng state ahead of recorded state already";
+            fail();
+            return;
+        } else {
+            int rounds = record.cards - m_rngState;
+            engine()->throwAwayRandomState(rounds);
+            qCInfo(lcRecorder) << "Replayed rng state by" << rounds << "rounds, now" << m_rngState;
+            QTimer::singleShot(0, this, [this] {
+                replaySingle();
+            });
+        }
+        break;
     }
     m_replaying++;
 }
@@ -276,15 +300,28 @@ void Recorder::clear()
 void Recorder::save()
 {
     if (!m_elapsed.isValid() || m_elapsed.hasExpired(MinimumSaveInterval) || m_moves) {
+        if (m_lastSavedRngState != m_rngState) {
+            qCDebug(lcRecorder) << "Recording random state before save"
+                                << m_lastSavedRngState << "->" << m_rngState;
+            m_records.append(Record::rngState(m_rngState));
+            m_lastSavedRngState = m_rngState;
+        }
         QStringList records;
-        for (const Record &record : m_records)
+        QChar dataVersion = DataVersion0;
+        for (const Record &record : m_records) {
             records << record.toString();
+            if (record.type == RngState)
+                dataVersion = DataVersion1;
+        }
 #ifndef ENGINE_EXERCISER
         // Take elapsed time from another thread :E
         // This is fine. Trust me, I'm an engineer. ;)
         // (Patience instance is not going anywhere so we get away with this.)
-        m_stateConf.set(SavedState(m_gameFile, m_seed, m_hasSeed, Patience::instance()->elapsedTimeMs(),
-                                   records.join(',')).toString());
+        auto savedState = SavedState(m_gameFile, m_seed, m_hasSeed, Patience::instance()->elapsedTimeMs(),
+                                     records.join(','), dataVersion);
+        if (lcRecorderData().isDebugEnabled())
+            qCDebug(lcRecorderData) << "Saving state:" << savedState.toString(false);
+        m_stateConf.set(savedState.toString());
 #endif // ENGINE_EXERCISER
         m_moves = 0;
         m_elapsed.start();
@@ -305,6 +342,14 @@ void Recorder::setSeed(quint32 seed)
     qCDebug(lcRecorder) << "Storing seed";
     m_seed = seed;
     m_hasSeed = true;
+    m_rngState = 0;
+    m_lastSavedRngState = 0;
+}
+
+void Recorder::advanceRngState(int steps)
+{
+    m_rngState += steps;
+    qCDebug(lcRecorder) << "Advanced random state, now" << m_rngState;
 }
 
 void Recorder::invalidateState()
@@ -360,13 +405,24 @@ void Recorder::handleGameStarted()
     if (!m_replaying) {
         qCDebug(lcRecorder) << "Game started, resetting recorded state";
         clear();
+        qCDebug(lcRecorder) << "Setting last saved rng state before initial save:" << m_lastSavedRngState << "->" << m_rngState;
+        m_lastSavedRngState = m_rngState;
         save();
+    } else {
+        qCDebug(lcRecorder) << "Setting last saved rng state after replaying:" << m_lastSavedRngState << "->" << m_rngState;
+        m_lastSavedRngState = m_rngState;
     }
 }
 
 void Recorder::handleMoveEnded()
 {
     if (!m_replaying) {
+        if (m_lastSavedRngState != m_rngState) {
+            qCDebug(lcRecorder) << "Recording random state"
+                                << m_lastSavedRngState << "->" << m_rngState;
+            m_records.append(Record::rngState(m_rngState));
+            m_lastSavedRngState = m_rngState;
+        }
         if (++m_moves >= MovesBetweenSaves || m_elapsed.hasExpired(MoveTimeout))
             save();
     } else {
@@ -392,8 +448,20 @@ void Recorder::handleEngineFailure()
 
 void Recorder::undo()
 {
-    if (!m_replaying && !m_records.empty())
-        m_abandoned.append(m_records.takeLast());
+    if (!m_replaying) {
+        while (!m_records.empty()) {
+            auto last = m_records.takeLast();
+            qCDebug(lcRecorder) << "Took" << last.toString() << "from recorded state";
+            if (last.type != RngState) {
+                m_abandoned.append(last);
+                break;
+            } else {
+                qCDebug(lcRecorder) << "Resetting last saved rng state:" << m_lastSavedRngState << "->" << 0
+                                    << "while the current is" << m_rngState;
+                m_lastSavedRngState = 0;
+            }
+        }
+    }
 }
 
 void Recorder::redo()
@@ -441,7 +509,8 @@ void Recorder::addArguments(QCommandLineParser *parser)
         {{"s", "seed"}, "Set initial seed to load", "integer"},
         {{"m", "moves"}, "Recorded moves to make", "moves"},
         {{"t", "time"}, "Recorded time to set", "time"},
-        {{"o", "options"}, "Indices of options to set before loading game", "options"}
+        {{"o", "options"}, "Indices of options to set before loading game", "options"},
+        {{"v", "version"}, "Set data version", "integer"},
     });
 }
 
@@ -466,6 +535,10 @@ void Recorder::setArguments(QCommandLineParser *parser)
                 moves = moves.mid(moves.indexOf(':') + 1);
         }
         state.moves = moves;
+        state.version = parser->value("version").at(0);
+        if (state.version.isNull()) {
+            state.version = DataVersion0;
+        }
     }
     else if (parser->isSet("game") || parser->isSet("seed"))
         // invalidate moves
@@ -518,6 +591,12 @@ Recorder::Record Recorder::Record::fromString(const QString &record)
             return Record();
         }
         return doubleClick(parts.at(1).toInt());
+    case 'S':
+        if (parts.length() < 2) {
+            qCCritical(lcRecorder) << "Invalid stored random state";
+            return Record();
+        }
+        return rngState(parts.at(1).toInt());
     default:
         qCCritical(lcRecorder) << "Invalid stored record";
         return Record();
@@ -544,6 +623,10 @@ QString Recorder::Record::toString() const
     case DoubleClick:
         record << "L";
         record << QString::number(startSlot);
+        break;
+    case RngState:
+        record << "S";
+        record << QString::number(cards);
         break;
     case None:
         qCCritical(lcRecorder) << "Invalid record";

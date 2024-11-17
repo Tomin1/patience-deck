@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2023 Tomi Leppänen
+ * Copyright (C) 2020-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -788,6 +788,11 @@ void Engine::forgetPreviousGame()
     d_ptr->m_recorder.dropOldState();
 }
 
+void Engine::throwAwayRandomState(int steps)
+{
+    d_ptr->skipRandomValues(steps);
+}
+
 CardList Engine::cards(int slotId, int count) const
 {
     const CardList &slot = d_ptr->getSlot(slotId);
@@ -1169,9 +1174,17 @@ void EngineInternals::clearDelayedCall()
     }
 }
 
-quint32 EngineInternals::getRandomValue(quint32 first, quint32 last) {
+quint32 EngineInternals::getRandomValue(quint32 first, quint32 last)
+{
+    m_recorder.advanceRngState();
     std::uniform_int_distribution<quint32> distribution(first, last);
     return distribution(m_generator);
+}
+
+void EngineInternals::skipRandomValues(int steps)
+{
+    m_recorder.advanceRngState(steps);
+    m_generator.discard(steps);
 }
 
 void EngineInternals::resetGenerator(bool generateNewSeed)
