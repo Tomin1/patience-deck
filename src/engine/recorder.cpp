@@ -49,24 +49,19 @@ QString decode(const QString &text)
 struct SavedState {
     bool valid;
     QString gameFile;
-    quint32 seed;
-    bool hasSeed;
-    bool seedOk;
+    Seed seed;
     qint64 time;
     QString moves;
     QChar version;
 
     SavedState(const QString &gameFile = QString(),
-               quint32 seed = 0,
-               bool hasSeed = false,
+               Seed seed = Seed(),
                qint64 time = 0,
                QString moves = QString(),
                QChar version = InvalidDataVersion)
         : valid(false)
         , gameFile(gameFile)
         , seed(seed)
-        , hasSeed(hasSeed)
-        , seedOk(true)
         , time(time)
         , moves(moves)
         , version(version) {}
@@ -75,8 +70,8 @@ struct SavedState {
     {
         QStringList parts;
         parts << gameFile;
-        if (hasSeed)
-            parts << QString::number(seed);
+        if (seed.isValid())
+            parts << seed.toString();
         if (!moves.isEmpty() && !version.isNull()) {
             auto data = MovesTemplate.arg(time).arg(moves);
             parts << QString(version) << (encoded ? encode(data) : data);
@@ -92,8 +87,7 @@ struct SavedState {
         if (saved.valid) {
             saved.gameFile = parts.at(0);
             if (parts.count() >= 2) {
-                saved.hasSeed = true;
-                saved.seed = parts.at(1).toULongLong(&saved.seedOk);
+                saved.seed = Seed::fromString(parts.at(1));
                 if (parts.count() >= 3 && parts.at(2).length() == 1) {
                     QChar version = parts.at(2)[0];
                     if (version == DataVersion0)
@@ -101,7 +95,7 @@ struct SavedState {
                     else if (version == DataVersion1)
                         saved.version = DataVersion1;
                 }
-                if (!saved.version.isNull() && saved.seedOk && parts.count() >= 4) {
+                if (!saved.version.isNull() && saved.seed.isValid() && parts.count() >= 4) {
                     QString moves = decode(parts.at(3));
                     int sep = moves.indexOf(':');
                     bool ok = false;
@@ -178,12 +172,12 @@ bool Recorder::load()
     auto state = SavedState::fromConfItem(m_stateConf);
     qCDebug(lcRecorder) << "Loaded state" << state.toString(false);
     if (state.valid) {
-        if (state.seedOk) {
+        if (state.seed.isValid()) {
             if (!state.moves.isEmpty()) {
                 for (const QString &record : state.moves.split(','))
                     m_records.append(Record::fromString(record));
             }
-            emit replayingGame(state.gameFile, state.hasSeed, state.seed, state.time);
+            emit replayingGame(state.gameFile, state.seed, state.time);
             return true;
         }
     } else {
@@ -317,7 +311,7 @@ void Recorder::save()
         // Take elapsed time from another thread :E
         // This is fine. Trust me, I'm an engineer. ;)
         // (Patience instance is not going anywhere so we get away with this.)
-        auto savedState = SavedState(m_gameFile, m_seed, m_hasSeed, Patience::instance()->elapsedTimeMs(),
+        auto savedState = SavedState(m_gameFile, m_seed, Patience::instance()->elapsedTimeMs(),
                                      records.join(','), dataVersion);
         if (lcRecorderData().isDebugEnabled())
             qCDebug(lcRecorderData) << "Saving state:" << savedState.toString(false);
@@ -337,11 +331,10 @@ void Recorder::fail()
     save();
 }
 
-void Recorder::setSeed(quint32 seed)
+void Recorder::setSeed(const Seed &seed)
 {
     qCDebug(lcRecorder) << "Storing seed";
     m_seed = seed;
-    m_hasSeed = true;
     m_rngState = 0;
     m_lastSavedRngState = 0;
 }
@@ -355,13 +348,13 @@ void Recorder::advanceRngState(int steps)
 void Recorder::invalidateState()
 {
     qCDebug(lcRecorder) << "Invalidating state";
-    m_hasSeed = false;
+    m_seed = Seed();
 }
 
 void Recorder::storeOldState()
 {
     // Store only if there is a new state to store
-    if ((m_oldState.isNull() || !m_oldState->restoring()) && !m_replaying && m_hasSeed) {
+    if ((m_oldState.isNull() || !m_oldState->restoring()) && !m_replaying && m_seed.isValid()) {
         m_oldState.reset(new OldState(m_records, m_seed, Patience::instance()->elapsedTimeMs()));
         qCDebug(lcRecorder) << "Stored old state";
         emit oldStateStored(true);
@@ -374,14 +367,13 @@ void Recorder::restoreOldState()
     if (!m_oldState.isNull()) {
         m_records = m_oldState->records;
         m_abandoned.clear();
-        m_hasSeed = true;
         m_seed = m_oldState->seed;
         m_moves = 0;
         qint64 time = m_oldState->time;
         m_oldState->setRestoring();
         qCDebug(lcRecorder) << "Restored old state";
         emit oldStateStored(false);
-        emit replayingGame(m_gameFile, true, m_oldState->seed, time);
+        emit replayingGame(m_gameFile, m_oldState->seed, time);
         m_oldState.reset();
     }
 }
@@ -524,8 +516,7 @@ void Recorder::setArguments(QCommandLineParser *parser)
     if (parser->isSet("game"))
         state.gameFile = parser->value("game");
     if (parser->isSet("seed")) {
-        state.seed = parser->value("seed").toULongLong(&state.seedOk);
-        state.hasSeed = true;
+        state.seed = Seed::fromString(parser->value("seed"));
     }
     if (parser->isSet("moves")) {
         auto moves = parser->value("moves");

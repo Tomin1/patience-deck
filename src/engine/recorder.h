@@ -59,7 +59,7 @@ public:
     void recordClick(int slotId);
     void recordDoubleClick(int slotId);
 
-    void setSeed(quint32 seed);
+    void setSeed(const Seed &seed);
     void advanceRngState(int steps = 1);
     void invalidateState();
 
@@ -69,7 +69,7 @@ public:
 
 signals:
     void replayCompleted(CompletionStatus status);
-    void replayingGame(const QString &gameFile, bool hasSeed, quint32 seed, qint64 time);
+    void replayingGame(const QString &gameFile, Seed seed, qint64 time);
     void oldStateStored(bool stored);
 
 public slots:
@@ -122,10 +122,10 @@ private:
 
     struct OldState {
         QVector<Record> records;
-        quint32 seed;
+        Seed seed;
         qint64 time;
 
-        OldState(QVector<Record> records, quint32 seed, qint64 time)
+        OldState(QVector<Record> records, Seed seed, qint64 time)
             : records(records)
             , seed(seed)
             , time(time) {}
@@ -149,8 +149,7 @@ private:
     MGConfItem m_stateConf;
 #endif // ENGINE_EXERCISER
     QString m_gameFile;
-    bool m_hasSeed = false;
-    quint32 m_seed = 0;
+    Seed m_seed;
     quint32 m_rngState = 0;
     quint32 m_lastSavedRngState = 0;
     int m_moves = 0;

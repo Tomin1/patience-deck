@@ -21,6 +21,7 @@
 #include <QList>
 #include <QMetaEnum>
 #include <QMetaType>
+#include <random>
 
 enum Rank : int {
     RankJoker = 0,
@@ -117,5 +118,38 @@ typedef QList<GameOption> GameOptionList;
 Q_DECLARE_METATYPE(struct GameOption)
 
 Q_DECLARE_METATYPE(GameOptionList)
+
+class Seed {
+public:
+    static Seed randomSeed();
+    static Seed fromString(const QString &str);
+
+    Seed();
+    Seed(const Seed &other);
+    ~Seed();
+    Seed &operator=(const Seed &other);
+    Seed &operator=(Seed &&other);
+
+    bool isValid() const;
+    std::mt19937 getRng() const;
+    QString toString() const;
+
+private:
+    typedef unsigned char tag_t;
+    Seed(uint_fast32_t seed);
+    Seed(quint32 *seed, int count);
+    inline bool isScalar() const { return m_tag == 0 || !isValid(); }
+    inline bool isVector() const { return !isScalar(); }
+
+    friend QDebug operator<<(QDebug debug, const Seed &seed);
+
+    union {
+        uint_fast32_t m_scalar;
+        quint32 *m_vector;
+    };
+    tag_t m_tag = 0;
+};
+
+Q_DECLARE_METATYPE(Seed)
 
 #endif // ENGINEDATA_H

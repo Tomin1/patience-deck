@@ -58,8 +58,6 @@ public:
 
     CardList cards(int slotId, int count) const;
 
-    uint_fast32_t seed() const;
-
 public slots:
     void init();
     void initWithDirectory(const QString &gameDirectory);
@@ -84,6 +82,8 @@ public slots:
     void restorePreviousGame();
     void forgetPreviousGame();
     void throwAwayRandomState(int steps);
+    Seed seed() const;
+    Seed getSeed();
 
 signals:
     void canUndo(bool canUndo);

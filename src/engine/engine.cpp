@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include <QCommandLineParser>
 #include <QDebug>
 #include "constants.h"
@@ -92,6 +93,180 @@ QDebug operator<<(QDebug debug, const CardData *data)
     return debug.space();
 }
 
+Seed Seed::randomSeed()
+{
+    static std::random_device seedGenerator;
+    auto size = qgetenv("PATIENCE_DECK_SEED_SIZE");
+    bool ok = false;
+    int count = size.toInt(&ok);
+    if (size.isEmpty() || !ok || count <= 0 || count >= std::numeric_limits<tag_t>::max()) {
+        return Seed(seedGenerator());
+    }
+    quint32 *seed = new quint32[count];
+    for (ssize_t i = 0; i < count; ++i) {
+        seed[i] = seedGenerator();
+    }
+    return Seed(seed, count);
+}
+
+Seed Seed::fromString(const QString &str)
+{
+    bool ok = false;
+    if (str.contains(':')) {
+        auto parts = str.split(':');
+        int count = parts[0].toInt(&ok);
+        if (!ok || count <= 0 || count >= std::numeric_limits<tag_t>::max() || count != parts.size() - 1) {
+            return Seed();
+        }
+        quint32 *seed = new quint32[count];
+        for (ssize_t i = 0; i < count; ++i) {
+            auto part = parts.value(i+1).toULongLong(&ok);
+            if (!ok || part < std::numeric_limits<quint32>::min()
+                    || part > std::numeric_limits<quint32>::max()) {
+                return Seed();
+            }
+            seed[i] = static_cast<quint32>(part);
+        }
+        return Seed(seed, count);
+    } else {
+        auto seed = str.toULongLong(&ok);
+        if (!ok || seed < std::numeric_limits<uint_fast32_t>::min()
+                || seed > std::numeric_limits<uint_fast32_t>::max()) {
+            return Seed();
+        }
+        return Seed(static_cast<uint_fast32_t>(seed));
+    }
+}
+
+Seed::Seed()
+    : m_scalar(std::mt19937::default_seed)
+    , m_tag(std::numeric_limits<tag_t>::max())
+{
+    // Invalid seed
+    assert(isScalar());
+}
+
+Seed::Seed(const Seed &other)
+    : m_tag(other.m_tag)
+{
+    if (other.isVector()) {
+        m_vector = new quint32[m_tag];
+        memcpy(m_vector, other.m_vector, m_tag * sizeof(quint32));
+    } else {
+        m_scalar = other.m_scalar;
+    }
+}
+
+Seed &Seed::operator=(const Seed &other)
+{
+    if (isVector()) {
+        delete[] m_vector;
+    }
+
+    m_tag = other.m_tag;
+    if (other.isVector()) {
+        m_vector = new quint32[m_tag];
+        memcpy(m_vector, other.m_vector, m_tag * sizeof(quint32));
+    } else {
+        m_scalar = other.m_scalar;
+    }
+    return *this;
+}
+
+Seed &Seed::operator=(Seed &&other)
+{
+    if (isVector()) {
+        delete[] m_vector;
+    }
+
+    m_tag = other.m_tag;
+    if (other.isVector()) {
+        m_vector = other.m_vector;
+    } else {
+        m_scalar = other.m_scalar;
+    }
+    other.m_vector = nullptr;
+    other.m_scalar = std::mt19937::default_seed;
+    other.m_tag = std::numeric_limits<tag_t>::max();
+    return *this;
+}
+
+Seed::~Seed()
+{
+    if (isVector()) {
+        delete[] m_vector;
+    }
+    m_vector = nullptr;
+    m_scalar = std::mt19937::default_seed;
+    m_tag = std::numeric_limits<tag_t>::max();
+}
+
+bool Seed::isValid() const
+{
+    return m_tag != std::numeric_limits<tag_t>::max();
+}
+
+std::mt19937 Seed::getRng() const
+{
+    if (isScalar()) {
+        return std::mt19937(m_scalar);
+    } else {
+        std::seed_seq seed(m_vector, m_vector + m_tag);
+        return std::mt19937(seed);
+    }
+}
+
+QString Seed::toString() const
+{
+    if (isScalar()) {
+        return QString::number(m_scalar);
+    } else {
+        QStringList parts;
+        parts << QString::number(m_tag);
+        for (size_t i = 0; i < m_tag; ++i) {
+            parts << QString::number(m_vector[i]);
+        }
+        return parts.join(':');
+    }
+}
+
+Seed::Seed(uint_fast32_t seed)
+    : m_scalar(seed)
+    , m_tag(0)
+{
+    assert(isScalar());
+}
+
+Seed::Seed(quint32 *seed, int count)
+    : m_vector(seed)
+    , m_tag(count)
+{
+    // TODO: Could implement this with refcount if it helps
+    assert(count && count <= std::numeric_limits<tag_t>::max());
+    assert(seed || m_tag == std::numeric_limits<tag_t>::max());
+    assert(isVector());
+}
+
+QDebug operator<<(QDebug debug, const Seed &seed)
+{
+    if (!seed.isValid()) {
+        debug << "invalid seed";
+    } else if (seed.m_tag) {
+        QDebugStateSaver saver(debug);
+        debug.nospace() << '[';
+        for (ssize_t i = 0; i < seed.m_tag; ++i) {
+            debug.nospace() << seed.m_vector[i];
+            if (i != seed.m_tag - 1) {
+                debug.nospace() << ", ";
+            }
+        }
+        debug.nospace() << ']';
+    } else {
+        debug << seed.m_scalar;
+    }
+    return debug;
+}
+
 bool EngineInternals::replaying() const
 {
     return m_recorder.replaying();
@@ -104,11 +279,11 @@ EngineInternals::EngineInternals(Engine *engine)
     , m_features(NoFeatures)
     , m_state(UninitializedState)
     , m_timeout(0)
-    , m_seed(std::mt19937::default_seed)
     , m_recordingMove(false)
     , m_recorder(engine)
     , m_makeFirstMove(false)
 {
+    qRegisterMetaType<Seed>();
 }
 
 EngineInternals::~EngineInternals()
@@ -799,19 +974,26 @@ CardList Engine::cards(int slotId, int count) const
     return slot.mid(count > 0 ? slot.count() - count : 0);
 }
 
-uint_fast32_t Engine::seed() const
+Seed Engine::seed() const
 {
     return d_ptr->m_seed;
 }
 
-void EngineInternals::handleReplayGame(const QString &gameFile, bool hasSeed, uint_fast32_t seed, qint64 time)
+Seed Engine::getSeed()
 {
-    if (hasSeed)
+    Seed seed;
+    QMetaObject::invokeMethod(this, "seed", Qt::BlockingQueuedConnection, Q_RETURN_ARG(Seed, seed));
+    return seed;
+}
+
+void EngineInternals::handleReplayGame(const QString &gameFile, const Seed &seed, qint64 time)
+{
+    if (seed.isValid())
         m_seed = seed;
-    engine()->loadGame(gameFile, hasSeed);
+    engine()->loadGame(gameFile, seed.isValid());
     if (time)
         emit engine()->restoreStarted(time);
-    qCDebug(lcEngine) << "Restored game" << gameFile << (hasSeed ? "with" : "without") << "seed" << seed;
+    qCDebug(lcEngine) << "Restored game" << gameFile << (seed.isValid() ? "with" : "without") << "seed" << seed;
 }
 
 void EngineInternals::handleReplayCompleted(Recorder::CompletionStatus status)
@@ -1189,10 +1371,9 @@ void EngineInternals::skipRandomValues(int steps)
 
 void EngineInternals::resetGenerator(bool generateNewSeed)
 {
-    static std::random_device seedGenerator;
     if (generateNewSeed)
-        m_seed = seedGenerator();
-    m_generator = std::mt19937(m_seed);
+        m_seed = Seed::randomSeed();
+    m_generator = m_seed.getRng();
     m_recorder.setSeed(m_seed);
 }
 

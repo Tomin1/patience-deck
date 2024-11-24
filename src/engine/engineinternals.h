@@ -123,7 +123,7 @@ public:
     bool makeSCMCall(QString name, SCM *args, size_t n, SCM *retval);
 
 private slots:
-    void handleReplayGame(const QString &gameFile, bool hasSeed, uint_fast32_t seed, qint64 time);
+    void handleReplayGame(const QString &gameFile, const Seed &seed, qint64 time);
     void handleReplayCompleted(Recorder::CompletionStatus status);
 
 private:
@@ -143,7 +143,7 @@ private:
     GameState m_state;
     int m_timeout;
     QString m_gameFile;
-    uint_fast32_t m_seed;
+    Seed m_seed;
     std::mt19937 m_generator;
     bool m_recordingMove;
     quint32 m_action;

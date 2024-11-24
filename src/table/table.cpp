@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2024 Tomi Leppänen
+ * Copyright (C) 2020-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -338,9 +338,8 @@ void Table::playWinAnimation()
 
 void Table::createWinAnimation()
 {
-    // SAFETY: While Engine is owned by another thread, it's not destroyed until
-    // the app closes and the seed only changes when a new game is started
-    std::mt19937 generator(Engine::instance()->seed());
+    const Seed seed = Engine::instance()->getSeed();
+    std::mt19937 generator = seed.getRng();
     AnimationBuilder builder = AnimationBuilder::sequentialAnimation(this);
     using SlotIterator = typename QVector<Slot *>::iterator;
     IndexedIterator<SlotIterator> shuffledIt = shuffled(m_slots, generator);
