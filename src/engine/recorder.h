@@ -75,7 +75,7 @@ signals:
 public slots:
     void handleGameLoaded(const QString &gameFile);
     void handleGameStarted();
-    void handleMoveEnded();
+    void handleMoveEnded(quint16 crc);
     void handleGameOver();
     void handleEngineFailure();
 
@@ -155,6 +155,8 @@ private:
     int m_moves = 0;
     QElapsedTimer m_elapsed;
     QScopedPointer<OldState> m_oldState;
+    bool m_crcSet = false;
+    quint16 m_crc = 0;
 };
 
 #endif // RECORDER_H

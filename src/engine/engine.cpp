@@ -284,6 +284,12 @@ EngineInternals::EngineInternals(Engine *engine)
     , m_makeFirstMove(false)
 {
     qRegisterMetaType<Seed>();
+    connect(engine, &Engine::moveEnded, this, [this] {
+        quint16 crc = calculateStateCRC();
+        emit moveEnded(crc);
+    }, Qt::DirectConnection);
+    connect(this, &EngineInternals::moveEnded,
+            &m_recorder, &Recorder::handleMoveEnded, Qt::QueuedConnection);
 }
 
 EngineInternals::~EngineInternals()
@@ -984,6 +990,30 @@ Seed Engine::getSeed()
     Seed seed;
     QMetaObject::invokeMethod(this, "seed", Qt::BlockingQueuedConnection, Q_RETURN_ARG(Seed, seed));
     return seed;
+}
+
+quint16 Engine::calculateStateCRC() const
+{
+    return d_ptr->calculateStateCRC();
+}
+
+quint16 EngineInternals::calculateStateCRC() const
+{
+    QByteArray state;
+    state.reserve(m_cardSlots.length());
+    for (const CardList &slot : m_cardSlots) {
+        // Empty slots are represented by 0
+        char value = 0;
+        if (!slot.empty()) {
+            SuitAndRank card = slot.back().value();
+            int suit = card.first;
+            int rank = card.second;
+            // Add 1 to avoid 0
+            value = suit + ((rank + 1) << 2);
+        }
+        state.push_back(value);
+    }
+    return qChecksum(state.constData(), state.length());
 }
 
 void EngineInternals::handleReplayGame(const QString &gameFile, const Seed &seed, qint64 time)

@@ -58,6 +58,8 @@ public:
 
     CardList cards(int slotId, int count) const;
 
+    quint16 calculateStateCRC() const;
+
 public slots:
     void init();
     void initWithDirectory(const QString &gameDirectory);

@@ -47,24 +47,32 @@ QString decode(const QString &text)
 }
 
 struct SavedState {
-    bool valid;
+    bool valid = false;
     QString gameFile;
     Seed seed;
-    qint64 time;
+    qint64 time = 0;
     QString moves;
-    QChar version;
+    QChar version = InvalidDataVersion;
+    bool hasCrc = false;
+    quint16 crc = 0;
 
-    SavedState(const QString &gameFile = QString(),
-               Seed seed = Seed(),
-               qint64 time = 0,
-               QString moves = QString(),
-               QChar version = InvalidDataVersion)
-        : valid(false)
+    SavedState() {}
+
+    SavedState(const QString &gameFile,
+               Seed seed,
+               qint64 time,
+               QString moves,
+               QChar version,
+               bool hasCrc,
+               quint16 crc = 0)
+        : valid(true)
         , gameFile(gameFile)
         , seed(seed)
         , time(time)
         , moves(moves)
-        , version(version) {}
+        , version(version)
+        , hasCrc(hasCrc)
+        , crc(crc) {}
 
     QString toString(bool encoded = true) const
     {
@@ -75,6 +83,8 @@ struct SavedState {
         if (!moves.isEmpty() && !version.isNull()) {
             auto data = MovesTemplate.arg(time).arg(moves);
             parts << QString(version) << (encoded ? encode(data) : data);
+            if (hasCrc)
+                parts << (QString('A') + QString::number(crc));
         }
         return parts.join(';');
     }
@@ -102,6 +112,10 @@ struct SavedState {
                     saved.time = moves.left(sep).toLongLong(&ok);
                     if (ok)
                         saved.moves = moves.mid(sep + 1);
+                    // 'A' is 'CRC version'
+                    if (parts.count() >= 5 && parts.at(4)[0] == 'A') {
+                        saved.crc = parts.at(4).mid(1).toUShort(&saved.hasCrc);
+                    }
                 }
             }
         }
@@ -130,7 +144,6 @@ Recorder::Recorder(Engine *engine)
 {
     connect(engine, &Engine::gameLoaded, this, &Recorder::handleGameLoaded, Qt::DirectConnection);
     connect(engine, &Engine::gameStarted, this, &Recorder::handleGameStarted, Qt::DirectConnection);
-    connect(engine, &Engine::moveEnded, this, &Recorder::handleMoveEnded, Qt::QueuedConnection);
     connect(engine, &Engine::gameOver, this, &Recorder::handleGameOver, Qt::QueuedConnection);
 
 #ifndef ENGINE_EXERCISER
@@ -177,6 +190,8 @@ bool Recorder::load()
                 for (const QString &record : state.moves.split(','))
                     m_records.append(Record::fromString(record));
             }
+            m_crcSet = state.hasCrc;
+            m_crc = state.crc;
             emit replayingGame(state.gameFile, state.seed, state.time);
             return true;
         }
@@ -195,6 +210,20 @@ void Recorder::replaySingle()
     }
 
     if (m_replaying > (uint)m_records.count()) {
+        if (lcRecorderCRC().isDebugEnabled()) {
+            quint16 crc = engine()->calculateStateCRC();
+            qCDebug(lcRecorderCRC) << "CRC is" << crc;
+        }
+        if (m_crcSet) {
+            quint16 crc = engine()->calculateStateCRC();
+            if (crc != m_crc) {
+                qCWarning(lcRecorder) << "CRC failure after replaying, expected" << m_crc << "but got" << crc;
+                fail();
+                return;
+            } else {
+                qCDebug(lcRecorder) << "Validated CRC";
+            }
+        }
         emit replayCompleted(Success);
         m_replaying = 0;
         return;
@@ -289,6 +318,7 @@ void Recorder::clear()
     m_records.clear();
     m_abandoned.clear();
     m_moves++; // Count clear() as a move to force save()
+    m_crcSet = false;
 }
 
 void Recorder::save()
@@ -312,7 +342,7 @@ void Recorder::save()
         // This is fine. Trust me, I'm an engineer. ;)
         // (Patience instance is not going anywhere so we get away with this.)
         auto savedState = SavedState(m_gameFile, m_seed, Patience::instance()->elapsedTimeMs(),
-                                     records.join(','), dataVersion);
+                                     records.join(','), dataVersion, m_crcSet, m_crc);
         if (lcRecorderData().isDebugEnabled())
             qCDebug(lcRecorderData) << "Saving state:" << savedState.toString(false);
         m_stateConf.set(savedState.toString());
@@ -406,9 +436,11 @@ void Recorder::handleGameStarted()
     }
 }
 
-void Recorder::handleMoveEnded()
+void Recorder::handleMoveEnded(quint16 crc)
 {
     if (!m_replaying) {
+        m_crcSet = true;
+        m_crc = crc;
         if (m_lastSavedRngState != m_rngState) {
             qCDebug(lcRecorder) << "Recording random state"
                                 << m_lastSavedRngState << "->" << m_rngState;
@@ -502,6 +534,7 @@ void Recorder::addArguments(QCommandLineParser *parser)
         {{"m", "moves"}, "Recorded moves to make", "moves"},
         {{"t", "time"}, "Recorded time to set", "time"},
         {{"o", "options"}, "Indices of options to set before loading game", "options"},
+        {{"r", "crc"}, "Set crc to validate", "crc"},
         {{"v", "version"}, "Set data version", "integer"},
     });
 }
@@ -530,13 +563,19 @@ void Recorder::setArguments(QCommandLineParser *parser)
         if (state.version.isNull()) {
             state.version = DataVersion0;
         }
-    }
-    else if (parser->isSet("game") || parser->isSet("seed"))
+    } else if (parser->isSet("game") || parser->isSet("seed")) {
         // invalidate moves
         state.moves.clear();
+    }
+    state.hasCrc = false;
+    if (parser->isSet("crc")) {
+        QString crc = parser->value("crc");
+        if (crc.at(0) == 'A')
+            state.crc = crc.mid(1).toUShort(&state.hasCrc);
+    }
     if (parser->isSet("time"))
         state.time = parser->value("time").toLongLong();
-    if (parser->isSet("game") || parser->isSet("seed") || parser->isSet("moves")) {
+    if (parser->isSet("game") || parser->isSet("seed") || parser->isSet("moves") || parser->isSet("crc")) {
         stateConf.set(state.toString());
         stateConf.sync();
     }

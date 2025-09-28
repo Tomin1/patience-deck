@@ -126,6 +126,9 @@ private slots:
     void handleReplayGame(const QString &gameFile, const Seed &seed, qint64 time);
     void handleReplayCompleted(Recorder::CompletionStatus status);
 
+signals:
+    void moveEnded(quint16 crc);
+
 private:
     friend Engine;
 #ifdef ENGINE_EXERCISER
@@ -134,6 +137,7 @@ private:
 
     Engine::ActionTypeFlags flags(Engine::ActionType action, bool engineAction = false) const;
     bool replaying() const;
+    quint16 calculateStateCRC() const;
 
     QTimer *m_delayedCallTimer;
     int m_delayedCallDelay;

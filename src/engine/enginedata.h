@@ -23,6 +23,7 @@
 #include <QMetaType>
 #include <random>
 
+// These values are used by checksumming
 enum Rank : int {
     RankJoker = 0,
     RankAce = 1,
@@ -46,6 +47,7 @@ enum Rank : int {
     CardsTotal = 56,
 };
 
+// These values are used by checksumming
 enum Suit : int {
     SuitClubs = 0,
     SuitDiamonds = 1,
