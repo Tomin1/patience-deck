@@ -555,8 +555,11 @@ void Recorder::setArguments(QCommandLineParser *parser)
         auto moves = parser->value("moves");
         if (!moves.contains(':') && !moves.contains(',') && moves != "D") {
             moves = decode(moves.toUtf8());
-            if (moves.at(0).isDigit())
-                moves = moves.mid(moves.indexOf(':') + 1);
+            if (moves.at(0).isDigit()) {
+                auto sep = moves.indexOf(':');
+                state.time = moves.left(sep).toLongLong();
+                moves = moves.mid(sep + 1);
+            }
         }
         state.moves = moves;
         state.version = parser->value("version").at(0);
