@@ -25,11 +25,17 @@ COMMENT="$*"
 
 STATE=$(dconf read /site/tomin/apps/PatienceDeck/state | tr -d \')
 GAME="${STATE%%;*}"
+VERSION=$(echo "$STATE" | cut -d\; -f1)
 SEED=$(echo "$STATE" | cut -d\; -f2)
-MOVES="${STATE##*;}"
+MOVES="$(echo "$STATE" | cut -d\; -f3)"
+CRC="$(echo "$STATE" | cut -d\; -f4)"
 OPTIONS=$(dconf read "/site/tomin/apps/PatienceDeck/options/${GAME%.scm}" | tr -d \')
 
-COMMAND="patience-deck --game '$GAME' --seed $SEED --moves '$MOVES'"
+COMMAND="patience-deck --game '$GAME' --seed '$SEED' --moves '$MOVES' --crc '$CRC'"
+if [ "$VERSION" != "0" ];
+then
+    COMMAND="$COMMAND --version '$VERSION'"
+fi
 if [ "$OPTIONS" != "" ];
 then
     COMMAND="$COMMAND --options '$OPTIONS'"
