@@ -1,6 +1,6 @@
 /*
  * Patience Deck is a collection of patience games.
- * Copyright (C) 2020-2022 Tomi Leppänen
+ * Copyright (C) 2020-2025 Tomi Leppänen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,18 +19,25 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Patience 1.0
 import PatienceDeck 1.0
-import "../components"
 
 CoverBackground {
     Column {
         anchors.centerIn: parent
         width: parent.width
 
-        Image {
+        Icon {
             anchors.horizontalCenter: parent.horizontalCenter
-            source: PatienceDeck.getIconPath(Theme.iconSizeLauncher)
-            sourceSize.height: Theme.iconSizeLauncher
-            sourceSize.width: Theme.iconSizeLauncher
+            source: {
+                if (Patience.state === Patience.WonState) {
+                    return "../../buttons/icon-m-fireworks.svg"
+                } else if (Patience.state === Patience.GameOverState) {
+                    return "../../buttons/icon-m-skull.svg"
+                } else {
+                    return "../../buttons/icon-m-cards.svg"
+                }
+            }
+            sourceSize.height: parent.width - 2 * Theme.paddingMedium
+            sourceSize.width: parent.width - 2 * Theme.paddingMedium
         }
 
         Item {
@@ -50,11 +57,6 @@ CoverBackground {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Patience.elapsedTime
             color: Theme.secondaryColor
-        }
-
-        GameFinishedIcon {
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: Patience.state >= Patience.GameOverState
         }
     }
 }
